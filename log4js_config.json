@@ -1,0 +1,23 @@
+{
+  "appenders": [
+    {
+      "type": "logLevelFilter",
+      "level": "info",
+      "appender": {
+        "type": "file",
+        "filename": "logs/log_file.log",
+        "maxLogSize": 20480,
+        "backups": 5
+      }
+    },
+    {
+      "type": "console"		
+    }
+  ],
+  "levels": {
+    "socket.io" : "error",
+    "io" : "info",
+    "game" : "debug",
+    "card": "debug"
+  }
+}

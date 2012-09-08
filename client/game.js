@@ -1,0 +1,20 @@
+importFiles = [
+	"/game/general.js",
+	"/game/UIServices.js",
+	"/game/UIElement.js",
+	"/game/FieldPane.js",
+	"/game/Button.js",
+	"/game/InfoField.js",
+	"/game/Card.js",
+	"/game/CardLayouter.js",
+	"/game/InfoBar.js",
+	"/game/AuctionPanel.js",
+	"/game/ServerCommListener.js",
+	"/game/CanvasManager.js",
+	"/game/Global.js",
+	"/game/GlobalListeners.js",
+	"/game/Cookie.js",
+	"/game/I18n.js",
+	"/game/PreGameHtml.js",
+	"/game/global_scope.js"
+]
