@@ -85,7 +85,7 @@ RentalCard.prototype.play = function(field, player) {
 		field.buildState = 1;
 		return { changedFields : Field.asFields(field) , secretPlay : false};
 	} else {
-		throw "Field already occupied!";
+		throw "error_field_already_occupied";
 	}
 };
 RentalCard.getTypeFromField = function(field) {

@@ -76,7 +76,7 @@ AddCriminals1Card.prototype.prePlay = function() {
 };
 AddCriminals1Card.prototype.play = function(field, player) {
 	if(field.attachedCard.houseType < 9) {
-		throw "housetype must be >= 9";
+		throw "error_housetype_too_low";
 	}
 	return this.parent.play.apply(this, arguments);	
 }
@@ -111,7 +111,7 @@ AddCriminals2Card.prototype.prePlay = function() {
 };
 AddCriminals2Card.prototype.play = function(field, player) {
 	if(field.attachedCard.houseType < 7) {
-		throw "housetype must be >= 7";
+		throw "error_housetype_too_low";
 	}
 	return this.parent.play.apply(this, arguments);	
 }
@@ -149,7 +149,7 @@ AddCriminals3Card.prototype.prePlay = function() {
 };
 AddCriminals3Card.prototype.play = function(field, player) {
 	if(field.attachedCard.houseType > 4) {
-		throw "housetype must be <= 4";
+		throw "error_housetype_too_low";
 	}
 	return this.parent.play.apply(this, arguments);	
 }

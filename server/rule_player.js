@@ -29,7 +29,7 @@ Player.prototype.getSocket = function() {
 	return socket;
 }
 
-Player.prototype.playCard = function(cardIdToPlay,targetFieldId,onSuccess) {
+Player.prototype.playCard = function(cardIdToPlay,targetFieldId,onSuccess,onFail) {
 	// check if player is able to deploy a card this turn
 	var self = this;
 	if(self.availableActions & 1 == 0) {
@@ -42,12 +42,14 @@ Player.prototype.playCard = function(cardIdToPlay,targetFieldId,onSuccess) {
 		var field = null;
 		var cardPlayReturn;
 		// store the Game with the changed (deployed) field
-		GameManager.storeGame(game, function(game) {
+		GameManager.storeGame(game, 
+		function(gameToPrepare) {
+			// prepare
 			var card = self.cardHand.getById(cardIdToPlay);
-			field = game.gameField.fields[targetFieldId];
-			cardPlayReturn = card.play(field, self, game.gameField.fields);
-		}, function() {					
-			// safe the player with the removed card
+			field = gameToPrepare.gameField.fields[targetFieldId];			
+			cardPlayReturn = card.play(field, self, gameToPrepare.gameField.fields);			
+		}, function(savedGame) {					
+			// onSuccess: safe the player with the removed card
 			PlayerManager.storePlayer(self, function(playerToPrepare) {
 				var card = playerToPrepare.cardHand.getById(cardIdToPlay);
 				playerToPrepare.availableActions ^= card.actionBit; // clear deployable action							
@@ -55,6 +57,9 @@ Player.prototype.playCard = function(cardIdToPlay,targetFieldId,onSuccess) {
 			}, function(savedPlayer) {
 				onSuccess(savedPlayer, field, cardPlayReturn);
 			});						
+		}, function(error) {
+			// onFail
+			onFail(error);
 		});
 	});	
 }

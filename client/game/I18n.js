@@ -7,7 +7,10 @@ var I18n = {
 
 		error_noname : "You need to name yourself!",
 		error_not_enough_money : "You don't have that much money!",
-		
+		error_field_already_occupied : 'The field you selected is already occupied. Choose another!',
+		error_field_is_not_occupied : 'The field you selected is not occupied. Choose another!',
+		error_housetype_too_low : 'The field you selected has a too low house-type. Choose another!',
+
 		"City Builder": 'City Builder',
 		"A card based multi player board game": 'A card based multi player board game',
 		"Your name": 'Your name',

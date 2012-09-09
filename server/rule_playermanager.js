@@ -15,7 +15,7 @@ var PlayerManager = {
 
 	getPlayer : function(playerId, onLoad) {
 		if(typeof playerId === "undefined") {
-			throw "Error in getPlayer - playerId is undefined";
+			logger.error("Error in getPlayer - playerId is undefined");
 		}
 		db.get(playerId, { revs_info: false }, function(err, body) {
 			if (err) {
@@ -37,7 +37,7 @@ var PlayerManager = {
 
 	getPlayers : function(gameId, perRow, allRows) {
 		if(typeof gameId === "undefined") {
-			throw "Error in getPlayers - gameId is undefined";
+			logger.error("Error in getPlayers - gameId is undefined");
 		}
 		db.view("game", "playersByGameId", { key : gameId }, function(err, body) {
 			if (err) {
@@ -61,7 +61,7 @@ var PlayerManager = {
 							return p;
 						}
 					}
-					throw "player not found with no="+playerNo;
+					logger.error("player not found with no="+playerNo);
 				};	
 							
 				allRows(body.rows);
@@ -71,7 +71,7 @@ var PlayerManager = {
 
 	getPlayerBySocketId : function(socketId, onLoad) {
 		if(typeof socketId === "undefined") {
-			throw "Error in getPlayerBySocketId - socketId is undefined";
+			logger.error("Error in getPlayerBySocketId - socketId is undefined");
 		}
 		db.view('game', 'playersBySocketId', {key : socketId}, function(err, body) {
 			if(err) {

@@ -11,6 +11,7 @@ function ServerCommListener() {
 		socket.on('card', self.card);	
 		socket.on('prePlayCard_resp', self.prePlayCard_resp);	
 		socket.on('cardPlaySelectTarget_resp', self.cardPlaySelectTarget_resp);
+		socket.on('cardPlaySelectTargetFailed_resp', self.cardPlaySelectTargetFailed_resp);
 		socket.on('onStartAuction_resp', self.onStartAuction_resp);
 		socket.on('waitAddPlayer', self.waitAddPlayer);
 		socket.on('gamedEnded', self.gamedEnded);
@@ -172,6 +173,11 @@ function ServerCommListener() {
 			G.availableActions = msg.availableActions;
 		}	
 		G.draw();
+	}
+	this.cardPlaySelectTargetFailed_resp = function(msg) {
+		$('#overlay').hide();
+		G.cardLayouter.unlock();
+		alert(G.i18n[msg.error]);
 	}
 	this.onCardDiscard = function(card) {
 		socket.emit('cardDiscard_req', {card : card, playerId : G.playerId });

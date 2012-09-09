@@ -35,7 +35,7 @@ RemoveBuildingCard.prototype.play = function(field, player) {
 		field.buildState = 1;
 		return { changedFields: {}, secretPlay : true };
 	} else {
-		throw "Field is not occupied!";
+		throw "error_field_is_not_occupied";
 	}
 };
 

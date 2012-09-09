@@ -28,8 +28,7 @@ var GameManager = {
 
 	getGame : function(gameId, onLoad) {	
 		if(typeof gameId === "undefined") {
-			console.trace("Here I am!");
-			throw "Error in getGame - gameId is undefined";
+			logger.error("Error in getGame - gameId is undefined");
 		}		
 		db.get(gameId, { revs_info: false }, function(err, body) {
 			if (err) {
@@ -55,39 +54,58 @@ var GameManager = {
 		});
 	},
 
-	storeGame : function(game, prepare, onSuccess) {
-		var self = this;
-		var doInsert = true;
-		if(prepare!=null) {
-			var prepareReturn = prepare(game);
-			if(typeof(prepareReturn) !== 'undefined') {
-				doInsert = prepareReturn;
+	storeGame : function(game, prepare, onSuccess, onFail) {
+		try {
+			var self = this;
+			var doInsert = true;
+			if(prepare!=null) {
+				var prepareReturn = prepare(game);
+				if(typeof(prepareReturn) !== 'undefined') {
+					doInsert = prepareReturn;
+				}
 			}
-		}
-		if(doInsert) {
-			db.insert(game, function(err, body) {
-				if (err) {
-					console.trace("Here I am!")
-					logger.error('[GameManager] - storeGame failed. '+(prepare==null?'HARD FAIL!':'')+' : ', err.message);
-					if(prepare!=null) {
-						self.getGame(game._id, function(newGame) {
-							var doInsert = prepare(newGame);
-							if(typeof(doInsert) === 'undefined' || doInsert) {
-								self.storeGame(newGame, prepare, onSuccess);
-							}							
-						});
-					}
-					return;
-				}
-				game._id = body.id;
-				game._rev = body.rev; // update rev so we can perisit it again
-				if(typeof(onSuccess) !== 'undefined') {
-					onSuccess(game);
-				}
-			});
-		}
+			if(doInsert) {
+				db.insert(game, function(err, body) {
+					try {
+						if (err) {
+							logger.error('[GameManager] - storeGame failed. '+(prepare==null?'HARD FAIL!':'will try again...')+' : ', err.message);
+							if(prepare!=null) {
+								self.getGame(game._id, function(newGame) {
+									try {
+										var doInsert = prepare(newGame);
+										if(typeof(doInsert) === 'undefined' || doInsert) {
+											self.storeGame(newGame, prepare, onSuccess);
+										}							
+									} catch(e) {
+										logger.error("Caught exception : " + e);
+										if(typeof(onFail) !== 'undefined') {
+											onFail(e);
+										}
+									}
+								});
+							}
+							return;
+						}
+						game._id = body.id;
+						game._rev = body.rev; // update rev so we can perisit it again
+						if(typeof(onSuccess) !== 'undefined') {
+							onSuccess(game);
+						}
+					} catch(e) {
+						logger.error("Caught exception : " + e);
+						if(typeof(onFail) !== 'undefined') {
+							onFail(e);
+						}
+					}				
+				});
+			}
+		} catch(e) {
+			logger.error("Caught exception : " + e);
+			if(typeof(onFail) !== 'undefined') {
+				onFail(e);
+			}
+		}				
 	}
-
 };
 
 module.exports = GameManager

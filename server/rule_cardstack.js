@@ -55,7 +55,7 @@ CardStack.prototype.removeTop = function() {
 }
 
 CardStack.prototype.removeCardById = function(cardId) {
-	if(typeof cardId === "undefined") throw "Error in removeCardById - cardId is undefined";
+	if(typeof cardId === "undefined") logger.error("Error in removeCardById - cardId is undefined");
 	for(var i = 0 ; i < this.cards.length ; i++ ) {
 		if(this.cards[i].id == cardId) {
 			this.cards.splice(i,1);
@@ -65,7 +65,7 @@ CardStack.prototype.removeCardById = function(cardId) {
 }
 
 CardStack.prototype.getById = function(cardId) {
-	if(typeof cardId === "undefined") throw "Error in getById - cardId is undefined";
+	if(typeof cardId === "undefined") logger.error("Error in getById - cardId is undefined");
 	for(var i = 0 ; i < this.cards.length ; i++ ) {
 		if(this.cards[i].id == cardId) {
 			return this.cards[i];

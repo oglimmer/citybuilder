@@ -119,16 +119,21 @@ module.exports = function(io, logger) {
 			var PlayerManager = require("./rule_playermanager.js");
 			// load player
 			PlayerManager.getPlayer(data.playerId, function(player) {
-				player.playCard(data.cardIdToPlay, data.targetFieldId, function(player, field, cardPlayReturn) {
-					var fieldsToSend = cardPlayReturn.changedFields;
-					player.getSocket().emit('cardPlaySelectTarget_resp', {field: fieldsToSend, cardId: data.cardIdToPlay, availableActions: player.availableActions});
-					if(cardPlayReturn.secretPlay !== true) {
-						// send the changed field to other players as well
-						PlayerManager.getOtherPlayers(player, function (otherPlayer) {
-							otherPlayer.getSocket().emit('cardPlaySelectTarget_resp', {field: GameField.forPlayer(otherPlayer, fieldsToSend) /*must not send the card*/ });
-						});					
+				player.playCard(data.cardIdToPlay, data.targetFieldId, 
+					/*onSuccess*/function(player, field, cardPlayReturn) {
+						var fieldsToSend = cardPlayReturn.changedFields;
+						player.getSocket().emit('cardPlaySelectTarget_resp', {field: fieldsToSend, cardId: data.cardIdToPlay, availableActions: player.availableActions});
+						if(cardPlayReturn.secretPlay !== true) {
+							// send the changed field to other players as well
+							PlayerManager.getOtherPlayers(player, function (otherPlayer) {
+								otherPlayer.getSocket().emit('cardPlaySelectTarget_resp', {field: GameField.forPlayer(otherPlayer, fieldsToSend) /*must not send the card*/ });
+							});					
+						}
+					},
+					/*onFail*/function(error) {
+						player.getSocket().emit('cardPlaySelectTargetFailed_resp', { cardId: data.cardIdToPlay, error : error });						
 					}
-				});
+				);
 			});
 		});
 		socket.on('roundEnd_req', function(data) {			
