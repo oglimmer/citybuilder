@@ -50,7 +50,7 @@ function Global() {
 		this.canvasManager.onclick(x,y);
 	}
 	this.getButton = function(x,y) {
-		this.canvasManager.getButton();
+		return this.canvasManager.getButton();
 	}
 
 	this.resize = function() {
