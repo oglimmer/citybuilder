@@ -1,5 +1,6 @@
-
-
+/* ------------------------------------------ */
+/* class CanvasManager */  
+/* ------------------------------------------ */
 function CanvasManager() {
 
 	this.elements = [/*0: zindex, 1: temporary?, 2: element*/];

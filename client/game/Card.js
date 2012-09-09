@@ -1,12 +1,13 @@
-/*Function.prototype.Inherits = function(parent) {
+/* Needed for Inheritence */
+Function.prototype.Inherits = function(parent) {
 	this.prototype = new parent();
 	this.prototype.constructor = this;
 	this.prototype.parent = parent.prototype;
 };
 
- ------------------------------------------ */
-/* class Card */
-/* ------------------------------------------ 
+/* ------------------------------------------ */
+/* class BaseCard */
+/* ------------------------------------------ */
 function BaseCard() {
 }
 BaseCard.prototype.Inherits = function(parent) {
@@ -15,14 +16,75 @@ BaseCard.prototype.Inherits = function(parent) {
 	} else {      
 		parent.call(this);
 	}
-};*/
+};
+BaseCard.prototype.drawText = function(ctx) {
+	var text = G.i18n[this.text];
+	if(text.match(/\{.*\}/)) {
+		var originalText = text;
+		var pattern = /{[0-9]+,[0-9]+}/g;
+		var toReplace = originalText.match(pattern);
+		var textToken = originalText.split(pattern);
+		var resultText = "";
+		var j = 0;
+		for(var i = 0 ; i < textToken.length ; i++) {
+			resultText += textToken[i];
+			if(i < textToken.length-1) {
+				var tempTxt = toReplace[j++];
+				tempTxt = tempTxt.substring(1, tempTxt.length-1);
+				var start = parseInt(tempTxt.substring(0,tempTxt.indexOf(',')));
+				var end = parseInt(tempTxt.substring(tempTxt.indexOf(',')+1));
+				var tempTxtDisp = "";
+				if(start == 1 && end == 10) {
+					tempTxtDisp += G.i18n.c_all_housetypes;
+				} else {
+					for(var k = start ; k <= end ; k++) {
+						if(start !== end || k !== end) {
+							if(k!==start) {
+								tempTxtDisp += "/ ";
+							}
+							tempTxtDisp += UIServices.getHouseTypeText(k);
+						}
+					}
+				}
+				resultText += tempTxtDisp;
+			}
+		}
+		text = resultText;
+	}
+	var words = text.split(" ");
+	var line = "";
+	var tmpY = this.y+28;
+
+	for ( var n = 0; n < words.length; n++) {
+		var testLine = line + words[n] + " ";
+		var metrics = ctx.measureText(testLine);
+		var testWidth = metrics.width;
+		if (testWidth > this.width-4) {
+			ctx.fillText(line, this.x+5, tmpY);
+			line = words[n] + " ";
+			tmpY += 12; //lineHeight
+		} else {
+			line = testLine;
+		}
+	}
+	ctx.fillText(line, this.x+5, tmpY);
+}
+BaseCard.prototype.onclick = function(x, y) {   
+	return this.atPos(x,y);
+};
+BaseCard.prototype.atPos = function(x, y) {   
+	if(x>=this.x && y>=this.y && x<=this.x+this.width && y <=this.y+this.height) {
+		return true;
+	}
+	return false;
+};	
 
 /* ------------------------------------------ */
 /* class Card */
 /* ------------------------------------------ */
-//BaseCard.Inherits(Card);
+Card.Inherits(BaseCard);
 function Card(id,title,text,actionBit,playType,ctx) {
-	//this.Inherits(Card);
+	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
 	this.text = text;
@@ -56,15 +118,6 @@ function Card(id,title,text,actionBit,playType,ctx) {
 			this.drawText(ctx);
 		}
 	};    
-	this.onclick = function(x, y) {   
-		return this.atPos(x,y);
-	};
-	this.atPos = function(x, y) {   
-		if(x>=this.x && y>=this.y && x<=this.x+this.width && y <=this.y+this.height) {
-			return true;
-		}
-		return false;
-	};	
 	this.toggle = function() {
 		if(this.expanded) {
 			this.height = 20;
@@ -95,34 +148,15 @@ function Card(id,title,text,actionBit,playType,ctx) {
 			}));
 		}		
 		this.expanded = !this.expanded;
-	};
-	this.drawText = function(ctx) {
-		var words = G.i18n[this.text].split(" ");
-		var line = "";
-		var tmpY = this.y+28;
-
-		for ( var n = 0; n < words.length; n++) {
-			var testLine = line + words[n] + " ";
-			var metrics = ctx.measureText(testLine);
-			var testWidth = metrics.width;
-			if (testWidth > this.width-2) {
-				ctx.fillText(line, this.x+5, tmpY);
-				line = words[n] + " ";
-				tmpY += 12; //lineHeight
-			} else {
-				line = testLine;
-			}
-		}
-		ctx.fillText(line, this.x+5, tmpY);
-	}
+	};	
 }
 
 /* ------------------------------------------ */
 /* class AuctionCard */
 /* ------------------------------------------ */
-//BaseCard.Inherits(AuctionCard);
+AuctionCard.Inherits(BaseCard);
 function AuctionCard(id,title,text,x,y,ctx) {
-	//this.Inherits(AuctionCard);
+	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
 	this.text = text;
@@ -152,32 +186,4 @@ function AuctionCard(id,title,text,x,y,ctx) {
 		ctx.fillText(G.i18n[this.title]/*+" ("+this.id+")"*/, this.x+5, this.y+12);
 		this.drawText(ctx);
 	};    
-	this.onclick = function(x, y) {  
-		return this.atPos(x,y);
-	};
-	this.atPos = function(x, y) {   
-		if(x>=this.x && y>=this.y && x<=this.x+this.width && y <=this.y+this.height) {
-			return true;
-		}
-		return false;
-	};		
-	this.drawText = function(ctx) {
-		var words = G.i18n[this.text].split(" ");
-		var line = "";
-		var tmpY = this.y+28;
-
-		for ( var n = 0; n < words.length; n++) {
-			var testLine = line + words[n] + " ";
-			var metrics = ctx.measureText(testLine);
-			var testWidth = metrics.width;
-			if (testWidth > this.width-2) {
-				ctx.fillText(line, this.x+5, tmpY);
-				line = words[n] + " ";
-				tmpY += 12; //lineHeight
-			} else {
-				line = testLine;
-			}
-		}
-		ctx.fillText(line, this.x+5, tmpY);
-	}
 }

@@ -232,14 +232,17 @@ module.exports = function(io, logger) {
 		socket.on('disconnect', function (data) {
 			var Game = require("./rule_game.js");
 			Game.removePlayer(socket.id, function(game) {
-				game.checkForNextTurn();
-				var PlayerManager = require("./rule_playermanager.js");
-				PlayerManager.getPlayers(game._id, function(player) {
-					if(player.socketId !== null) {
-						var psoc = require('./socket.js')(player);
-						psoc.emit('infoBar', game.constructMsgInfoBar(player));
-					}
-				});
+				// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)
+				if(game.playerNames.length > 0) {
+					game.checkForNextTurn();
+					var PlayerManager = require("./rule_playermanager.js");
+					PlayerManager.getPlayers(game._id, function(player) {
+						if(player.socketId !== null) {
+							var psoc = require('./socket.js')(player);
+							psoc.emit('infoBar', game.constructMsgInfoBar(player));
+						}
+					});
+				}
 			});	
 		});
 	});	
