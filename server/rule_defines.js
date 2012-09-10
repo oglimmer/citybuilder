@@ -10,8 +10,8 @@ Array.prototype.removeByObj = function(obj) {
 
 var Config = {
 	dbHost : 'http://localhost:5984',
-	db : 'http://localhost:5984/test',
-	dbSchema : 'test',
+	db : 'http://localhost:5984/citybuilder',
+	dbSchema : 'citybuilder',
 	httpPort : 1337
 }
 
