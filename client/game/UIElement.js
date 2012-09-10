@@ -3,12 +3,12 @@
 /* ------------------------------------------ */
 function UIElement(item) {  
 	if(typeof item !== 'undefined') {
-		this.drawX = item.x*33 + Math.floor(item.x/3)*5;
-		this.drawY = item.y*33 + Math.floor(item.y/3)*5;
+		this.drawX = item.x*49 + Math.floor(item.x/3)*5;
+		this.drawY = item.y*49 + Math.floor(item.y/3)*5;
 		this.x = item.x;
 		this.y = item.y;
-		this.width = 32;
-		this.height = 32;    
+		this.width = 48;
+		this.height = 48;    
 		this.fillStyleH = null;//color highlight
 		this.fillStyleS = null;//color selected
 		this.fillStyleN = null;//color if no selection
@@ -66,8 +66,16 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 	if(this.type == 0) {
 		switch(G.uiMode) {
 			case 0:
-				ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+19);		
+			case 1:
+			case 2:
+			case 3:
+				//ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+14);		
+				ctx.font = '9px Arial';				
+				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType)+" ("+this.attachedCard.housePopulation+")",relocateX+this.drawX+1,relocateY+this.drawY+20);
+				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+1,relocateY+this.drawY+38);
+				ctx.font = '10px sans-serif';						
 				break;
+				/*
 			case 1:
 				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType),relocateX+this.drawX+1,relocateY+this.drawY+19);
@@ -80,10 +88,10 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+1,relocateY+this.drawY+19);
 				ctx.font = '10px sans-serif';				
-				break;
+				break;*/
 		}
 	} else {
-		ctx.fillText(this.fillText,relocateX+this.drawX+13,relocateY+this.drawY+19);
+		ctx.fillText(this.fillText,relocateX+this.drawX+20,relocateY+this.drawY+27);
 	}
 };
 UIElement.prototype.onclick = function(x, y) {

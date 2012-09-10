@@ -59,9 +59,9 @@ var I18n = {
 		uiSwitchButtonText_mode: [ 'Field type', 'House type', 'Population', 'Social level' ],
 		buildStateText: [ 'no build in progress', 'build in progress', 'build done' ],
 		localLevelTextShort_0 : 'Under',
-		localLevelTextShort_1 : 'UnMidl',
+		localLevelTextShort_1 : 'UnderMidl',
 		localLevelTextShort_2 : 'Middle',
-		localLevelTextShort_3 : 'UpMidl',
+		localLevelTextShort_3 : 'UpperMidl',
 		localLevelTextShort_4 : 'Upper',
 		localLevelText_0 : 'Under class',
 		localLevelText_1 : 'Lower middle class',
@@ -158,7 +158,7 @@ var I18n = {
 		c300_2 : 'Baue einen "Bijou Brigitte" anstelle eines beliebigen Wohnhauses. Einflussradius: 2-Felder, Einkommen: 30€ pPpW für {5,8}, 10€ pPpW für {9,10} Niveaumodifikator: 0',
 
 		c301_1 : 'Juwelier',
-		c301_2 : 'Baue einen "Juwelier" anstelle eines beliebigen Wohnhauses. Einflussradius: 2-Felder, Einkommen: 150€ pPpW für {1,3}, 60€ pPpW für 4..6, 20€ pPpW für {7,8} Niveaumodifikator: 0',
+		c301_2 : 'Baue einen "Juwelier" anstelle eines beliebigen Wohnhauses. Einflussradius: 2-Felder, Einkommen: 150€ pPpW für {1,3}, 60€ pPpW für {4,6}, 20€ pPpW für {7,8} Niveaumodifikator: 0',
 
 		c302_1 : 'Tiffany & Co',
 		c302_2 : 'Baue einen "Tiffany & Co" anstelle eines beliebigen Wohnhauses. Einflussradius: 3-Felder, Einkommen: 2000€ pPpW für {1,1}, 100€ pPpW für {2,2} Niveaumodifikator: +15',
