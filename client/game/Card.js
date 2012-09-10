@@ -38,12 +38,10 @@ BaseCard.prototype.drawText = function(ctx) {
 					tempTxtDisp += G.i18n.c_all_housetypes;
 				} else {
 					for(var k = start ; k <= end ; k++) {
-						if(start !== end || k !== end) {
-							if(k!==start) {
-								tempTxtDisp += "/ ";
-							}
-							tempTxtDisp += UIServices.getHouseTypeText(k);
+						if(k!==start) {
+							tempTxtDisp += " / ";
 						}
+						tempTxtDisp += UIServices.getHouseTypeText(k);
 					}
 				}
 				resultText += tempTxtDisp;
@@ -55,6 +53,7 @@ BaseCard.prototype.drawText = function(ctx) {
 	var line = "";
 	var tmpY = this.y+28;
 
+	ctx.font = '11px sans-serif';	
 	for ( var n = 0; n < words.length; n++) {
 		var testLine = line + words[n] + " ";
 		var metrics = ctx.measureText(testLine);
@@ -68,6 +67,7 @@ BaseCard.prototype.drawText = function(ctx) {
 		}
 	}
 	ctx.fillText(line, this.x+5, tmpY);
+	ctx.font = '10px sans-serif';	
 }
 BaseCard.prototype.onclick = function(x, y) {   
 	return this.atPos(x,y);
