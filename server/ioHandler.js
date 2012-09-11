@@ -1,5 +1,6 @@
 var Field = require('./rule_field.js');
 var GameField = require('./rule_gamefield.js');
+var util = require('util');
 
 // we want to have all sort of communication in this class
 // we want to have workflow / controller logic here
@@ -9,7 +10,8 @@ module.exports = function(io, logger) {
 
 	io.sockets.on('connection', function (socket) {
 		/* A client creates a new game, joins it and waits for other players */
-		socket.on('create_req', function (data) { 
+		socket.on('create_req', function (data) {
+			logger.debug("[create_req] player:"+data.playerName);
 			var GameManager = require("./rule_gamemanager.js");
 			GameManager.createGame(function(game) {			
 				game.createPlayer(socket.id, data.playerName, function(player) {
@@ -18,7 +20,8 @@ module.exports = function(io, logger) {
 			});
 		});		
 		/* A client joins a game and waits for other players. */
-		socket.on('register_req', function (data) { 
+		socket.on('register_req', function (data) {
+			logger.debug("[register_req] player:"+data.playerName+", game:"+data.gameId);
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			GameManager.getGame(data.gameId, function(game) {
@@ -51,6 +54,8 @@ module.exports = function(io, logger) {
 					game.rejoinPlayer(socket.id, player, function(savedPlayer) {
 						var psoc = require('./socket.js')(savedPlayer);
 						psoc.sendInit(game);
+						psoc.emit('card', savedPlayer.cardHand);
+						psoc.emit('startGame_resp', {gameId:game._id, playerId: savedPlayer._id, playerNo: savedPlayer.no, availableActions: savedPlayer.availableActions });
 						psoc.sendToAllPlayersInGame(function(pla) {
 							return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) };
 						})
@@ -67,23 +72,28 @@ module.exports = function(io, logger) {
 		});
 		/* the host started the game */
 		socket.on('startGame', function(data) {
+			logger.debug("[startGame] playTime:"+data.playTime);
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayerBySocketId(socket.id, function(player) {
-				GameManager.getGame(player.gameId, function(game) {
-					GameManager.storeGame(game, function(gameToPrepare) {
-						gameToPrepare.startGame(data.playTime);
-					}, function(savedGame) {
-						PlayerManager.getPlayers(savedGame._id, function(aPlayer) {
-							var psoc = require('./socket.js')(aPlayer);
-							psoc.sendInit(savedGame);
-							psoc.emit('infoBar', savedGame.constructMsgInfoBar(aPlayer));
+				GameManager.getGame(player.gameId, function(game) {					
+					PlayerManager.getPlayers(game._id, null, function(allPlayers) {		
+						GameManager.storeGame(game, function(gameToPrepare) {
+							gameToPrepare.startGame(data.playTime, allPlayers);
+						}, function(savedGame) {
+							PlayerManager.getPlayers(savedGame._id, function(aPlayer) {
+								var psoc = require('./socket.js')(aPlayer);
+								psoc.emit('startGame_resp', {gameId:savedGame._id, playerId: aPlayer._id, playerNo: aPlayer.no, availableActions: aPlayer.availableActions });
+								//psoc.sendInit(savedGame);
+								//psoc.emit('infoBar', savedGame.constructMsgInfoBar(aPlayer));
+							});
 						});
 					});
 				});
 			});
 		});
 		socket.on('prePlayCard_req', function (data) {
+			logger.debug("[prePlayCard_req] playerId:"+data.playerId+", card:"+util.inspect(data.card));
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {			
@@ -93,6 +103,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('directCardPlay_req', function(data) {
+			logger.debug("[directCardPlay_req] playerId:"+data.playerId+", card:"+util.inspect(data.card));
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {
@@ -106,6 +117,7 @@ module.exports = function(io, logger) {
 			});	
 		});
 		socket.on('cardDiscard_req', function (data) {
+			logger.debug("[cardDiscard_req] player:"+data.playerId+", card:"+util.inspect(data.card));
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {
@@ -115,6 +127,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('cardPlaySelectTarget_req', function(data) {
+			logger.debug("[cardPlaySelectTarget_req] playerId:"+data.playerId+", cardIdToPlay:"+data.cardIdToPlay+", field:"+data.targetFieldId);
 			/*data={playerId,cardIdToPlay,targetFieldId}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			// load player
@@ -136,7 +149,8 @@ module.exports = function(io, logger) {
 				);
 			});
 		});
-		socket.on('roundEnd_req', function(data) {			
+		socket.on('roundEnd_req', function(data) {
+			logger.debug("[roundEnd_req] playerId:"+data.playerId);	
 			/*data={playerId}*/
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
@@ -151,6 +165,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('auctionBid_req', function(data) {
+			logger.debug("[auctionBid_req] playerId:"+data.playerId);	
 			/*data={playerId, bid}*/
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
@@ -174,16 +189,17 @@ module.exports = function(io, logger) {
 			});			
 		});
 		socket.on('postAuctionSelect_req', function(data) {
+			logger.debug("[postAuctionSelect_req] playerId:"+data.playerId+", card:"+data.cardId);	
 			/*data={playerId, cardId}*/
 			var GameManager = require("./rule_gamemanager.js");
-			var PlayerManager = require("./rule_playermanager.js");
+			var PlayerManager = require("./rule_playermanager.js");			
 			PlayerManager.getPlayer(data.playerId, function(player) {			
 				GameManager.getGame(player.gameId, function(game) {					
 					var selectedCard = null;
 					GameManager.storeGame(game, function(gameToPrepare) {
 						// try to get the selected card (if one was choosen)
 						if(data.cardId !== null) {
-							selectedCard = gameToPrepare.removeCardFromAuction(data.cardId);						
+							selectedCard = gameToPrepare.removeCardFromAuction(data.cardId, player._id);						
 						}
 						logger.debug("Player "+player.playerName+" wanted to select card "+data.cardId+" and got "+(selectedCard!==null?selectedCard.id:"null"));
 						// if the selected card is already given, use must select another one
@@ -197,11 +213,13 @@ module.exports = function(io, logger) {
 					}, function(savedGame) {
 						// either the selected card was successfully retrieved for the user or the user just didn't select anything
 						if(data.cardId !== null) {
-							// since a card was selected inform other players that this one is removed now
-							PlayerManager.getOtherPlayers(player, function(otherPlayer) {
-								var psoc = require('./socket.js')(otherPlayer);
-								psoc.emit('auctionCardRemove', { card: selectedCard } );
-							});
+							if(savedGame.gameState == 3) {
+								// since a card was selected in the auction-phase (initial phase uses this as well) inform other players that this one is removed now
+								PlayerManager.getOtherPlayers(player, function(otherPlayer) {
+									var psoc = require('./socket.js')(otherPlayer);
+									psoc.emit('auctionCardRemove', { card: selectedCard } );
+								});
+							}
 							// update the player (server&client) for the new card and check for "nextTurn"
 							PlayerManager.storePlayer(player, function(playerToPrepare) {							
 								playerToPrepare.cardHand.addTop(selectedCard);
@@ -230,6 +248,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('disconnect', function (data) {
+			logger.debug("[disconnect] playerId:"+socket.id);	
 			var Game = require("./rule_game.js");
 			Game.removePlayer(socket.id, function(game) {
 				// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)

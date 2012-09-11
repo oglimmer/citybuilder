@@ -19,22 +19,32 @@ CardStack.prototype.shuffle = function() {
   }
 }
 
-CardStack.prototype.create = function(stage) {
+CardStack.prototype.createBlock = function(stage) {
 	var id = -1;
 	this.cards.forEach(function(e) {
 		id = Math.max(e.id,id);
 	});
 	id++;
 	var c = 0;	
-	while(c++ < CardStack.NUMBER_PER_CARD) {
-		var availCards = CardFactory["availCards"+stage];
-		for(var i = 0 ; i < availCards.length ; i++) {
-			var defEle = availCards[i];
-			for(var j = 0 ; j < defEle[1] ; j++) {
-				var card = CardFactory.createCard(id, defEle[0]);
-				this.addTop(card);
-				id++;
-			}
+	var availCards = CardFactory["availCards"+stage];
+	for(var i = 0 ; i < availCards.length ; i++) {
+		var defEle = availCards[i];
+		for(var j = 0 ; j < (stage==0?1:defEle[1]) ; j++) {
+			var card = CardFactory.createCard(id, defEle[0]);
+			this.addTop(card);
+			id++;
+		}
+	}
+}
+
+CardStack.prototype.create = function(stage) {
+	if(stage==0) {
+		this.createBlock(0);
+	} else {
+		var c = 0;	
+		while(c++ < CardStack.NUMBER_PER_CARD) {
+			this.createBlock(0);
+			this.createBlock(1);
 		}
 	}
 	logger.debug("[CardStack::create] stack created. New size:" + this.cards.length);
@@ -49,7 +59,7 @@ CardStack.prototype.addTop = function(c) {
 	this.cards.push(c);
 }
 
-CardStack.prototype.removeTop = function() {	
+CardStack.prototype.removeTop = function() {
 	var topCard = this.cards.pop();
 	return topCard;
 }

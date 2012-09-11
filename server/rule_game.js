@@ -8,6 +8,9 @@ var FieldType = require("./rule_defines.js").FieldType;
 var log4js = require('log4js');
 var logger = log4js.getLogger('game');
 var AllCards = require('./rule_card.js');
+var HouseTypeMaxPop = require("./rule_defines.js").HouseTypeMaxPop;
+var HouseTypeReverse = require("./rule_defines.js").HouseTypeReverse;
+
 
 function Game() {
 	this.clazz = "Game";
@@ -19,18 +22,40 @@ function Game() {
 	this.cardsToAuction = [];
 
 	this.maxPlayerNumber = 0;
+
+	/* 0 = game created, but waiting for players
+	 * 1 = deploy card
+	 * 2 = set bid
+	 * 3 = select card for auction
+	 * 4 = initial card selection
+	 */
 	this.gameState = 0;
+
 	this.currentDate = new MonthHelper();
 	this.gameField = new GameField(this);
-	this.cards = new CardStack();
-	this.cards.create(0);
+	this.cards = new CardStack();	
 	this.initTurn();
 }
 
-Game.prototype.startGame = function(playTime) {
+Game.prototype.startGame = function(playTime, allPlayers) {
 	this.playTime = playTime;
-	this.gameState = 1;
-	this.cards.create(1);
+	this.gameState = 4;
+	this.cards.create(0);
+	var self = this;
+	allPlayers.forEach(function(doc) {
+		var player = doc.value;
+		var cardsToSelect = [];
+		for(var i = 0 ; i < 4 ; i++) {
+			if(self.cards.length()==0) {
+				self.cards.create(0);
+			}
+			cardsToSelect.push(self.cards.removeTop());
+		}
+		self.cardsToAuction.push({playerId: player._id, cardsToSelect: cardsToSelect});
+		var psoc = require('./socket.js')(player);	
+		psoc.sendInitialCardSelection({cardsToSelect : cardsToSelect, gameState: self.gameState, infoBar: self.constructMsgInfoBar(player) });
+	});
+	self.cards.create(1);
 }
 
 Game.prototype.createPlayer = function(socketId, playerName, onCreated) {
@@ -114,11 +139,12 @@ Game.prototype.allPlayersDone = function() {
 	return this.playersOnTurn.length == 0;
 }
 
-Game.prototype.checkForNextTurn = function() {	
+Game.prototype.checkForNextTurn = function() {
+	logger.debug("[checkForNextTurn] gameState="+this.gameState);
 	var self = this;
-	if(self.allPlayersDone()) {
+	if(self.allPlayersDone()) {		
 		var PlayerManager = require("./rule_playermanager.js");
-		PlayerManager.getPlayers(self._id, null, function(allPlayers) {
+		PlayerManager.getPlayers(self._id, null, function(allPlayers) {			
 			if(self.gameState == 1) {
 				self.processNextTurn(allPlayers);
 			} else if(self.gameState == 2) {
@@ -129,9 +155,23 @@ Game.prototype.checkForNextTurn = function() {
 				} else {
 					self.processAuctionSelect(allPlayers);
 				}
+			} else if(self.gameState == 4) {
+				self.initialCardSelectionDone(allPlayers);
 			}
 		});
 	}
+}
+
+Game.prototype.initialCardSelectionDone = function(allPlayers) {
+	this.gameState = 1;
+	this.initTurn();
+	var GameManager = require("./rule_gamemanager.js");
+	GameManager.storeGame(this, null);
+	var self = this;
+	allPlayers.forEach(function(player) {
+		var psoc = require('./socket.js')(player.value);
+		psoc.sendInit(self);
+	});				
 }
 
 Game.prototype.processAuctionSelect = function(allPlayers) {
@@ -194,21 +234,34 @@ Game.prototype.processPostAuctionSelection = function() {
 	});
 }
 
-Game.prototype.removeCardFromAuction = function(cardId) {
+Game.prototype.removeCardFromAuction = function(cardId, playerId) {
 	var c = null;
-	for(var i = 0 ; i < this.cardsToAuction.length ; i++) {
-		if(this.cardsToAuction[i].id == cardId) {
-			c = this.cardsToAuction[i];
-			this.cardsToAuction.splice(i,1);
+	if(this.gameState == 3) {
+		for(var i = 0 ; i < this.cardsToAuction.length ; i++) {
+			if(this.cardsToAuction[i].id == cardId) {
+				c = this.cardsToAuction[i];
+				this.cardsToAuction.splice(i,1);
+			}
+		}
+	} else {
+		for(var j = 0 ; j < this.cardsToAuction.length ; j++) {
+			if( this.cardsToAuction[j].playerId == playerId ) {
+				for(var i = 0 ; i < this.cardsToAuction[j].cardsToSelect.length ; i++) {
+					if(this.cardsToAuction[j].cardsToSelect[i].id == cardId) {
+						c = this.cardsToAuction[j].cardsToSelect[i];
+					}
+				}		
+			}
 		}
 	}
+	logger.debug("removeCardFromAuction = " + c.title);
 	return c;
 }
 
 Game.prototype.processNextTurn = function(allPlayers) {
 	this.gameState = 2;
 
-	var changedFields = {};
+	var changedFields = this.growCity();
 
 	this.resetSuppliesAndCalcBuildstate(changedFields);
 
@@ -218,7 +271,7 @@ Game.prototype.processNextTurn = function(allPlayers) {
 
 	this.calcSupplies(); // depends on profit(attachedCard.houseType), set:supply
 
-	this.calcIncome(allPlayers); // depends on supply and profit(attachedCard.houseType)
+	var incomeReceipt = this.calcIncome(allPlayers); // depends on supply and profit(attachedCard.houseType)
 
 	this.currentDate.nextMonth();
 	this.playTime--;
@@ -230,23 +283,28 @@ Game.prototype.processNextTurn = function(allPlayers) {
 		for(var i = 0 ; i < allPlayers.length + 1 ; i++) {
 			cardsToAuction.push(this.cards.removeTop());
 		}
-		this.sendAuction(allPlayers, changedFields, cardsToAuction);
+		this.sendAuction(allPlayers, changedFields, cardsToAuction, incomeReceipt);
 	}	
 }
 
-Game.prototype.sendAuction = function(allPlayers, changedFields, cardsToAuction) {
+Game.prototype.growCity = function() {
+	var houseType = Math.floor((Math.random()*3))*3+3; // random = {3,6,9}
+	return this.gameField.add(3,3,houseType, HouseTypeMaxPop[HouseTypeReverse[houseType]], houseType==3?30:houseType==6?0:-10);
+}
+
+Game.prototype.sendAuction = function(allPlayers, changedFields, cardsToAuction, incomeReceipt) {
 	var self = this;
 	self.cardsToAuction = cardsToAuction;
 	allPlayers.forEach(function(doc) {
-		self.sendAuctionToPlayer(doc.value, changedFields, cardsToAuction);
+		self.sendAuctionToPlayer(doc.value, changedFields, cardsToAuction, incomeReceipt);
 	});
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(self, null);		
 }
 
-Game.prototype.sendAuctionToPlayer = function(player, changedFields, cardsToAuction) {
+Game.prototype.sendAuctionToPlayer = function(player, changedFields, cardsToAuction, incomeReceipt) {
 	player.availableActions |= 1; // a card is deployable
-	var newTurnData = this.constructNewTurnData(player, changedFields, cardsToAuction);	
+	var newTurnData = this.constructNewTurnData(player, changedFields, cardsToAuction, incomeReceipt);	
 	var PlayerManager = require("./rule_playermanager.js");
 	PlayerManager.storePlayer(player,null, function(savedPlayer) {
 		require('./socket.js')(savedPlayer).startAuction(newTurnData);
@@ -307,13 +365,17 @@ Game.prototype.doSocialDowngrades = function() {
 }
 
 Game.prototype.calcIncome = function(allPlayers) {
+	var incomeReceipt = [];
 	for(var k in this.gameField.fields) {
 		var field = this.gameField.fields[k];
 		if(field.type !== FieldType.HOUSE) {
 			var p = allPlayers.getPlayer(field.owner);
-			p.money += field.attachedCard.calcRent(field, this.gameField.fields);
+			var fieldIncome = field.attachedCard.calcRent(field, this.gameField.fields);
+			p.money += fieldIncome;
+			incomeReceipt.push([p.playerName,fieldIncome,field.attachedCard.title,field.x,field.y]);
 		}
 	}
+	return incomeReceipt;
 }
 
 Game.prototype.processEndGame = function(allPlayers) {
@@ -343,13 +405,14 @@ Game.prototype.constructMsgInfoBar = function(player) {
 	};
 }
 
-Game.prototype.constructNewTurnData = function(player, changedFields, cardsToAuction) {
+Game.prototype.constructNewTurnData = function(player, changedFields, cardsToAuction, incomeReceipt) {
 	return {
 		gameState : this.gameState,
 		infoBar : this.constructMsgInfoBar(player),
 		uiElement : changedFields,
 		availableActions : player.availableActions,
-		cardsToAuction : cardsToAuction
+		cardsToAuction : cardsToAuction,
+		incomeReceipt : incomeReceipt
 	};	
 }
 

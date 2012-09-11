@@ -16,17 +16,20 @@ function CardLayouter(ctx) {
 			card.draw(ctx);
 		}
 	};
+	this.toggle = function(card) {
+		G.canvasManagerField.clearTemp();
+		card.toggle();			
+		if(this.currentlyExpanded!==null&&this.currentlyExpanded!==card) {
+			this.currentlyExpanded.toggle();
+		}
+		this.currentlyExpanded = card.expanded ? card : null;		
+	};
 	this.onclick = function(x, y) {
 		if(this.currentlyClicked===null) {
 			for(var i = this.cards.length-1 ; i >= 0 ; i--) {
 				var card = this.cards[i];
 				if(card.onclick(x,y)) {
-					G.canvasManagerField.clearTemp();
-					card.toggle();			
-					if(this.currentlyExpanded!==null&&this.currentlyExpanded!==card) {
-						this.currentlyExpanded.toggle();
-					}
-					this.currentlyExpanded = card.expanded ? card : null;
+					this.toggle(card);
 					return true;
 				}
 			}

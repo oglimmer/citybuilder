@@ -31,6 +31,11 @@ function InfoBar() {
 				var pd = G.allPlayersData[i];
 				ctx.fillText(pd.name+": $" + UIServices.addCommas(Math.floor(pd.money))+(pd.conn?"":" (not connected)"), 120, 130+i*12);
 			};
+			ctx.fillText(G.i18n.infoBar_income_last_round, 330, 115);
+			for (var i = 0; i < G.incomeReceipt.length; i++) {
+				var ir = G.incomeReceipt[i];
+				ctx.fillText(ir[0]+" got $" + UIServices.addCommas(Math.floor(ir[1]))+" from "+G.i18n[ir[2]]+" ("+ir[3]+","+ir[4]+")", 340, 130+i*12);
+			}
 		}
 	};
 	this.onclick = function(x, y) {

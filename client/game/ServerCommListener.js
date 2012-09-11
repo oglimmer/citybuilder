@@ -19,7 +19,8 @@ function ServerCommListener() {
 		socket.on('postAuctionSelection', self.postAuctionSelection);
 		socket.on('auctionComplete', self.auctionComplete);
 		socket.on('auctionCardRemove', self.auctionCardRemove);
-	};	
+		socket.on('initialCardSelection', self.initialCardSelection);
+	};
 	this.requestAllPlayerData = function() {
 		socket.emit('requestAllPlayerData_req', {playerId : G.playerId});
 	};
@@ -52,8 +53,8 @@ function ServerCommListener() {
 		}
 	};
 	this.startGame_resp = function (data) {
-		$('#waitingForPlayers').hide();
-		$('#bottom').show();
+		//$('#waitingForPlayers').hide();
+		//$('#bottom').show();
 		G.playerId = data.playerId;
 		G.playerNo = data.playerNo;		
 		Cookie.set("playerId", data.playerId, 7);
@@ -74,8 +75,13 @@ function ServerCommListener() {
 	this.card = function (data) {
 		console.log("Got card : #" + data.cards.length);
 		for(var i = 0 ; i < data.cards.length ; i++) {
-			var card = data.cards[i];			
-			G.cardLayouter.cards.push(new Card(card.id, card.title, card.text, card.actionBit,card.playType, G.ctx));	
+			var card = data.cards[i];		
+			var newCard = new Card(card.id, card.title, card.text, card.actionBit,card.playType, G.ctx);	
+			G.cardLayouter.cards.push(newCard);	
+			if(data.cards.length == 1) {
+				G.cardLayouter.draw(G.ctx); // this calculates the x pos for the new card which is needed for the button's pos in toggle()
+				G.cardLayouter.toggle(newCard);
+			}
 		}
 	};
 	this.onTurnDone = function() {
@@ -94,7 +100,7 @@ function ServerCommListener() {
 			} else {
 				socket.emit('auctionBid_req', { playerId : G.playerId, bid: bid });
 			}
-		} else if(G.gameState == 3) {
+		} else if(G.gameState == 3 || G.gameState == 4) {
 			var selectedCardId = G.auctionPanel.currentlyClicked !== null ? G.auctionPanel.currentlyClicked.id : null;
 			socket.emit('postAuctionSelect_req', { playerId : G.playerId, cardId: selectedCardId });
 		}
@@ -117,6 +123,7 @@ function ServerCommListener() {
 		G.canvasManagerField.enabled = false;
 		G.turnDoneButton.label = G.i18n.button_set_bidding;
 		G.turnDoneButton.enabled = true;
+		G.incomeReceipt = msg.incomeReceipt;
 		$('#bidInput').show();
 		G.draw();
 	};
@@ -138,7 +145,24 @@ function ServerCommListener() {
 		G.turnDoneButton.label = G.i18n.button_pick_card;
 		G.turnDoneButton.enabled = true;
 		G.draw();	
-	}
+	};
+	this.initialCardSelection = function(msg) {
+		console.log(msg);
+		$('#waitingForPlayers').hide();
+		$('#bottom').show();
+		$('#overlay').hide();
+		/*  */
+		self.infoBar(msg.infoBar);
+		G.gameState = msg.gameState;
+		G.auctionPanel.selectable = true;
+		G.auctionPanel.setCards(msg.cardsToSelect);
+		G.canvasManagerAuction.enabled = true;
+		G.canvasManagerAuction.currentlyClicked = null;
+		G.canvasManagerField.enabled = false;
+		G.turnDoneButton.label = G.i18n.button_pick_card;
+		G.turnDoneButton.enabled = true;
+		G.draw();
+	};
 	this.onCardPlay = function(card) {
 		$('#overlay').show();		
 		var msgName = card.playType == 0 ? 'directCardPlay_req' : 'prePlayCard_req';

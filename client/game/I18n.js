@@ -39,6 +39,7 @@ var I18n = {
 		infoBar_playernum : 'Player#',
 		infoBar_date : 'Date',
 		infoBar_balances : 'Current balances:',
+		infoBar_income_last_round : 'Income last round:',
 
 		infoField_type : 'Type',
 		infoField_pos : 'Pos',

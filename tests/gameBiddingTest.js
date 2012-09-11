@@ -50,7 +50,7 @@ module.exports = {
 		test.done();
 	},
 
-	bids3Equal : function(test) {
+	bids2 : function(test) {
 		var g = new Game();
 		g.biddings = { 'A': '10', 'B': '5' };
 		g.processPostAuctionSelection = function() {};

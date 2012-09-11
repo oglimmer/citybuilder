@@ -93,7 +93,7 @@ function Card(id,title,text,actionBit,playType,ctx) {
 	this.x = null;
 	this.height = 20;
 	this.y = ctx.canvas.height-this.height;
-	this.width = 160;
+	this.width = 220;
 	this.expanded = false;
 	this.clicked = false;
 	this.draw = function(ctx) {  
@@ -117,35 +117,37 @@ function Card(id,title,text,actionBit,playType,ctx) {
 		if(this.expanded) {
 			this.drawText(ctx);
 		}
-	};    
+	};   
+	Card.onDiscardClicked = function(card) {
+		G.serverCommListener.onCardDiscard(card);
+		G.cardLayouter.cards.removeByObj(card);
+		G.cardLayouter.colapse();
+		G.draw();
+	}
+	Card.onCancelClicked = function(card) {
+		G.cardLayouter.unlock();
+		G.draw();
+	}
+	Card.onPlayClicked = function(card) {
+		G.serverCommListener.onCardPlay(card);
+		//G.cardLayouter.colapse();
+		G.canvasManagerField.clearTemp();
+		G.cardLayouter.lock(card);	
+		G.canvasManagerField.addTemp(67, new Button(G.i18n.button_cancel,card,card.x,card.y-25,70, Card.onCancelClicked));
+		G.draw();
+	}
 	this.toggle = function() {
 		if(this.expanded) {
 			this.height = 20;
 			this.y = ctx.canvas.height-this.height;
 		} else {
-			this.height = 160;
+			this.height = 200;
 			this.y = ctx.canvas.height-this.height;
 			var self = this;	
 			if((G.availableActions&this.actionBit)==this.actionBit) {
-				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this,this.x,this.y-30,null,function(card) {
-					G.serverCommListener.onCardPlay(card);
-					G.cardLayouter.colapse(card);
-					G.cardLayouter.lock(card);
-					
-					G.canvasManagerField.addTemp(67, new Button(G.i18n.button_cancel,self,self.x,self.y-25,70,function(card) {
-						G.cardLayouter.unlock();
-						G.draw();
-					}));
-
-					G.draw();
-				}));
+				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this,this.x,this.y-30,null, Card.onPlayClicked));
 			}
-			G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this,this.x+70,this.y-30,null,function(card) {
-				G.serverCommListener.onCardDiscard(card);
-				G.cardLayouter.cards.removeByObj(card);
-				G.cardLayouter.colapse(card);
-				G.draw();
-			}));
+			G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this,this.x+70,this.y-30,null, Card.onDiscardClicked));
 		}		
 		this.expanded = !this.expanded;
 	};	

@@ -10,10 +10,7 @@ function Player(game, socketId, playerName) {
 	this.playerName = playerName;
 	this.money = 0;
 	this.availableActions = 1; // a card is deployable
-	this.cardHand = new CardStack(game);
-	for(var i = 0 ; i < 4 ; i++) {
-		this.cardHand.addTop(game.cards.removeTop());
-	}
+	this.cardHand = new CardStack();
 }
 
 Player.prototype.getSocket = function() {
