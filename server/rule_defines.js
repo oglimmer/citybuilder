@@ -6,7 +6,13 @@ Array.prototype.removeByObj = function(obj) {
 		}
 	}
 };
-
+Array.prototype.findByProp = function(propName, propValue) {
+	for(var i = 0 ; i < this.length ; i++) {
+		if(this[i][propName] === propValue) {
+			return this[i];
+		}
+	}
+};
 
 var Config = {
 	dbHost : 'http://localhost:5984',

@@ -5,7 +5,7 @@ function ServerCommListener() {
 	var self = this;
 	/*socket is a global variable*/
 	this.init = function() {
-		socket.on('startGame_resp', self.startGame_resp);
+		socket.on('sendPlayerData', self.sendPlayerData);
 		socket.on('uiElement', self.uiElement);	
 		socket.on('infoBar', self.infoBar);	
 		socket.on('card', self.card);	
@@ -13,13 +13,14 @@ function ServerCommListener() {
 		socket.on('cardPlaySelectTarget_resp', self.cardPlaySelectTarget_resp);
 		socket.on('cardPlaySelectTargetFailed_resp', self.cardPlaySelectTargetFailed_resp);
 		socket.on('onStartAuction_resp', self.onStartAuction_resp);
-		socket.on('waitAddPlayer', self.waitAddPlayer);
+		socket.on('waitAddPlayer_resp', self.waitAddPlayer_resp);
 		socket.on('gamedEnded', self.gamedEnded);
 		socket.on('requestAllPlayerData_resp', self.requestAllPlayerData_resp);
 		socket.on('postAuctionSelection', self.postAuctionSelection);
-		socket.on('auctionComplete', self.auctionComplete);
+		socket.on('showFieldPane', self.showFieldPane);
 		socket.on('auctionCardRemove', self.auctionCardRemove);
 		socket.on('initialCardSelection', self.initialCardSelection);
+		socket.on('showWait', self.showWait);
 	};
 	this.requestAllPlayerData = function() {
 		socket.emit('requestAllPlayerData_req', {playerId : G.playerId});
@@ -44,7 +45,7 @@ function ServerCommListener() {
 		$('#winner').show();
 		$('#overlay').hide();
 	};
-	this.waitAddPlayer = function (data) {
+	this.waitAddPlayer_resp = function (data) {
 		$.each(data.playerName, function(ind, val) {
 			$('#playerList').html($('#playerList').html()+'- '+val+'<br/>');
 		});
@@ -52,9 +53,7 @@ function ServerCommListener() {
 			$('#startButtonDiv').show();
 		}
 	};
-	this.startGame_resp = function (data) {
-		//$('#waitingForPlayers').hide();
-		//$('#bottom').show();
+	this.sendPlayerData = function (data) {
 		G.playerId = data.playerId;
 		G.playerNo = data.playerNo;		
 		Cookie.set("playerId", data.playerId, 7);
@@ -127,7 +126,7 @@ function ServerCommListener() {
 		$('#bidInput').show();
 		G.draw();
 	};
-	this.auctionComplete = function(msg) {
+	this.showFieldPane = function(msg) {
 		$('#overlay').hide();
 		G.gameState = msg.gameState;
 		G.turnDoneButton.label = G.i18n.button_endRound;
@@ -153,7 +152,6 @@ function ServerCommListener() {
 		$('#overlay').hide();
 		/*  */
 		self.infoBar(msg.infoBar);
-		G.gameState = msg.gameState;
 		G.auctionPanel.selectable = true;
 		G.auctionPanel.setCards(msg.cardsToSelect);
 		G.canvasManagerAuction.enabled = true;
@@ -202,6 +200,12 @@ function ServerCommListener() {
 		$('#overlay').hide();
 		G.cardLayouter.unlock();
 		alert(G.i18n[msg.error]);
+	}
+	this.showWait = function(msg) {
+		$('#overlay').show();
+		G.turnDoneButton.enabled = false;		
+		G.cardLayouter.unlock();
+		G.cardLayouter.colapse();
 	}
 	this.onCardDiscard = function(card) {
 		socket.emit('cardDiscard_req', {card : card, playerId : G.playerId });

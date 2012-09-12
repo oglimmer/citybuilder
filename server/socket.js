@@ -8,11 +8,9 @@ module.exports = function(player) {
 	this.emit = function(name, msg) {
 		socket.emit(name, msg);
 	};
-	this.sendInit = function(game) {
-		//socket.emit('startGame_resp', {gameId:game._id, playerId: player._id, playerNo: player.no, availableActions: player.availableActions });
+	this.sendInitUIElements = function(game) {
 		socket.emit('uiElement', game.gameField.forPlayer(player));
-		//socket.emit('card', player.cardHand);
-		socket.emit('auctionComplete', { gameState : game.gameState });
+		socket.emit('showFieldPane', { gameState : game.gameState });
 	};
 	this.sendToAllPlayersInGame = function(getData) {
 		var PlayerManager = require("./rule_playermanager.js");
@@ -30,11 +28,8 @@ module.exports = function(player) {
 	this.sendPostAuctionSelection = function(msg) {
 		socket.emit('postAuctionSelection', msg);
 	}
-	this.sentAuctionComplete = function(msg) {
-		socket.emit('auctionComplete', msg);
-	}
-	this.sendInitialCardSelection = function(msg) {
-		socket.emit('initialCardSelection', msg);	
+	this.sentshowFieldPane = function(msg) {
+		socket.emit('showFieldPane', msg);
 	}
 	return this;
 }

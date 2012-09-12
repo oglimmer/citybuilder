@@ -63,6 +63,15 @@ var PlayerManager = {
 					}
 					logger.error("player not found with no="+playerNo);
 				};	
+				body.rows.getPlayerById = function(playerId) {
+					for(var i = 0 ; i < body.rows.length ; i++) {
+						var p = body.rows[i].value;
+						if(p._id == playerId) {
+							return p;
+						}
+					}
+					logger.error("player not found with id="+getPlayerById);
+				};	
 							
 				allRows(body.rows);
 			}

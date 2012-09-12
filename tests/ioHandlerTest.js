@@ -41,7 +41,7 @@ module.exports = {
         			this[name] = eventHandler;
         		},
 	        	emit : function(name, payLoad) {
-	        		if(name == 'waitAddPlayer') {
+	        		if(name == 'waitAddPlayer_resp') {
 		        		test.equal(payLoad.playerName, "oli");
 		        		test.equal(payLoad.showStartButton, true);
 	        		} else {
@@ -56,6 +56,6 @@ module.exports = {
 
         io.sockets.connection(io.sockets);
 
-        io.sockets.create_req({ playerName : "oli" });        
+        io.sockets.createGame_req({ playerName : "oli" });        
     }
 };

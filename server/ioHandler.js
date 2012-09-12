@@ -10,18 +10,18 @@ module.exports = function(io, logger) {
 
 	io.sockets.on('connection', function (socket) {
 		/* A client creates a new game, joins it and waits for other players */
-		socket.on('create_req', function (data) {
-			logger.debug("[create_req] player:"+data.playerName);
+		socket.on('createGame_req', function (data) {
+			logger.debug("[createGame_req] player:%s", data.playerName);
 			var GameManager = require("./rule_gamemanager.js");
 			GameManager.createGame(function(game) {			
 				game.createPlayer(socket.id, data.playerName, function(player) {
-					socket.emit('waitAddPlayer', { playerName: [ data.playerName ], showStartButton: true}); 
+					socket.emit('waitAddPlayer_resp', { playerName: [ data.playerName ], showStartButton: true}); 
 				});
 			});
 		});		
 		/* A client joins a game and waits for other players. */
-		socket.on('register_req', function (data) {
-			logger.debug("[register_req] player:"+data.playerName+", game:"+data.gameId);
+		socket.on('joinGame_req', function (data) {
+			logger.debug("[joinGame_req] player:%s, game:%s",data.playerName,data.gameId);
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			GameManager.getGame(data.gameId, function(game) {
@@ -31,9 +31,9 @@ module.exports = function(io, logger) {
 					if(firstPlayer) {
 						msg.showStartButton=true;
 					}
-					socket.emit('waitAddPlayer', msg);
+					socket.emit('waitAddPlayer_resp', msg);
 					PlayerManager.getOtherPlayers(player, function(otherPlayer) {
-						otherPlayer.getSocket().emit('waitAddPlayer', { playerName: [ data.playerName ] });
+						otherPlayer.getSocket().emit('waitAddPlayer_resp', { playerName: [ data.playerName ] });
 					});
 				});
 			});
@@ -53,12 +53,23 @@ module.exports = function(io, logger) {
 				PlayerManager.getPlayer(data.playerId, function(player) {
 					game.rejoinPlayer(socket.id, player, function(savedPlayer) {
 						var psoc = require('./socket.js')(savedPlayer);
-						psoc.sendInit(game);
-						psoc.emit('card', savedPlayer.cardHand);
-						psoc.emit('startGame_resp', {gameId:game._id, playerId: savedPlayer._id, playerNo: savedPlayer.no, availableActions: savedPlayer.availableActions });
+						psoc.emit('sendPlayerData', {gameId:game._id, playerId: savedPlayer._id, playerNo: savedPlayer.no, availableActions: savedPlayer.availableActions }); // sendPlayerData
+						psoc.emit('uiElement', game.gameField.forPlayer(savedPlayer));						
+						psoc.emit('card', savedPlayer.cardHand); // sends all cards
 						psoc.sendToAllPlayersInGame(function(pla) {
-							return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) };
+							return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) }; // update the player# for all others
 						})
+						if(game.gameState==1) {
+							psoc.emit('showFieldPane', { gameState : game.gameState });
+						} else if(game.gameState==2) {
+							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
+							psoc.emit('onStartAuction_resp', newTurnData);
+						} else if(game.gameState==3) {
+							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
+							psoc.emit('onStartAuction_resp', newTurnData);
+							psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
+						}
+						psoc.emit('showWait');
 					});
 				});
 			});
@@ -72,7 +83,7 @@ module.exports = function(io, logger) {
 		});
 		/* the host started the game */
 		socket.on('startGame', function(data) {
-			logger.debug("[startGame] playTime:"+data.playTime);
+			logger.debug("[startGame] playTime:%d", data.playTime);
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayerBySocketId(socket.id, function(player) {
@@ -83,9 +94,9 @@ module.exports = function(io, logger) {
 						}, function(savedGame) {
 							PlayerManager.getPlayers(savedGame._id, function(aPlayer) {
 								var psoc = require('./socket.js')(aPlayer);
-								psoc.emit('startGame_resp', {gameId:savedGame._id, playerId: aPlayer._id, playerNo: aPlayer.no, availableActions: aPlayer.availableActions });
-								//psoc.sendInit(savedGame);
-								//psoc.emit('infoBar', savedGame.constructMsgInfoBar(aPlayer));
+								var cardsToSelect = savedGame.cardsToAuction.findByProp("playerId", aPlayer._id).cardsToSelect;
+								psoc.emit('sendPlayerData', {gameId:savedGame._id, playerId: aPlayer._id, playerNo: aPlayer.no, availableActions: aPlayer.availableActions });
+								psoc.emit('initialCardSelection', {cardsToSelect : cardsToSelect, infoBar: savedGame.constructMsgInfoBar(aPlayer) });
 							});
 						});
 					});
@@ -93,7 +104,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('prePlayCard_req', function (data) {
-			logger.debug("[prePlayCard_req] playerId:"+data.playerId+", card:"+util.inspect(data.card));
+			logger.debug("[prePlayCard_req] playerId:%s, card: %j", data.playerId, data.card);
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {			
@@ -103,7 +114,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('directCardPlay_req', function(data) {
-			logger.debug("[directCardPlay_req] playerId:"+data.playerId+", card:"+util.inspect(data.card));
+			logger.debug("[directCardPlay_req] playerId:%s, card:%j",data.playerId,data.card);
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {
@@ -117,7 +128,7 @@ module.exports = function(io, logger) {
 			});	
 		});
 		socket.on('cardDiscard_req', function (data) {
-			logger.debug("[cardDiscard_req] player:"+data.playerId+", card:"+util.inspect(data.card));
+			logger.debug("[cardDiscard_req] player:%s, card:%j",data.playerId,data.card);
 			/*data={playerId,card}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {
@@ -127,7 +138,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('cardPlaySelectTarget_req', function(data) {
-			logger.debug("[cardPlaySelectTarget_req] playerId:"+data.playerId+", cardIdToPlay:"+data.cardIdToPlay+", field:"+data.targetFieldId);
+			logger.debug("[cardPlaySelectTarget_req] playerId:%s, cardIdToPlay:%s, field:%s",data.playerId,data.cardIdToPlay,data.targetFieldId);
 			/*data={playerId,cardIdToPlay,targetFieldId}*/
 			var PlayerManager = require("./rule_playermanager.js");
 			// load player
@@ -150,7 +161,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('roundEnd_req', function(data) {
-			logger.debug("[roundEnd_req] playerId:"+data.playerId);	
+			logger.debug("[roundEnd_req] playerId:%s",data.playerId);	
 			/*data={playerId}*/
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
@@ -165,7 +176,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('auctionBid_req', function(data) {
-			logger.debug("[auctionBid_req] playerId:"+data.playerId);	
+			logger.debug("[auctionBid_req] playerId:%s",data.playerId);	
 			/*data={playerId, bid}*/
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
@@ -177,7 +188,7 @@ module.exports = function(io, logger) {
 							gameToPrepare.setPlayerDone(player);
 						}, function(savedGame) {						
 							PlayerManager.storePlayer(player, function(playerToPrepare) {
-								playerToPrepare.money -= data.bid;
+								//playerToPrepare.money -= data.bid;
 							}, function(savedPlayer) {
 								savedGame.checkForNextTurn(); /* back: postAuctionSelection */
 							});						
@@ -189,7 +200,7 @@ module.exports = function(io, logger) {
 			});			
 		});
 		socket.on('postAuctionSelect_req', function(data) {
-			logger.debug("[postAuctionSelect_req] playerId:"+data.playerId+", card:"+data.cardId);	
+			logger.debug("[postAuctionSelect_req] playerId:%s, card:%s",data.playerId,data.cardId);	
 			/*data={playerId, cardId}*/
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");			
@@ -225,11 +236,11 @@ module.exports = function(io, logger) {
 								playerToPrepare.cardHand.addTop(selectedCard);
 							}, function(savedPlayer) {							
 								socket.emit('card', { cards: [selectedCard] });
-								savedGame.checkForNextTurn(); /* back: auctionComplete */
+								savedGame.checkForNextTurn(); /* back: showFieldPane */
 							});
 						} else {
 							// we don't have to update the client, since the user didn't select any card, but we have to check for "textTurn"
-							savedGame.checkForNextTurn(); /* back: auctionComplete */
+							savedGame.checkForNextTurn(); /* back: showFieldPane */
 						}
 					});						
 				});
@@ -248,7 +259,7 @@ module.exports = function(io, logger) {
 			});
 		});
 		socket.on('disconnect', function (data) {
-			logger.debug("[disconnect] playerId:"+socket.id);	
+			logger.debug("[disconnect] playerId:data.playerId",socket.id);	
 			var Game = require("./rule_game.js");
 			Game.removePlayer(socket.id, function(game) {
 				// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)

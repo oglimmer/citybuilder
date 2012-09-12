@@ -14,7 +14,7 @@ function createGame() {
 			socket = io.connect(document.domain);
 		}
 		G.serverCommListener.init();
-		socket.emit('create_req', { playerName: playerName });
+		socket.emit('createGame_req', { playerName: playerName });
 	}
 }
 function listGames() {
@@ -43,7 +43,7 @@ function joinGame() {
 		$('#waitingForPlayers').show();
 		var gameId = $("#availGamesSel").val();
 		G.serverCommListener.init();
-		socket.emit('register_req', { gameId: gameId, playerName: playerName });	
+		socket.emit('joinGame_req', { gameId: gameId, playerName: playerName });	
 	}
 }
 function rejoinGame() {

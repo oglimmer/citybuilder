@@ -44,17 +44,17 @@ Game.prototype.startGame = function(playTime, allPlayers) {
 	var self = this;
 	allPlayers.forEach(function(doc) {
 		var player = doc.value;
+		if(self.cards.length() < 4) {
+			self.cards.clear();
+			self.cards.create(0);
+		}
 		var cardsToSelect = [];
 		for(var i = 0 ; i < 4 ; i++) {
-			if(self.cards.length()==0) {
-				self.cards.create(0);
-			}
 			cardsToSelect.push(self.cards.removeTop());
 		}
 		self.cardsToAuction.push({playerId: player._id, cardsToSelect: cardsToSelect});
-		var psoc = require('./socket.js')(player);	
-		psoc.sendInitialCardSelection({cardsToSelect : cardsToSelect, gameState: self.gameState, infoBar: self.constructMsgInfoBar(player) });
 	});
+	self.cards.clear();
 	self.cards.create(1);
 }
 
@@ -92,7 +92,7 @@ Game.prototype.rejoinPlayer = function(socketId, player, onSuccess) {
 		GameManager.storeGame(self, function(gameToPrepare) {
 			gameToPrepare.playerIds[player.no] = player._id;			
 			gameToPrepare.playerNames.push(player.playerName);
-			gameToPrepare.playersOnTurn.push(player._id);
+			//gameToPrepare.playersOnTurn.push(player._id);
 		}, function(savedGame) {
 			onSuccess(savedPlayer);
 		});
@@ -135,6 +135,15 @@ Game.prototype.setPlayerDone = function(player) {
 	}
 }
 
+Game.prototype.isPlayerDone = function(player) {
+	for(var i = 0 ; i < this.playersOnTurn.length ; i++) {
+		if(this.playersOnTurn[i] == player._id) {			
+			return false;
+		}
+	}
+	return true;
+}
+
 Game.prototype.allPlayersDone = function() {
 	return this.playersOnTurn.length == 0;
 }
@@ -148,7 +157,7 @@ Game.prototype.checkForNextTurn = function() {
 			if(self.gameState == 1) {
 				self.processNextTurn(allPlayers);
 			} else if(self.gameState == 2) {
-				self.processAuctionBid();
+				self.processAuctionBid(allPlayers);
 			} else if(self.gameState == 3) {
 				if(self.auctionTakeOrder.length > 0) {
 					self.processPostAuctionSelection();
@@ -170,7 +179,7 @@ Game.prototype.initialCardSelectionDone = function(allPlayers) {
 	var self = this;
 	allPlayers.forEach(function(player) {
 		var psoc = require('./socket.js')(player.value);
-		psoc.sendInit(self);
+		psoc.sendInitUIElements(self);
 	});				
 }
 
@@ -182,23 +191,44 @@ Game.prototype.processAuctionSelect = function(allPlayers) {
 	var self = this;
 	allPlayers.forEach(function(player) {
 		var psoc = require('./socket.js')(player.value);	
-		psoc.sentAuctionComplete({ gameState : self.gameState });
+		psoc.sentshowFieldPane({ gameState : self.gameState });
 	});
 }
 
-Game.prototype.processAuctionBid = function() {
+Game.prototype.payBid = function(playerIds, allPlayers, part, biddingsTmp) {
+	var PlayerManager = require("./rule_playermanager.js");
+	playerIds.forEach(function(pId) {
+		var player = allPlayers.getPlayerById(pId);
+		var cost = biddingsTmp[pId] * part;
+		logger.debug("[payBid] Player "+player.playerName+" paid "+biddingsTmp[pId]+" by "+part+"="+cost);
+		player.money -= cost;
+		PlayerManager.storePlayer(player, null);		
+	});
+}
+
+Game.prototype.processAuctionBid = function(allPlayers) {
 	this.gameState = 3;
+	var self = this;
+	// if a player left the game, it could be that the bidding is 0. If he already rejoined add a $0 bid
+	allPlayers.forEach(function(pla) {
+		var player = pla.value;
+		if(player.socketId !== null && typeof(self.biddings[player._id]) === 'undefined') {
+			self.biddings[player._id] = 0;
+		}
+	});
+	// order by bid and create turn order
 	this.auctionTakeOrder = [];
+	var biddingsTmp = JSON.parse(JSON.stringify(this.biddings));
 	while(Object.keys(this.biddings).length !== 0) {
 		var maxBid = -1;
 		var maxBidders;
-		for(var pId in this.biddings) {
-			var bid = parseInt(this.biddings[pId]);
+		for(var playerId in this.biddings) {
+			var bid = parseInt(this.biddings[playerId]);
 			if(maxBid < bid) {
 				maxBid = bid;
-				maxBidders = [pId];
+				maxBidders = [playerId];
 			} else if(maxBid == bid) {
-				maxBidders.push(pId);
+				maxBidders.push(playerId);
 			}
 		}
 		var self = this;
@@ -207,17 +237,25 @@ Game.prototype.processAuctionBid = function() {
 		});
 		this.auctionTakeOrder.push(maxBidders);
 	}
-	this.processPostAuctionSelection();
+	// calc final bid cost and subtract money
+	this.payBid(this.auctionTakeOrder[0], allPlayers, 1, biddingsTmp);
+	for(var i = 1 ; i < this.auctionTakeOrder.length-1 ; i++) {
+		var max = this.auctionTakeOrder.length-1;
+		var part = (1/max)*(max-i);
+		this.payBid(this.auctionTakeOrder[i], allPlayers, part, biddingsTmp);
+	}
+
+	this.processPostAuctionSelection(allPlayers);
 }
 
-Game.prototype.processPostAuctionSelection = function() {
+Game.prototype.processPostAuctionSelection = function(allPlayers) {
 	/* readies the next player(s) for the given bid
 	 * => puts them into playersOnTurn, and send message over */
 	var nextPlayerIds = this.auctionTakeOrder.shift();
 	var self = this;
 
 	if(typeof(nextPlayerIds) === 'undefined') {
-		console.trace("muuuu")
+		console.trace("[processPostAuctionSelection] nextPlayerIds is undefined")
 	}
 
 	this.playersOnTurn = JSON.parse(JSON.stringify(nextPlayerIds)); // deep-copy
@@ -226,11 +264,17 @@ Game.prototype.processPostAuctionSelection = function() {
 	GameManager.storeGame(this, null);
 
 	nextPlayerIds.forEach(function(playerId) {
-		var PlayerManager = require("./rule_playermanager.js");
-		PlayerManager.getPlayer(playerId, function(player) {			
+		if(typeof(allPlayers) !== 'undefined') {
+			var player = allPlayers.getPlayerById(playerId);
 			var psoc = require('./socket.js')(player);	
-			psoc.sendPostAuctionSelection({ gameState : self.gameState, money : player.money });		
-		});
+			psoc.sendPostAuctionSelection({ gameState : self.gameState, money: player.money });					
+		} else {
+			var PlayerManager = require("./rule_playermanager.js");
+			PlayerManager.getPlayer(playerId, function(player) {			
+				var psoc = require('./socket.js')(player);	
+				psoc.sendPostAuctionSelection({ gameState : self.gameState, money: player.money });		
+			});
+		}
 	});
 }
 
@@ -296,15 +340,15 @@ Game.prototype.sendAuction = function(allPlayers, changedFields, cardsToAuction,
 	var self = this;
 	self.cardsToAuction = cardsToAuction;
 	allPlayers.forEach(function(doc) {
-		self.sendAuctionToPlayer(doc.value, changedFields, cardsToAuction, incomeReceipt);
+		self.sendAuctionToPlayer(doc.value, changedFields, incomeReceipt);
 	});
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(self, null);		
 }
 
-Game.prototype.sendAuctionToPlayer = function(player, changedFields, cardsToAuction, incomeReceipt) {
+Game.prototype.sendAuctionToPlayer = function(player, changedFields, incomeReceipt) {
 	player.availableActions |= 1; // a card is deployable
-	var newTurnData = this.constructNewTurnData(player, changedFields, cardsToAuction, incomeReceipt);	
+	var newTurnData = this.constructNewTurnData(player, changedFields, incomeReceipt);	
 	var PlayerManager = require("./rule_playermanager.js");
 	PlayerManager.storePlayer(player,null, function(savedPlayer) {
 		require('./socket.js')(savedPlayer).startAuction(newTurnData);
@@ -405,13 +449,13 @@ Game.prototype.constructMsgInfoBar = function(player) {
 	};
 }
 
-Game.prototype.constructNewTurnData = function(player, changedFields, cardsToAuction, incomeReceipt) {
+Game.prototype.constructNewTurnData = function(player, changedFields, incomeReceipt) {
 	return {
 		gameState : this.gameState,
 		infoBar : this.constructMsgInfoBar(player),
 		uiElement : changedFields,
 		availableActions : player.availableActions,
-		cardsToAuction : cardsToAuction,
+		cardsToAuction : this.cardsToAuction,
 		incomeReceipt : incomeReceipt
 	};	
 }

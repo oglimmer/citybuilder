@@ -74,6 +74,9 @@ UIServices.getMaxPop = function(houseType) {
 	}	
 	return maxPop;
 }
+/*
+ * numberString will be formatted in a US-style number format
+ */
 UIServices.addCommas = function(numberString) {
   numberString += '';
   var x = numberString.split('.'),

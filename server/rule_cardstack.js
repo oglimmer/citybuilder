@@ -51,6 +51,10 @@ CardStack.prototype.create = function(stage) {
 	this.shuffle();
 }
 
+CardStack.prototype.clear = function() {
+	this.cards = [];
+}
+
 CardStack.prototype.length = function() {
 	return this.cards.length;
 }
