@@ -52,7 +52,7 @@ function rejoinGame() {
 	var gameId = Cookie.get("gameId");
 	var playerId = Cookie.get("playerId");
 	G.serverCommListener.init();
-	socket.emit('reregister_req', { gameId: gameId, playerId: playerId });	
+	socket.emit('reJoinGame_req', { gameId: gameId, playerId: playerId });	
 }
 function startGame() {
 	socket.emit('startGame', { playTime : $('#playTime').val() });

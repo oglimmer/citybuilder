@@ -21,9 +21,9 @@ $(window).load(function() {
 
 	if(Cookie.get("playerId")!="" && Cookie.get("gameId") != "") {
 		socket = io.connect(document.domain);
-		socket.on('reregistercheck_resp', function(data) {
+		socket.on('reJoinGameCheck_resp', function(data) {
 			$('<input type="button" value="'+G.i18n.msg_re_join_game+'" onclick="rejoinGame()">').appendTo('#rejoinDiv');		
 		});
-		socket.emit('reregistercheck_req', { gameId: Cookie.get("gameId") });
+		socket.emit('reJoinGameCheck_req', { gameId: Cookie.get("gameId") });
 	}	
 });

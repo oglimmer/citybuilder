@@ -12,7 +12,7 @@ function ServerCommListener() {
 		socket.on('prePlayCard_resp', self.prePlayCard_resp);	
 		socket.on('cardPlaySelectTarget_resp', self.cardPlaySelectTarget_resp);
 		socket.on('cardPlaySelectTargetFailed_resp', self.cardPlaySelectTargetFailed_resp);
-		socket.on('onStartAuction_resp', self.onStartAuction_resp);
+		socket.on('startAuction_resp', self.startAuction_resp);
 		socket.on('waitAddPlayer_resp', self.waitAddPlayer_resp);
 		socket.on('gamedEnded', self.gamedEnded);
 		socket.on('requestAllPlayerData_resp', self.requestAllPlayerData_resp);
@@ -108,7 +108,7 @@ function ServerCommListener() {
 		G.auctionPanel.removeCard(msg.card);
 		G.draw();
 	}
-	this.onStartAuction_resp = function(msg) {
+	this.startAuction_resp = function(msg) {
 		$('#overlay').hide();
 		/*  */
 		G.gameState = msg.gameState;

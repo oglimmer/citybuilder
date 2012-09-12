@@ -20,7 +20,7 @@ module.exports = function(player) {
 		});		
 	};
 	this.startAuction = function(newTurnData) {
-		socket.emit('onStartAuction_resp', newTurnData);
+		socket.emit('startAuction_resp', newTurnData);
 	};
 	this.sendEndGame = function(winner) {
 		socket.emit('gamedEnded', winner);

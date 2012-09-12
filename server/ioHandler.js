@@ -39,14 +39,14 @@ module.exports = function(io, logger) {
 			});
 		});
 		/* A client wants to check if his old game is still running. */
-		socket.on('reregistercheck_req', function (data) {
+		socket.on('reJoinGameCheck_req', function (data) {
 			var GameManager = require("./rule_gamemanager.js");
 			GameManager.getGame(data.gameId, function(game) {
-				socket.emit('reregistercheck_resp');
+				socket.emit('reJoinGameCheck_resp');
 			});
 		});
 		/* A client wants to re-join an old game. */
-		socket.on('reregister_req', function (data) {
+		socket.on('reJoinGame_req', function (data) {
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			GameManager.getGame(data.gameId, function(game) {
@@ -63,10 +63,10 @@ module.exports = function(io, logger) {
 							psoc.emit('showFieldPane', { gameState : game.gameState });
 						} else if(game.gameState==2) {
 							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
-							psoc.emit('onStartAuction_resp', newTurnData);
+							psoc.emit('startAuction_resp', newTurnData);
 						} else if(game.gameState==3) {
 							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
-							psoc.emit('onStartAuction_resp', newTurnData);
+							psoc.emit('startAuction_resp', newTurnData);
 							psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
 						}
 						psoc.emit('showWait');
@@ -103,6 +103,7 @@ module.exports = function(io, logger) {
 				});
 			});
 		});
+		/* a player clicked "play" on a card which requires a field target. */
 		socket.on('prePlayCard_req', function (data) {
 			logger.debug("[prePlayCard_req] playerId:%s, card: %j", data.playerId, data.card);
 			/*data={playerId,card}*/
@@ -113,6 +114,7 @@ module.exports = function(io, logger) {
 				socket.emit('prePlayCard_resp', eventData);
 			});
 		});
+		/* a player clicked "play" on a card which doesn't require a field target. This card will take affect immediately */
 		socket.on('directCardPlay_req', function(data) {
 			logger.debug("[directCardPlay_req] playerId:%s, card:%j",data.playerId,data.card);
 			/*data={playerId,card}*/
@@ -127,6 +129,7 @@ module.exports = function(io, logger) {
 				});
 			});	
 		});
+		/* a player clicked "discard" on a card. */
 		socket.on('cardDiscard_req', function (data) {
 			logger.debug("[cardDiscard_req] player:%s, card:%j",data.playerId,data.card);
 			/*data={playerId,card}*/
@@ -137,6 +140,7 @@ module.exports = function(io, logger) {
 				});	
 			});
 		});
+		/* a player clicked on a field. This selects the target for a previously "played" card */
 		socket.on('cardPlaySelectTarget_req', function(data) {
 			logger.debug("[cardPlaySelectTarget_req] playerId:%s, cardIdToPlay:%s, field:%s",data.playerId,data.cardIdToPlay,data.targetFieldId);
 			/*data={playerId,cardIdToPlay,targetFieldId}*/
@@ -160,6 +164,7 @@ module.exports = function(io, logger) {
 				);
 			});
 		});
+		/* A player clicked the button "round end". So we have to be in gameState==1. */
 		socket.on('roundEnd_req', function(data) {
 			logger.debug("[roundEnd_req] playerId:%s",data.playerId);	
 			/*data={playerId}*/
@@ -170,11 +175,12 @@ module.exports = function(io, logger) {
 					GameManager.storeGame(game, function(gameToPrepare) {
 						gameToPrepare.setPlayerDone(player);
 					}, function(savedGame) {						
-						savedGame.checkForNextTurn(); /* back: onStartAuction_resp */
+						savedGame.checkForNextTurn(); /* back: startAuction_resp */
 					});
 				});
 			});
 		});
+		/* A player clicked the button "Set bidding". So we have to be in gameState==2. */
 		socket.on('auctionBid_req', function(data) {
 			logger.debug("[auctionBid_req] playerId:%s",data.playerId);	
 			/*data={playerId, bid}*/
@@ -186,12 +192,8 @@ module.exports = function(io, logger) {
 						GameManager.storeGame(game, function(gameToPrepare) {
 							gameToPrepare.setBidding(player, data.bid);
 							gameToPrepare.setPlayerDone(player);
-						}, function(savedGame) {						
-							PlayerManager.storePlayer(player, function(playerToPrepare) {
-								//playerToPrepare.money -= data.bid;
-							}, function(savedPlayer) {
-								savedGame.checkForNextTurn(); /* back: postAuctionSelection */
-							});						
+						}, function(savedGame) {
+							savedGame.checkForNextTurn(); /* back: postAuctionSelection */
 						});
 					});
 				} else {
@@ -199,6 +201,7 @@ module.exports = function(io, logger) {
 				}
 			});			
 		});
+		/* A player clicked the button "Pick card". So we have to be in gameState==3. */
 		socket.on('postAuctionSelect_req', function(data) {
 			logger.debug("[postAuctionSelect_req] playerId:%s, card:%s",data.playerId,data.cardId);	
 			/*data={playerId, cardId}*/
@@ -246,7 +249,9 @@ module.exports = function(io, logger) {
 				});
 			});						
 		});
+		/* A player clicked on the infobar and wants to see the other players balance */
 		socket.on('requestAllPlayerData_req', function(data) {
+			logger.debug("[requestAllPlayerData_req] playerId:%s", data.playerId);	
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {
 				PlayerManager.getPlayers(player.gameId, null, function(allPlayer) {
@@ -258,8 +263,9 @@ module.exports = function(io, logger) {
 				});
 			});
 		});
+		/* A player disconnected ;) */
 		socket.on('disconnect', function (data) {
-			logger.debug("[disconnect] playerId:data.playerId",socket.id);	
+			logger.debug("[disconnect] playerId:%s", socket.id);	
 			var Game = require("./rule_game.js");
 			Game.removePlayer(socket.id, function(game) {
 				// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)
