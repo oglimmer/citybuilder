@@ -73,10 +73,12 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 
 	ctx.fillStyle = 'white';
 	if(this.type == 0) {
+		ctx.font = '9px Arial';				
 		switch(G.uiMode) {
 			case 0:
 			case 1:
 			case 2:
+				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+3,relocateY+this.drawY+38);
 			case 3:
 			case 4:
 			case 5:
@@ -84,10 +86,7 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 7:
 			case 8:
 				//ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+14);		
-				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType)+","+this.attachedCard.housePopulation,relocateX+this.drawX+3,relocateY+this.drawY+20);
-				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+3,relocateY+this.drawY+38);
-				ctx.font = '10px sans-serif';						
 				break;
 				/*
 			case 1:
@@ -104,6 +103,7 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 				ctx.font = '10px sans-serif';				
 				break;*/
 		}
+		ctx.font = '10px sans-serif';						
 	} else {
 		ctx.fillText(this.fillText,relocateX+this.drawX+22,relocateY+this.drawY+28);
 	}

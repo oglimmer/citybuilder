@@ -161,17 +161,26 @@ NewPeopleCard.prototype.prePlay = function() {
 };
 NewPeopleCard.newPeople = function(field,changedFields) {
 	if(field.type == FieldType.HOUSE) {
-		var oldHouseType = field.attachedCard.houseType;
+		var oldHouseType = field.attachedCard.houseType;		
+		var currentHouseTypeName = HouseTypeReverse[oldHouseType];
+		var currentLocalLevel = null;
 		[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE, LocalLevel.UPPERCLASS].forEach(function(locLev) {				
-			if(field.localLevel >= locLev.min && field.localLevel <= locLev.max) {			
-				if(field.attachedCard.houseType >= HouseType[locLev.buildings[0]] && field.attachedCard.houseType <= HouseType[locLev.buildings[ locLev.buildings.length-1 ]]) {
-					var rnd = parseInt(Math.random() * locLev.buildings.length);
-					field.attachedCard.houseType = HouseType[locLev.buildings[rnd]];
-					field.attachedCard.housePopulation = parseInt(Math.random() * HouseTypeMaxPop[locLev.buildings[rnd]])+1
+			locLev.buildings.forEach(function(buildName) {
+				if(buildName == currentHouseTypeName) {
+					currentLocalLevel = locLev;
 				}
-			}
-		});	
-		if(oldHouseType != field.attachedCard.houseType) {
+			})
+		});
+		if(currentLocalLevel==null) {
+			logger.error("[newPeople] currentLocalLevel was null, %j",field);
+			return;
+		}
+		var rnd = parseInt(Math.random() * currentLocalLevel.buildings.length);
+		var newHouseType = HouseType[currentLocalLevel.buildings[rnd]];
+		var newHousePopulation = parseInt(Math.random() * HouseTypeMaxPop[currentLocalLevel.buildings[rnd]])+1
+		if(newHouseType < field.attachedCard.houseType || newHousePopulation > field.attachedCard.housePopulation) {
+			field.attachedCard.houseType = newHouseType;
+			field.attachedCard.housePopulation = newHousePopulation;
 			changedFields[field.x+":"+field.y] = field;
 			logger.debug("[NewPeopleCard] Changed houseType for " + field.x+","+field.y+" from "+oldHouseType+" to "+field.attachedCard.houseType);
 		}		
