@@ -198,13 +198,13 @@ var I18n = {
 		c602_2 : 'Baue eine "Feuerwehrstation" anstelle eines beliebigen Wohnhauses.',
 
 		c603_1 : 'Dealer auf dem Spielplatz',
-		c603_2 : 'Einem Wohnfeld deiner Wahl wird zum Umschlagsplatz für Drogendealer. gespielt werden.',
+		c603_2 : 'Einem Wohnfeld deiner Wahl wird zum Umschlagsplatz für Drogendealer. Kann nur auf ein {9,10} Wohnfeld gespielt werden.',
 
 		c604_1 : 'Bordell',
-		c604_2 : 'In einem Wohnfeld deiner Wahl wird ein Bordell eröffnet. gespielt werden.',
+		c604_2 : 'In einem Wohnfeld deiner Wahl wird ein Bordell eröffnet. Kann nur auf ein {7,10} Wohnfeld gespielt werden.',
 
 		c605_1 : 'Edel Bordell',
-		c605_2 : 'In einem Wohnfeld deiner Wahl wird ein Edel Bordell eröffnet. gespielt werden.',
+		c605_2 : 'In einem Wohnfeld deiner Wahl wird ein Edel Bordell eröffnet. Kann nur auf ein {1,4} Wohnfeld gespielt werden.',
 
 		c700_1 : 'Spaß am Kochen',
 		c700_2 : 'Die Leute haben wieder Spaß am Kochen. Wähle ein Restaurant und entferne es.',

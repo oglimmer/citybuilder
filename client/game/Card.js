@@ -45,7 +45,37 @@ BaseCard.prototype.drawText = function(ctx) {
 	}	
 	if(typeof(this.localLevelMod) !== 'undefined' && this.localLevelMod != 0) {
 		text += " Soziallevel:"+this.localLevelMod+".";
-	}	
+	}
+	if(text.match(/\{.*\}/)) {
+		var originalText = text;
+		var pattern = /{[0-9]+,[0-9]+}/g;
+		var toReplace = originalText.match(pattern);
+		var textToken = originalText.split(pattern);
+		var resultText = "";
+		var j = 0;
+		for(var i = 0 ; i < textToken.length ; i++) {
+			resultText += textToken[i];
+			if(i < textToken.length-1) {
+				var tempTxt = toReplace[j++];
+				tempTxt = tempTxt.substring(1, tempTxt.length-1);
+				var start = parseInt(tempTxt.substring(0,tempTxt.indexOf(',')));
+				var end = parseInt(tempTxt.substring(tempTxt.indexOf(',')+1));
+				var tempTxtDisp = "";
+				if(start == 1 && end == 10) {
+					tempTxtDisp += G.i18n.c_all_housetypes;
+				} else {
+					for(var k = start ; k <= end ; k++) {
+						if(k!==start) {
+							tempTxtDisp += " / ";
+						}
+						tempTxtDisp += UIServices.getHouseTypeText(k);
+					}
+				}
+				resultText += tempTxtDisp;
+			}
+		}
+		text = resultText;
+	}
 	var words = text.split(" ");
 	var line = "";
 	var tmpY = this.y+28;
