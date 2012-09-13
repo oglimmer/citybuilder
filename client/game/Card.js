@@ -19,36 +19,33 @@ BaseCard.prototype.Inherits = function(parent) {
 };
 BaseCard.prototype.drawText = function(ctx) {
 	var text = G.i18n[this.text];
-	if(text.match(/\{.*\}/)) {
-		var originalText = text;
-		var pattern = /{[0-9]+,[0-9]+}/g;
-		var toReplace = originalText.match(pattern);
-		var textToken = originalText.split(pattern);
-		var resultText = "";
-		var j = 0;
-		for(var i = 0 ; i < textToken.length ; i++) {
-			resultText += textToken[i];
-			if(i < textToken.length-1) {
-				var tempTxt = toReplace[j++];
-				tempTxt = tempTxt.substring(1, tempTxt.length-1);
-				var start = parseInt(tempTxt.substring(0,tempTxt.indexOf(',')));
-				var end = parseInt(tempTxt.substring(tempTxt.indexOf(',')+1));
-				var tempTxtDisp = "";
-				if(start == 1 && end == 10) {
-					tempTxtDisp += G.i18n.c_all_housetypes;
+	if(typeof(this.profitConfig) !== 'undefined') {
+		for(var i = 0 ; i < this.profitConfig.length ; i++) {
+			var pf = this.profitConfig[i];
+			text += " $"+pf.pro+" pPpW für ";
+			if(pf.ht.length == 1) {
+				text += UIServices.getHouseTypeText(pf.ht[0]);
+			} else {
+				if(pf.ht[0] == 1 && pf.ht[1] == 10) {
+					text += G.i18n.c_all_housetypes;
 				} else {
-					for(var k = start ; k <= end ; k++) {
-						if(k!==start) {
-							tempTxtDisp += " / ";
+					for(var j = pf.ht[0] ; j <= pf.ht[1] ; j++) {
+						if(j!==pf.ht[0]) {
+							text += " / ";
 						}
-						tempTxtDisp += UIServices.getHouseTypeText(k);
+						text += UIServices.getHouseTypeText(j);
 					}
 				}
-				resultText += tempTxtDisp;
 			}
+			text += ".";
 		}
-		text = resultText;
-	}
+	}	
+	if(typeof(this.range) !== 'undefined') {
+		text += " Einflussradius:"+this.range+".";
+	}	
+	if(typeof(this.localLevelMod) !== 'undefined' && this.localLevelMod != 0) {
+		text += " Soziallevel:"+this.localLevelMod+".";
+	}	
 	var words = text.split(" ");
 	var line = "";
 	var tmpY = this.y+28;
@@ -83,13 +80,16 @@ BaseCard.prototype.atPos = function(x, y) {
 /* class Card */
 /* ------------------------------------------ */
 Card.Inherits(BaseCard);
-function Card(id,title,text,actionBit,playType,ctx) {
+function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,ctx) {
 	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
 	this.text = text;
 	this.actionBit = actionBit;
 	this.playType = playType;
+	this.profitConfig = profitConfig;
+	this.range = range;
+	this.localLevelMod = localLevelMod;
 	this.x = null;
 	this.height = 20;
 	this.y = ctx.canvas.height-this.height;
@@ -157,11 +157,14 @@ function Card(id,title,text,actionBit,playType,ctx) {
 /* class AuctionCard */
 /* ------------------------------------------ */
 AuctionCard.Inherits(BaseCard);
-function AuctionCard(id,title,text,x,y,ctx) {
+function AuctionCard(id,title,text,x,y,profitConfig,range,localLevelMod,ctx) {
 	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
 	this.text = text;
+	this.profitConfig = profitConfig;
+	this.range = range;
+	this.localLevelMod = localLevelMod;
 	this.x = x;
 	this.y = y;
 	this.height = 160;

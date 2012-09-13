@@ -75,7 +75,7 @@ function ServerCommListener() {
 		console.log("Got card : #" + data.cards.length);
 		for(var i = 0 ; i < data.cards.length ; i++) {
 			var card = data.cards[i];		
-			var newCard = new Card(card.id, card.title, card.text, card.actionBit,card.playType, G.ctx);	
+			var newCard = new Card(card.id, card.title, card.text, card.actionBit, card.playType, card.profitConfig, card.range, card.localLevelMod, G.ctx);	
 			G.cardLayouter.cards.push(newCard);	
 			if(data.cards.length == 1) {
 				G.cardLayouter.draw(G.ctx); // this calculates the x pos for the new card which is needed for the button's pos in toggle()
@@ -110,7 +110,7 @@ function ServerCommListener() {
 	}
 	this.startAuction_resp = function(msg) {
 		$('#overlay').hide();
-		/*  */
+		/*  */		
 		G.gameState = msg.gameState;
 		self.infoBar(msg.infoBar);
 		self.uiElement(msg.uiElement);
@@ -123,6 +123,7 @@ function ServerCommListener() {
 		G.turnDoneButton.label = G.i18n.button_set_bidding;
 		G.turnDoneButton.enabled = true;
 		G.incomeReceipt = msg.incomeReceipt;
+		G.infoBar.showLargeInfo = false;
 		$('#bidInput').show();
 		G.draw();
 	};
@@ -138,6 +139,7 @@ function ServerCommListener() {
 	this.postAuctionSelection = function(msg) {
 		$('#overlay').hide();
 		$('#bidInput').hide();
+		G.auctionPanel.currentlyClicked = null;
 		G.gameState = msg.gameState;
 		G.infoBar.money = msg.money;
 		G.auctionPanel.selectable = true;

@@ -39,7 +39,7 @@ function InfoBar() {
 		}
 	};
 	this.onclick = function(x, y) {
-		if(this.atPos(x,y)) {
+		if(this.atPos(x,y) && G.gameState == 1) {
 			G.serverCommListener.requestAllPlayerData();
 			this.showLargeInfo = !this.showLargeInfo;
 			return true;

@@ -8,8 +8,8 @@ var RentalCard = basecards.RentalCard;
 /* No: 400...499 */
 /* ------------------------------------------ */
 BuildElectronicCard.Inherits(RentalCard);
-function BuildElectronicCard(id,no,range) {
-	this.Inherits(RentalCard,id,no,range,FieldType.ELECTRONIC);
+function BuildElectronicCard(id,no,range,profitConfig,localLevelMod) {
+	this.Inherits(RentalCard,id,no,range,FieldType.ELECTRONIC,profitConfig,localLevelMod);
 }
 
 /* ------------------------------------------ */
@@ -17,36 +17,13 @@ function BuildElectronicCard(id,no,range) {
 /* ------------------------------------------ */
 BuildElectronicSmlCard.Inherits(BuildElectronicCard);
 function BuildElectronicSmlCard(id) {
-	this.Inherits(BuildElectronicCard,id,400,1);
+	this.Inherits(BuildElectronicCard,id,400,1,[ {ht:[1,7], pro:300}, {ht:[8,10], pro:100} ], 0);
 }
-BuildElectronicSmlCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 7) {
-		profit = 300;
-	}
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 100;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildElectronicLrgCard */
 /* ------------------------------------------ */
 BuildElectronicLrgCard.Inherits(BuildElectronicCard);
 function BuildElectronicLrgCard(id) {
-	this.Inherits(BuildElectronicCard,id,401,3);
+	this.Inherits(BuildElectronicCard,id,401,3,[ {ht:[1,3], pro:250}, {ht:[4,7], pro:80}, {ht:[8,10], pro:30} ], 0);
 }
-BuildElectronicLrgCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 3) {
-		profit = 250;
-	}
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 7) {
-		profit = 80;
-	}
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 30;
-	}
-	return profit;
-};

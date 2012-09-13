@@ -211,7 +211,7 @@ module.exports = function(io, logger) {
 				GameManager.getGame(player.gameId, function(game) {					
 					var selectedCard = null;
 					GameManager.storeGame(game, function(gameToPrepare) {
-						// try to get the selected card (if one was choosen)
+						// try to get the selected card (if one was choosen)												
 						if(data.cardId !== null) {
 							selectedCard = gameToPrepare.removeCardFromAuction(data.cardId, player._id);						
 						}

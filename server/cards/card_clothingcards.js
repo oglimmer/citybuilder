@@ -8,190 +8,81 @@ var RentalCard = basecards.RentalCard;
 /* No: 200...299 */
 /* ------------------------------------------ */
 BuildClothingCard.Inherits(RentalCard);
-function BuildClothingCard(id,no,range) {
-	this.Inherits(RentalCard,id,no,range,FieldType.CLOTHING);
+function BuildClothingCard(id,no,range,profitConfig,localLevelMod) {
+	this.Inherits(RentalCard,id,no,range,FieldType.CLOTHING,profitConfig,localLevelMod);
 }
 
 /* ------------------------------------------ */
 /* class BuildClothingUltraCheapCard */
 /* ------------------------------------------ */
-BuildClothingUltraCheapCard.Inherits(BuildClothingCard);
+BuildClothingUltraCheapCard.Inherits(BuildClothingCard, 0);
 function BuildClothingUltraCheapCard(id) {
-	this.Inherits(BuildClothingCard,id,200,2);
+	this.Inherits(BuildClothingCard,id,200,2,[ {ht:[9,10], pro:1} ],-5);
 }
-BuildClothingUltraCheapCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 30;
-	}
-	return profit;
-};
-BuildClothingUltraCheapCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel -= 5;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingCheapCard */
 /* ------------------------------------------ */
 BuildClothingCheapCard.Inherits(BuildClothingCard);
 function BuildClothingCheapCard(id) {
-	this.Inherits(BuildClothingCard,id,201,2);
+	this.Inherits(BuildClothingCard,id,201,2,[ {ht:[5,7], pro:30}, {ht:[8,10], pro:10} ], 0);
 }
-BuildClothingCheapCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 5 && field.attachedCard.houseType <= 7) {
-		profit = 30;
-	}
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 10;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingCheapLrgCard */
 /* ------------------------------------------ */
 BuildClothingCheapLrgCard.Inherits(BuildClothingCard);
 function BuildClothingCheapLrgCard(id) {
-	this.Inherits(BuildClothingCard,id,202,3);
+	this.Inherits(BuildClothingCard,id,202,3,[ {ht:[4,6], pro:30}, {ht:[7,8], pro:10}, {ht:[9,10], pro:5} ], 0);
 }
-BuildClothingCheapLrgCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 6) {
-		profit = 30;
-	}
-	if(field.attachedCard.houseType >= 7 && field.attachedCard.houseType <= 8) {
-		profit = 10;
-	}
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 5;
-	}	
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingCheapYoungCard */
 /* ------------------------------------------ */
 BuildClothingCheapYoungCard.Inherits(BuildClothingCard);
 function BuildClothingCheapYoungCard(id) {
-	this.Inherits(BuildClothingCard,id,203,2);
+	this.Inherits(BuildClothingCard,id,203,2,[ {ht:[5], pro:45}, {ht:[6,8], pro:10}, {ht:[9,10], pro:12} ], 0);
 }
-BuildClothingCheapYoungCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType == 5) {
-		profit = 45;
-	}
-	if(field.attachedCard.houseType >= 6 && field.attachedCard.houseType <= 8) {
-		profit = 10;
-	}
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 12;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingLux1Card */
 /* ------------------------------------------ */
 BuildClothingLux1Card.Inherits(BuildClothingCard);
 function BuildClothingLux1Card(id) {
-	this.Inherits(BuildClothingCard,id,204,1);
+	this.Inherits(BuildClothingCard,id,204,1,[ {ht:[1,2], pro:100}, {ht:[3,6], pro:35} ],5);
 }
-BuildClothingLux1Card.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 2) {
-		profit = 100;
-	}
-	if(field.attachedCard.houseType >= 3 && field.attachedCard.houseType <= 6) {
-		profit = 35;
-	}
-	return profit;
-};
-BuildClothingLux1Card.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 5;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingLux2Card */
 /* ------------------------------------------ */
 BuildClothingLux2Card.Inherits(BuildClothingCard);
 function BuildClothingLux2Card(id) {
-	this.Inherits(BuildClothingCard,id,205,2);
+	this.Inherits(BuildClothingCard,id,205,2,[ {ht:[1,2], pro:1600} ], 10);
 }
-BuildClothingLux2Card.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 2) {
-		profit = 1600;
-	}
-	return profit;
-};
-BuildClothingLux2Card.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 10;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingFatCard */
 /* ------------------------------------------ */
 BuildClothingFatCard.Inherits(BuildClothingCard);
 function BuildClothingFatCard(id) {
-	this.Inherits(BuildClothingCard,id,206,2);
+	this.Inherits(BuildClothingCard,id,206,2,[ {ht:[2,3], pro:150}, {ht:[4,7], pro:45}, {ht:[8,10], pro:7} ], 0);
 }
-BuildClothingFatCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 2 && field.attachedCard.houseType <= 3) {
-		profit = 150;
-	}
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 7) {
-		profit = 45;
-	}
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 7;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingRegLrgCard */
 /* ------------------------------------------ */
 BuildClothingRegLrgCard.Inherits(BuildClothingCard);
 function BuildClothingRegLrgCard(id) {
-	this.Inherits(BuildClothingCard,id,207,2);
+	this.Inherits(BuildClothingCard,id,207,2,[ {ht:[2,4], pro:250}, {ht:[5,7], pro:30} ], 0);
 }
-BuildClothingRegLrgCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 2 && field.attachedCard.houseType <= 4) {
-		profit = 250;
-	}
-	if(field.attachedCard.houseType >= 5 && field.attachedCard.houseType <= 7) {
-		profit = 100;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildClothingTeenPreCard */
 /* ------------------------------------------ */
 BuildClothingTeenPreCard.Inherits(BuildClothingCard);
 function BuildClothingTeenPreCard(id) {
-	this.Inherits(BuildClothingCard,id,208,4);
+	this.Inherits(BuildClothingCard,id,208,4,[ {ht:[3], pro:250}, {ht:[4], pro:50} ], 5);
 }
-BuildClothingTeenPreCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 3 && field.attachedCard.houseType <= 3) {
-		profit = 250;
-	}
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 4) {
-		profit = 50;
-	}
-	return profit;
-};
-BuildClothingTeenPreCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 5;
-	return true;
-};
 
 
 

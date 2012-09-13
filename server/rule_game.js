@@ -298,7 +298,7 @@ Game.prototype.removeCardFromAuction = function(cardId, playerId) {
 			}
 		}
 	}
-	logger.debug("removeCardFromAuction = " + c.title);
+	logger.debug("removeCardFromAuction = " + (c !== null ? c.title : cardId+" not got!"));
 	return c;
 }
 

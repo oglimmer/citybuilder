@@ -97,6 +97,7 @@ function FieldPane() {
 				}
 			}
 		}
+		this.repaintTypeInfluence();
 		G.draw();
 	};
 	this.moveover = function(x,y) {
@@ -147,4 +148,53 @@ function FieldPane() {
 			this.currentHighlight = [];
 		}
 	}
+
+	this.repaintTypeInfluence = function() {
+		if(G.uiMode>=3&&G.uiMode<=8) {
+			this.calcRanges(G.uiMode-2);
+		}		
+	}
+
+	this.calcRanges = function(type) {
+		for(var i = 0 ; i < this.allElements.length ; i++) {
+			var field = this.allElements[i];
+			if(field.type == 0 ) {
+				field.influenced = 0;
+			}
+		}
+		for(var i = 0 ; i < this.allElements.length ; i++) {
+			var field = this.allElements[i];
+			if(field.type == type ) {
+				this.forEachField(field.attachedCard.range, field, this.allElementsByCor, function(surrField) {
+					if(surrField.type == 0) {
+						if(field.owner == G.playerNo) {
+							surrField.influenced |= 1;
+						} else {
+							surrField.influenced |= 2;
+						}
+					}
+				});
+			}
+		}
+		for(var i = 0 ; i < this.allElements.length ; i++) {
+			var field = this.allElements[i];
+			if(field.type == 0 ) {
+				field.setBaseFillStyle();
+			}
+		}
+	}
+
+	this.forEachField = function(range, field, fields, perField) {
+		for(var x = -range ; x <= range ; x++) {
+			for(var y = -range ; y <= range ; y++) {
+				if(x!=0 || y!=0) {
+					var surroundingElement = fields[(field.x+x)+":"+(field.y+y)];
+					if(typeof surroundingElement !== 'undefined') {
+						perField(surroundingElement);
+					}
+				}
+			}
+		}
+	};
+
 }

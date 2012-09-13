@@ -11,8 +11,8 @@ var RentalCard = basecards.RentalCard;
 /* No: 600...699 */
 /* ------------------------------------------ */
 BuildLocalLevelCard.Inherits(RentalCard);
-function BuildLocalLevelCard(id,no,range) {
-	this.Inherits(RentalCard,id,no,range,FieldType.LOCALLEVEL);
+function BuildLocalLevelCard(id,no,range,profitConfig,localLevelMod) {
+	this.Inherits(RentalCard,id,no,range,FieldType.LOCALLEVEL,profitConfig,localLevelMod);
 }
 
 /* ------------------------------------------ */
@@ -20,52 +20,31 @@ function BuildLocalLevelCard(id,no,range) {
 /* ------------------------------------------ */
 BuildLocalLevelPoliceCard.Inherits(BuildLocalLevelCard);
 function BuildLocalLevelPoliceCard(id) {
-	this.Inherits(BuildLocalLevelCard,id,600,1);
+	this.Inherits(BuildLocalLevelCard,id,600,1,[], 150);
 }
-BuildLocalLevelPoliceCard.prototype.getProfit = function(field) {
-	return 0;
-};
-BuildLocalLevelPoliceCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 150;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildLocalLevelHospitalCard */
 /* ------------------------------------------ */
 BuildLocalLevelHospitalCard.Inherits(BuildLocalLevelCard);
 function BuildLocalLevelHospitalCard(id) {
-	this.Inherits(BuildLocalLevelCard,id,601,2);
+	this.Inherits(BuildLocalLevelCard,id,601,2,[], 70);
 }
-BuildLocalLevelHospitalCard.prototype.getProfit = function(field) {
-	return 0;
-};
-BuildLocalLevelHospitalCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 70;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildLocalLevelFirestationCard */
 /* ------------------------------------------ */
 BuildLocalLevelFirestationCard.Inherits(BuildLocalLevelCard);
 function BuildLocalLevelFirestationCard(id) {
-	this.Inherits(BuildLocalLevelCard,id,602,3);
+	this.Inherits(BuildLocalLevelCard,id,602,3,[], 30);
 }
-BuildLocalLevelFirestationCard.prototype.getProfit = function(field) {
-	return 0;
-};
-BuildLocalLevelFirestationCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 30;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class AddCriminals1Card */
 /* ------------------------------------------ */
 AddCriminals1Card.Inherits(BuildLocalLevelCard);
 function AddCriminals1Card(id) {
-	this.Inherits(BuildLocalLevelCard,id,603,2);
+	this.Inherits(BuildLocalLevelCard,id,603,2,[ {ht:[9,10], pro:3} ], -105);
 }
 AddCriminals1Card.prototype.prePlay = function() {
 	return {
@@ -80,17 +59,6 @@ AddCriminals1Card.prototype.play = function(field, player) {
 	}
 	return this.parent.play.apply(this, arguments);	
 }
-AddCriminals1Card.prototype.getProfit = function(field) {
-	var profit = 0;
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 3;
-	}	
-	return profit;
-};
-AddCriminals1Card.prototype.changeLocalLevel = function(field) {
-	field.localLevel -= 105;
-	return true;
-};
 AddCriminals1Card.prototype.getSupplyType = function() {
 	return "AddCriminals1Card";
 }
@@ -100,7 +68,7 @@ AddCriminals1Card.prototype.getSupplyType = function() {
 /* ------------------------------------------ */
 AddCriminals2Card.Inherits(BuildLocalLevelCard);
 function AddCriminals2Card(id) {
-	this.Inherits(BuildLocalLevelCard,id,604,2);
+	this.Inherits(BuildLocalLevelCard,id,604,2,[ {ht:[7,8], pro:15}, {ht:[9,10], pro:2} ], -55);
 }
 AddCriminals2Card.prototype.prePlay = function() {
 	return {
@@ -115,20 +83,6 @@ AddCriminals2Card.prototype.play = function(field, player) {
 	}
 	return this.parent.play.apply(this, arguments);	
 }
-AddCriminals2Card.prototype.getProfit = function(field) {
-	var profit = 0;
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 2;
-	}	
-	if(field.attachedCard.houseType >= 7 && field.attachedCard.houseType <= 8) {
-		profit = 15;
-	}	
-	return profit;
-};
-AddCriminals2Card.prototype.changeLocalLevel = function(field) {
-	field.localLevel -= 55;
-	return true;
-};
 AddCriminals2Card.prototype.getSupplyType = function() {
 	return "AddCriminals2Card";
 }
@@ -138,7 +92,7 @@ AddCriminals2Card.prototype.getSupplyType = function() {
 /* ------------------------------------------ */
 AddCriminals3Card.Inherits(BuildLocalLevelCard);
 function AddCriminals3Card(id) {
-	this.Inherits(BuildLocalLevelCard,id,605,2);
+	this.Inherits(BuildLocalLevelCard,id,605,2,[ {ht:[1,2], pro:1500}, {ht:[3,4], pro:200} ], -5);
 }
 AddCriminals3Card.prototype.prePlay = function() {
 	return {
@@ -153,20 +107,6 @@ AddCriminals3Card.prototype.play = function(field, player) {
 	}
 	return this.parent.play.apply(this, arguments);	
 }
-AddCriminals3Card.prototype.getProfit = function(field) {
-	var profit = 0;
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 2) {
-		profit = 1500;
-	}	
-	if(field.attachedCard.houseType >= 3 && field.attachedCard.houseType <= 4) {
-		profit = 200;
-	}	
-	return profit;
-};
-AddCriminals3Card.prototype.changeLocalLevel = function(field) {
-	field.localLevel -= 5;
-	return true;
-};
 AddCriminals3Card.prototype.getSupplyType = function() {
 	return "AddCriminals2Card";
 }

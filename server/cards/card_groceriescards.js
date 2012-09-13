@@ -8,8 +8,8 @@ var RentalCard = basecards.RentalCard;
 /* No: 100...199 */
 /* ------------------------------------------ */
 BuildGroceriesCard.Inherits(RentalCard);
-function BuildGroceriesCard(id,no,range) {
-	this.Inherits(RentalCard,id,no,range,FieldType.GROCERIES);
+function BuildGroceriesCard(id,no,range,profitConfig,localLevelMod) {
+	this.Inherits(RentalCard,id,no,range,FieldType.GROCERIES,profitConfig,localLevelMod);
 }
 
 /* ------------------------------------------ */
@@ -17,125 +17,54 @@ function BuildGroceriesCard(id,no,range) {
 /* ------------------------------------------ */
 BuildGroceriesSmCard.Inherits(BuildGroceriesCard);
 function BuildGroceriesSmCard(id) {
-	this.Inherits(BuildGroceriesCard,id,100,3);
+	this.Inherits(BuildGroceriesCard,id,100,3,[ {ht:[1,4], pro:100}, {ht:[5,8], pro:20}, {ht:[9,10], pro:2} ], 0);
 }
-BuildGroceriesSmCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 4) {
-		profit = 100;
-	}
-	if(field.attachedCard.houseType >= 5 && field.attachedCard.houseType <= 8) {
-		profit = 20;
-	}
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 2;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesDisc1Card */
 /* ------------------------------------------ */
 BuildGroceriesDisc1Card.Inherits(BuildGroceriesCard);
 function BuildGroceriesDisc1Card(id) {
-	this.Inherits(BuildGroceriesCard,id,101,1);
+	this.Inherits(BuildGroceriesCard,id,101,1,[ {ht:[1,10], pro:10} ], 0);
 }
-BuildGroceriesDisc1Card.prototype.getProfit = function(field) {
-	var profit = 10;	
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesDisc2Card */
 /* ------------------------------------------ */
 BuildGroceriesDisc2Card.Inherits(BuildGroceriesCard);
 function BuildGroceriesDisc2Card(id) {
-	this.Inherits(BuildGroceriesCard,id,102,1);
+	this.Inherits(BuildGroceriesCard,id,102,1,[ {ht:[4,8], pro:30}, {ht:[9,10], pro:5} ], 0);
 }
-BuildGroceriesDisc2Card.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 8) {
-		profit = 30;
-	}
-	if(field.attachedCard.houseType >= 9 && field.attachedCard.houseType <= 10) {
-		profit = 5;
-	}	
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesDisc3Card */
 /* ------------------------------------------ */
 BuildGroceriesDisc3Card.Inherits(BuildGroceriesCard);
 function BuildGroceriesDisc3Card(id) {
-	this.Inherits(BuildGroceriesCard,id,103,1);
+	this.Inherits(BuildGroceriesCard,id,103,1,[ {ht:[8,10], pro:15} ], 0);
 }
-BuildGroceriesDisc3Card.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 15;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesSuperMartCard */
 /* ------------------------------------------ */
 BuildGroceriesSuperMartCard.Inherits(BuildGroceriesCard);
 function BuildGroceriesSuperMartCard(id) {
-	this.Inherits(BuildGroceriesCard,id,104,3);
+	this.Inherits(BuildGroceriesCard,id,104,3,[ {ht:[1,4], pro:100}, {ht:[5,7], pro:35}, {ht:[8,10], pro:10} ], 0);
 }
-BuildGroceriesSuperMartCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 4) {
-		profit = 100;
-	}
-	if(field.attachedCard.houseType >= 5 && field.attachedCard.houseType <= 7) {
-		profit = 35;
-	}
-	if(field.attachedCard.houseType >= 8 && field.attachedCard.houseType <= 10) {
-		profit = 10;
-	}
-	return profit;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesBioSmCard */
 /* ------------------------------------------ */
 BuildGroceriesBioSmCard.Inherits(BuildGroceriesCard);
 function BuildGroceriesBioSmCard(id) {
-	this.Inherits(BuildGroceriesCard,id,105,2);
+	this.Inherits(BuildGroceriesCard,id,105,2,[ {ht:[1,2], pro:300}, {ht:[3,5], pro:80} ], 10);
 }
-BuildGroceriesBioSmCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 2) {
-		profit = 300;
-	}
-	if(field.attachedCard.houseType >= 3 && field.attachedCard.houseType <= 5) {
-		profit = 80;
-	}
-	return profit;
-};
-BuildGroceriesBioSmCard.prototype.changeLocalLevel = function(field) {
-	field.localLevel += 10;
-	return true;
-};
 
 /* ------------------------------------------ */
 /* class BuildGroceriesBioLrgCard */
 /* ------------------------------------------ */
 BuildGroceriesBioLrgCard.Inherits(BuildGroceriesCard);
 function BuildGroceriesBioLrgCard(id) {
-	this.Inherits(BuildGroceriesCard,id,106,2);
+	this.Inherits(BuildGroceriesCard,id,106,2,[ {ht:[1,3], pro:250}, {ht:[4,7], pro:75} ], 0);
 }
-BuildGroceriesBioLrgCard.prototype.getProfit = function(field) {
-	var profit = 0;	
-	if(field.attachedCard.houseType >= 1 && field.attachedCard.houseType <= 3) {
-		profit = 250;
-	}
-	if(field.attachedCard.houseType >= 4 && field.attachedCard.houseType <= 7) {
-		profit = 75;
-	}
-	return profit;
-};
 

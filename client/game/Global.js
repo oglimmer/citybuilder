@@ -13,13 +13,21 @@ function Global() {
 	this.serverCommListener = new ServerCommListener();
 	this.fieldPane = new FieldPane();
 	this.turnDoneButton = new Button(this.i18n.button_endRound, this, this.ctx.canvas.width-70, this.ctx.canvas.height-30, null, this.serverCommListener.onTurnDone);	
-	this.switchUiButton = new Button(function() { return UIServices.getUiSwitchButtonText(G.uiMode); }, this, 10, 30, 88, function() { G.uiMode++; if(G.uiMode==4) { G.uiMode = 0; } G.draw(); });
+	this.switchUiButton = new Button(function() { return UIServices.getUiSwitchButtonText(G.uiMode); }, this, 10, 30, 120, function() { 
+		G.uiMode++; 
+		if(G.uiMode==9) { 
+			G.uiMode = 0; 
+		} 
+		G.fieldPane.repaintTypeInfluence();
+		G.draw(); 
+	});
 	this.infoField = new InfoField(this.ctx);
 	this.cardLayouter = new CardLayouter(this.ctx);
 	this.infoBar = new InfoBar();
 	this.auctionPanel = new AuctionPanel();
 	this.availableActions = 0;
 	this.allPlayersData = [];
+	this.incomeReceipt = [];
 
 	this.fieldPane.relocateX = 250;
 	this.fieldPane.relocateY = 125;

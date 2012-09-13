@@ -13,7 +13,7 @@ var RentalCard = basecards.RentalCard;
 /* ------------------------------------------ */
 RemoveBuildingCard.Inherits(RentalCard);
 function RemoveBuildingCard(id,no,removableType) {
-	this.Inherits(RentalCard,id,no,0,FieldType.HOUSE);
+	this.Inherits(RentalCard,id,no,0,FieldType.HOUSE,[],0);
 	this.removableType = removableType;
 }
 RemoveBuildingCard.prototype.prePlay = function() {

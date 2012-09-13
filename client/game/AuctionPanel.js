@@ -11,7 +11,7 @@ function AuctionPanel() {
 		this.cards = [];
 		for(var i = 0 ; i < cards.length ; i++) {
 			var c = cards[i];
-			var card = new AuctionCard(c.id, c.title, c.text, x, y, G.ctx);
+			var card = new AuctionCard(c.id, c.title, c.text, x, y, c.profitConfig, c.range, c.localLevelMod, G.ctx);
 			this.cards.push(card);
 			x += card.width+5;
 		}	

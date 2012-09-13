@@ -13,6 +13,7 @@ function UIElement(item) {
 		this.fillStyleS = null;//color selected
 		this.fillStyleN = null;//color if no selection
 		this.copyFrom(item);
+		this.influenced = 0;
 	}
 }
 UIElement.prototype.cor = function() {
@@ -35,16 +36,24 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 		// Type==HOUSE depends on the UI-mode
 		switch(G.uiMode) {
 			case 0:
-				ctx.fillStyle = this.fillStyleN;
+				ctx.fillStyle = this.fillStyleUi0;
 				break;
+			/*case 1:
+				ctx.fillStyle = this.fillStyleUi1;
+				break;*/
 			case 1:
-				ctx.fillStyle = this.fillStyleUi1
+				ctx.fillStyle = this.fillStyleUi2;
 				break;
 			case 2:
-				ctx.fillStyle = this.fillStyleUi2
+				ctx.fillStyle = this.fillStyleUi3;
 				break;
 			case 3:
-				ctx.fillStyle = this.fillStyleUi3
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 8:
+				ctx.fillStyle = this.fillStyleUi4;
 				break;
 		}
 	} 
@@ -69,6 +78,11 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 1:
 			case 2:
 			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+			case 8:
 				//ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+14);		
 				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType)+","+this.attachedCard.housePopulation,relocateX+this.drawX+3,relocateY+this.drawY+20);
@@ -173,6 +187,22 @@ UIElement.prototype.setBaseFillStyle = function() {
 	}
 
 	if(this.attachedCard != null && this.type == 0) {
+		if(this.attachedCard.houseType <= 1) {
+			this.fillStyleUi0 = "#000000";
+		} else if(this.attachedCard.houseType <= 2) {
+			this.fillStyleUi0 = "#222222";
+		} else if(this.attachedCard.houseType <= 3) {
+			this.fillStyleUi0 = "#444444";
+		} else if(this.attachedCard.houseType <= 5) {
+			this.fillStyleUi0 = "#666666";
+		} else if(this.attachedCard.houseType <= 7) {
+			this.fillStyleUi0 = "#888888";
+		} else if(this.attachedCard.houseType <= 9) {
+			this.fillStyleUi0 = "#AAAAAA";
+		}
+
+		/*
+		// Shows black/white where Gentrification makes sense since the current house-type is below the possible locallevel
 		if(this.attachedCard.houseType > 1 && this.localLevel >= 300
 			|| this.attachedCard.houseType > 2 && this.localLevel >= 100
 			|| this.attachedCard.houseType > 5 && this.localLevel >= 30
@@ -181,10 +211,11 @@ UIElement.prototype.setBaseFillStyle = function() {
 		} else {
 			this.fillStyleUi1 = "#AAAAAA";
 		}
+		*/
 
 		if(this.attachedCard.housePopulation/ UIServices.getMaxPop(this.attachedCard.houseType)<0.5) {
 			this.fillStyleUi2 = "#000000";
-		} else if(this.attachedCard.housePopulation/ UIServices.getMaxPop(this.attachedCard.houseType)<1) {
+		} else if(this.attachedCard.housePopulation/ UIServices.getMaxPop(this.attachedCard.houseType)<0.9) {
 			this.fillStyleUi2 = "#555555";
 		} else {
 			this.fillStyleUi2 = "#AAAAAA";
@@ -237,5 +268,22 @@ UIElement.prototype.setBaseFillStyle = function() {
 				this.fillStyleUi3 = "#000000";
 				break;
 		}
+
+		switch(this.influenced) {
+			case 0:
+				this.fillStyleUi4 = "#000000";
+				break;
+			case 1:
+				this.fillStyleUi4 = "#BBBBBB";
+				break;
+			case 2:
+				this.fillStyleUi4 = "#444444";
+				break;
+			case 3:
+				this.fillStyleUi4 = "#888888";
+				break;
+		}
+
 	}	
 }
+

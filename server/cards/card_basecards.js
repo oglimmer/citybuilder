@@ -55,19 +55,19 @@ Card.forEachField = function(range, field, fields, perField) {
 		}
 	}
 };
-//Card.prototype.play = function() {
-//	return { changedFields : {}, secretPlay : false};
-//}
+
 /* ------------------------------------------ */
 /* class RentalCard */
 /* ------------------------------------------ */
 RentalCard.Inherits(Card);
-function RentalCard(id,no,range,type) {
+function RentalCard(id,no,range,type,profitConfig,localLevelMod) {
 	this.Inherits(Card,id,no);
 	this.range = range;
 	this.type = type;
 	this.actionBit = 1;
 	this.playType = 1;
+	this.profitConfig = profitConfig;
+	this.localLevelMod = localLevelMod;
 }
 RentalCard.prototype.prePlay = function() {
 	return {
@@ -140,5 +140,18 @@ RentalCard.prototype.calcRent = function(field, fields) {
 	logger.debug("[RentalCard.calcRent] Total rent for "+field.attachedCard.title+" ("+field.x+","+field.y+") = "+totalRent);
 	return totalRent;
 };
-
+RentalCard.prototype.getProfit = function(field) {
+	var profit = 0;
+	this.profitConfig.forEach(function(e) {	
+		if((e.ht.length==1 && e.ht[0] == field.attachedCard.houseType) ||
+			(e.ht.length==2 && e.ht[0] <= field.attachedCard.houseType && e.ht[1] >= field.attachedCard.houseType)) {					
+			profit = e.pro;
+		}
+	});
+	return profit;
+};
+RentalCard.prototype.changeLocalLevel = function(field) {
+	field.localLevel += this.localLevelMod;
+	return true;
+};
 
