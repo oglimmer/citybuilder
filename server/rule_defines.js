@@ -29,7 +29,8 @@ var FieldType = {
 	CLOTHING : 3,
 	JEWELERY : 4,
 	ELECTRONIC : 5,
-	LOCALLEVEL : 6
+	LOCALLEVEL : 6,
+	CRIMINAL : 7
 }
 
 var HouseType = {

@@ -58,7 +58,7 @@ var I18n = {
 		gameEnded_winner : 'Winner {0} with ${1}',
 		gameEnded_list : ' got $',
 
-		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Social level diff', 'Restaurant influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services inf.' ],
+		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Social level diff', 'Restaurant influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services inf.', 'Criminals' ],
 		buildStateText: [ 'no build in progress', 'build in progress', 'build done' ],
 		localLevelTextShort_0 : 'Under',
 		localLevelTextShort_1 : 'UnderMidl',
@@ -72,8 +72,8 @@ var I18n = {
 		localLevelText_4 : 'Upper class',
 		houseTypeText : [ '', 'Villa', 'Residence', 'Duplex house', 'Row house', 'Apartment Building', 'Simple Bungalow', 'Small Tower', 'Large Tower', 'Social', 'Ghetto Tower' ],
 		houseTypeTextShort : [ '', 'Villa', 'Resid', 'Duplx', 'Rowh', 'Apatm', 'Bunga', 'Sm To', 'Lg To', 'Social', 'Ghetto'],
-		fieldType : ['U', 'H', 'R', 'G', 'C', 'J', 'E', 'P'],
-		fieldTypeLong : ['Occupied', 'House', 'Restaurant', 'Groceries', 'Clothing', 'Jewelery', 'Electronic', 'Public Services'],
+		fieldType : ['U', 'H', 'R', 'G', 'C', 'J', 'E', 'P', 'X'],
+		fieldTypeLong : ['Occupied', 'House', 'Restaurant', 'Groceries', 'Clothing', 'Jewelery', 'Electronic', 'Public Services', 'Criminals'],
 
 		c_all_housetypes : 'alle Haustypen',
 
@@ -200,15 +200,6 @@ var I18n = {
 		c602_1 : 'Feuerwehrstation',
 		c602_2 : 'Baue eine "Feuerwehrstation" anstelle eines beliebigen Wohnhauses.',
 
-		c603_1 : 'Dealer auf dem Spielplatz',
-		c603_2 : 'Einem Wohnfeld deiner Wahl wird zum Umschlagsplatz für Drogendealer. Kann nur auf ein {9,10} Wohnfeld gespielt werden.',
-
-		c604_1 : 'Bordell',
-		c604_2 : 'In einem Wohnfeld deiner Wahl wird ein Bordell eröffnet. Kann nur auf ein {7,10} Wohnfeld gespielt werden.',
-
-		c605_1 : 'Edel Bordell',
-		c605_2 : 'In einem Wohnfeld deiner Wahl wird ein Edel Bordell eröffnet. Kann nur auf ein {1,4} Wohnfeld gespielt werden.',
-
 		c700_1 : 'Spaß am Kochen',
 		c700_2 : 'Die Leute haben wieder Spaß am Kochen. Wähle ein Restaurant und entferne es.',
 
@@ -226,6 +217,15 @@ var I18n = {
 
 		c705_1 : 'Haushaltsdefizit',
 		c705_2 : 'Kein Geld im öffentlichen Haushalt. Wähle ein Polizeitrevier, Feuerwehrstation oder Krankenhaus und entferne es.',
+
+		c800_1 : 'Dealer auf dem Spielplatz',
+		c800_2 : 'Einem Wohnfeld deiner Wahl wird zum Umschlagsplatz für Drogendealer. Kann nur auf ein {9,10} Wohnfeld gespielt werden.',
+
+		c801_1 : 'Bordell',
+		c802_2 : 'In einem Wohnfeld deiner Wahl wird ein Bordell eröffnet. Kann nur auf ein {7,10} Wohnfeld gespielt werden.',
+
+		c802_1 : 'Edel Bordell',
+		c802_2 : 'In einem Wohnfeld deiner Wahl wird ein Edel Bordell eröffnet. Kann nur auf ein {1,4} Wohnfeld gespielt werden.',
 
 	}	
 }

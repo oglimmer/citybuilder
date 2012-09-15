@@ -5,6 +5,9 @@ Function.prototype.Inherits = function(parent) {
 	this.prototype.parent = parent.prototype;
 };
 
+/* const */
+var NUMBER_OF_FIELD_TYPES = 8;
+
 /* global variables and functions */
 var socket = null;
 var G = null;

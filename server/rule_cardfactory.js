@@ -11,8 +11,9 @@ var CardFactory = {
 	],
 	availCards1 : [
 		[500,25],[501,15],[502,0],[503,0],[504,0],[505,25],
-		[600,7],[601,7],[602,7],[603,5],[603,8],[604,5],[605,5],
-		[700, 4],[701, 4],[702, 4],[703, 4],[704, 4],[705, 4]
+		[600,7],[601,7],[602,7],
+		[700, 4],[701, 4],[702, 4],[703, 4],[704, 4],[705, 4],
+		[800,5],[801,8],[802,5]
 	],
 	classNames : {			
 		id0: "BuildRestaurantItaSmCard",
@@ -56,15 +57,15 @@ var CardFactory = {
 		id600: "BuildLocalLevelPoliceCard",
 		id601: "BuildLocalLevelHospitalCard",
 		id602: "BuildLocalLevelFirestationCard",
-		id603: "AddCriminals1Card",
-		id604: "AddCriminals2Card",
-		id605: "AddCriminals3Card",
 		id700: "RemoveFoodCard",
 		id701: "RemoveClothingCard",
 		id702: "RemoveGroceriesCard",
 		id703: "RemoveJeweleryCard",
-		id705: "RemoveElectronicCard",
-		id704: "RemoveLocalLevelCard"
+		id704: "RemoveElectronicCard",
+		id705: "RemoveLocalLevelCard",
+		id800: "AddCriminals1Card",
+		id801: "AddCriminals2Card",
+		id802: "AddCriminals3Card"
 	},
 	createCard : function(id, no) {
 		var className = this.classNames["id"+no];

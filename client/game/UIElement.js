@@ -38,21 +38,14 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 0:
 				ctx.fillStyle = this.fillStyleUi0;
 				break;
-			/*case 1:
-				ctx.fillStyle = this.fillStyleUi1;
-				break;*/
 			case 1:
 				ctx.fillStyle = this.fillStyleUi2;
 				break;
 			case 2:
 				ctx.fillStyle = this.fillStyleUi3;
 				break;
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-			case 8:
+			default:
+				/* 3-NUMBER_OF_FIELD_TYPES belong to fieldtype influences */
 				ctx.fillStyle = this.fillStyleUi4;
 				break;
 		}
@@ -79,12 +72,8 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 1:
 			case 2:
 				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+3,relocateY+this.drawY+38);
-			case 3:
-			case 4:
-			case 5:
-			case 6:
-			case 7:
-			case 8:
+			default:
+				/* from here we have the field-type influences */
 				//ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+14);		
 				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType)+","+this.attachedCard.housePopulation,relocateX+this.drawX+3,relocateY+this.drawY+20);
 				break;
@@ -167,6 +156,9 @@ UIElement.prototype.setBaseFillStyle = function() {
 			break;
 		case 6:/*LOCALLEVEL*/
 			this.fillStyleN = '#8888FF';
+			break;
+		case 7:/*CRIMINAL*/
+			this.fillStyleN = '#FF88FF';
 			break;
 	}
 	this.fillText = UIServices.getFieldType(this.type);

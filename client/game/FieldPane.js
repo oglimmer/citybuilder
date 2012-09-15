@@ -149,8 +149,8 @@ function FieldPane() {
 		}
 	}
 
-	this.repaintTypeInfluence = function() {
-		if(G.uiMode>=3&&G.uiMode<=8) {
+	this.repaintTypeInfluence = function() {	
+		if(G.uiMode>=3&&G.uiMode<=NUMBER_OF_FIELD_TYPES+1) {
 			this.calcRanges(G.uiMode-2);
 		}		
 	}
