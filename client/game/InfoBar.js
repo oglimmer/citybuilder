@@ -36,6 +36,11 @@ function InfoBar() {
 				var ir = G.incomeReceipt[i];
 				ctx.fillText(ir[0]+" got $" + UIServices.addCommas(Math.floor(ir[1]))+" from "+G.i18n[ir[2]]+" ("+ir[3]+","+ir[4]+")", 340, 130+i*12);
 			}
+			ctx.fillText(G.i18n.infoBar_last_bids, 620, 115);
+			for (var i = 0; i < G.lastBids.length; i++) {
+				var bids = G.lastBids[i];
+				ctx.fillText(bids.playerName+" bid $" + UIServices.addCommas(Math.floor(bids.bid))+" and paid $"+UIServices.addCommas(Math.floor(bids.cost)), 630, 130+i*12);
+			}
 		}
 	};
 	this.onclick = function(x, y) {

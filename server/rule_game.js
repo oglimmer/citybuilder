@@ -191,18 +191,32 @@ Game.prototype.processAuctionSelect = function(allPlayers) {
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(this, null);
 	var self = this;
+	var lastBiddings = [];
+	allPlayers.forEach(function(pl) {
+		var player = pl.value;
+		var bid = self.biddings[player._id];
+		if(typeof(bid) === 'number') {
+			// the last bid (which pays $0) is not processed, therefore we dont have originalBid and acutalCost
+			lastBiddings.push({playerName : player.playerName, bid : bid,cost:0});
+		} else {
+			lastBiddings.push({playerName : player.playerName, bid : bid.originalBid, cost : bid.acutalCost});
+		}
+	});
 	allPlayers.forEach(function(player) {
 		var psoc = require('./socket.js')(player.value);	
-		psoc.sentshowFieldPane({ gameState : self.gameState });
+		psoc.sentshowFieldPane({ gameState : self.gameState, lastBids : lastBiddings });
 	});
 }
 
-Game.prototype.payBid = function(playerIds, allPlayers, part, biddingsTmp) {
+Game.prototype.payBid = function(playerIds, allPlayers, part) {
 	var PlayerManager = require("./rule_playermanager.js");
+	var self = this;
 	playerIds.forEach(function(pId) {
 		var player = allPlayers.getPlayerById(pId);
-		var cost = biddingsTmp[pId] * part;
-		logger.debug("[payBid] Player "+player.playerName+" paid "+biddingsTmp[pId]+" by "+part+"="+cost);
+		var bid = self.biddings[pId];
+		var cost = bid * part;
+		self.biddings[pId] = {originalBid: bid, acutalCost: cost};
+		logger.debug("[payBid] Player "+player.playerName+" bid "+bid+" by "+part+"="+cost);
 		player.money -= cost;
 		PlayerManager.storePlayer(player, null);		
 	});
@@ -220,12 +234,12 @@ Game.prototype.processAuctionBid = function(allPlayers) {
 	});
 	// order by bid and create turn order
 	this.auctionTakeOrder = [];
-	var biddingsTmp = JSON.parse(JSON.stringify(this.biddings));
-	while(Object.keys(this.biddings).length !== 0) {
+	var tmpBiddings = JSON.parse(JSON.stringify(this.biddings)); // deep-copy
+	while(Object.keys(tmpBiddings).length !== 0) {
 		var maxBid = -1;
 		var maxBidders;
-		for(var playerId in this.biddings) {
-			var bid = parseInt(this.biddings[playerId]);
+		for(var playerId in tmpBiddings) {
+			var bid = parseInt(tmpBiddings[playerId]);
 			if(maxBid < bid) {
 				maxBid = bid;
 				maxBidders = [playerId];
@@ -233,18 +247,17 @@ Game.prototype.processAuctionBid = function(allPlayers) {
 				maxBidders.push(playerId);
 			}
 		}
-		var self = this;
 		maxBidders.forEach(function(oneMaxBidder) {
-			delete self.biddings[oneMaxBidder];	
+			delete tmpBiddings[oneMaxBidder];	
 		});
 		this.auctionTakeOrder.push(maxBidders);
 	}
 	// calc final bid cost and subtract money
-	this.payBid(this.auctionTakeOrder[0], allPlayers, 1, biddingsTmp);
+	this.payBid(this.auctionTakeOrder[0], allPlayers, 1);
 	for(var i = 1 ; i < this.auctionTakeOrder.length-1 ; i++) {
 		var max = this.auctionTakeOrder.length-1;
 		var part = (1/max)*(max-i);
-		this.payBid(this.auctionTakeOrder[i], allPlayers, part, biddingsTmp);
+		this.payBid(this.auctionTakeOrder[i], allPlayers, part);		
 	}
 
 	this.doNextAuctionPickCard(allPlayers);

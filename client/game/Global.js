@@ -20,6 +20,7 @@ function Global() {
 	this.availableActions = 0;
 	this.allPlayersData = [];
 	this.incomeReceipt = [];
+	this.lastBids = [];
 
 	this.fieldPane.relocateX = 250;
 	this.fieldPane.relocateY = 125;

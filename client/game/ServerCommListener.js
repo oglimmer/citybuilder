@@ -142,6 +142,10 @@ function ServerCommListener() {
 			G.cardLayouter.toggle(lastCard);
 		}
 
+		if(typeof(msg.lastBids) !== 'undefined') {
+			G.lastBids = msg.lastBids;
+		}
+
 		G.draw();
 	};
 	this.postAuctionSelection = function(msg) {
