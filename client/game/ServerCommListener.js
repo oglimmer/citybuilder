@@ -97,7 +97,12 @@ function ServerCommListener() {
 			}
 		} else if(G.gameState == 3 || G.gameState == 4) {
 			var selectedCardId = G.auctionPanel.currentlyClicked !== null ? G.auctionPanel.currentlyClicked.id : null;
-			socket.emit('postAuctionSelect_req', { playerId : G.playerId, cardId: selectedCardId });
+			if(selectedCardId!==null || confirm(G.i18n.error_no_card_selected)) {
+				socket.emit('postAuctionSelect_req', { playerId : G.playerId, cardId: selectedCardId });
+			} else {
+				$('#overlay').hide();
+				G.turnDoneButton.enabled = true;							
+			}
 		}
 	};
 	this.auctionCardRemove = function(msg) {

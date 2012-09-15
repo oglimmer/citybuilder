@@ -10,6 +10,7 @@ var I18n = {
 		error_field_already_occupied : 'The field you selected is already occupied. Choose another!',
 		error_field_is_not_occupied : 'The field you selected is not occupied. Choose another!',
 		error_housetype_too_low : 'The field you selected has a too low house-type. Choose another!',
+		error_no_card_selected : 'Continue without picking a card?',
 
 		"City Builder": 'City Builder',
 		"A card based multi player board game": 'A card based multi player board game',
@@ -173,10 +174,10 @@ var I18n = {
 		c401_2 : 'Baue einen "Elektronikmarkt" anstelle eines beliebigen Wohnhauses.',
 
 		c500_1 : 'Gentrifizierung',
-		c500_2 : 'Wähle ein Wohnhauses das gentrifiziert werden soll.',
+		c500_2 : 'Wähle ein Wohnhaus das gentrifiziert werden soll.',
 
 		c501_1 : 'Bevölkerungszuwachs',
-		c501_2 : 'Wähle ein Wohnhauses das mehr Bevökerung bekommen soll.',
+		c501_2 : 'Wähle ein Wohnhaus das mehr Bevökerung bekommen soll.',
 
 		c502_1 : 'Stadtwachsum',
 		c502_2 : 'Die Stadt wächst um 3x3 Blöcke.',
