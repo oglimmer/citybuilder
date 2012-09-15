@@ -50,10 +50,11 @@ CanvasManager.prototype.onclick = function(x, y) {
 		for(var i = this.elements.length - 1 ; i>= 0 ; i--) {
 			var ele = this.elements[i][2];
 			if(typeof(ele.onclick) === 'function' && ele.onclick(x,y)) {
-				return;
+				return true;
 			}
 		}
 	}
+	return false;
 };
 
 CanvasManager.prototype.getButton = function(x,y) {
@@ -83,14 +84,15 @@ CanvasManagerUIMode.prototype.onclick = function(x,y) {
 		for(var i = this.elements.length - 1 ; i>= 0 ; i--) {
 			var ele = this.elements[i][2];
 			if(typeof(ele.onclick) === 'function' && ele.onclick(x,y)) {
-				if(typeof(this.currrentlyClicked) !== 'undefined') {
+				if(typeof(this.currrentlyClicked) !== 'undefined' && this.currrentlyClicked !== ele) {
 					this.currrentlyClicked.clicked = false;
 				}
 				this.currrentlyClicked = ele;
-				return;
+				return true;
 			}
 		}
 	}
+	return false;
 }
 CanvasManagerUIMode.prototype.setClicked = function(ele) {
 	this.currrentlyClicked = ele;
