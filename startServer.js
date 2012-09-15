@@ -20,9 +20,12 @@ nano.db.destroy(Config.dbSchema, function() {
     		"playersByGameId": {
     			"map": "function(doc) { if(doc.clazz == 'Player') emit(doc.gameId, doc);}"
     		},
-    		"playersBySocketId": {
-    			"map": "function(doc) { if(doc.clazz == 'Player') emit(doc.socketId, doc);}"
-    		}
+            "playersBySocketId": {
+                "map": "function(doc) { if(doc.clazz == 'Player') emit(doc.socketId, doc);}"
+            },
+            "activePlayers": {
+                "map": "function(doc) { if(doc.clazz == 'Player' && doc.socketId != null) emit(1,1);}"
+            }
     	}
     });
   });

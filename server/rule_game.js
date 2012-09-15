@@ -160,8 +160,10 @@ Game.prototype.checkForNextTurn = function() {
 				self.processAuctionBid(allPlayers);
 			} else if(self.gameState == 3) {
 				if(self.auctionTakeOrder.length > 0) {
+					// no all players picked their card yet
 					self.processPostAuctionSelection();
 				} else {
+					// all cards picked, go to next turn
 					self.processAuctionSelect(allPlayers);
 				}
 			} else if(self.gameState == 4) {
@@ -209,7 +211,7 @@ Game.prototype.payBid = function(playerIds, allPlayers, part, biddingsTmp) {
 Game.prototype.processAuctionBid = function(allPlayers) {
 	this.gameState = 3;
 	var self = this;
-	// if a player left the game, it could be that the bidding is 0. If he already rejoined add a $0 bid
+	// if a player had left the game and rejoined again his bidding is undefined. So tread this as $0.
 	allPlayers.forEach(function(pla) {
 		var player = pla.value;
 		if(player.socketId !== null && typeof(self.biddings[player._id]) === 'undefined') {
@@ -245,17 +247,24 @@ Game.prototype.processAuctionBid = function(allPlayers) {
 		this.payBid(this.auctionTakeOrder[i], allPlayers, part, biddingsTmp);
 	}
 
-	this.processPostAuctionSelection(allPlayers);
+	this.doNextAuctionPickCard(allPlayers);
 }
 
-Game.prototype.processPostAuctionSelection = function(allPlayers) {
+Game.prototype.processPostAuctionSelection = function() {
+	var PlayerManager = require("./rule_playermanager.js");
+	var self = this;
+	PlayerManager.getPlayers(this._id, null, function(allPlayers) {			
+		self.doNextAuctionPickCard(allPlayers);
+	});
+}
+
+Game.prototype.doNextAuctionPickCard = function(allPlayers) {
 	/* readies the next player(s) for the given bid
 	 * => puts them into playersOnTurn, and send message over */
 	var nextPlayerIds = this.auctionTakeOrder.shift();
-	var self = this;
 
 	if(typeof(nextPlayerIds) === 'undefined') {
-		console.trace("[processPostAuctionSelection] nextPlayerIds is undefined")
+		console.trace("[doNextAuctionPickCard] nextPlayerIds is undefined")
 	}
 
 	this.playersOnTurn = JSON.parse(JSON.stringify(nextPlayerIds)); // deep-copy
@@ -263,18 +272,11 @@ Game.prototype.processPostAuctionSelection = function(allPlayers) {
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(this, null);
 
+	var self = this;
 	nextPlayerIds.forEach(function(playerId) {
-		if(typeof(allPlayers) !== 'undefined') {
-			var player = allPlayers.getPlayerById(playerId);
-			var psoc = require('./socket.js')(player);	
-			psoc.sendPostAuctionSelection({ gameState : self.gameState, money: player.money });					
-		} else {
-			var PlayerManager = require("./rule_playermanager.js");
-			PlayerManager.getPlayer(playerId, function(player) {			
-				var psoc = require('./socket.js')(player);	
-				psoc.sendPostAuctionSelection({ gameState : self.gameState, money: player.money });		
-			});
-		}
+		var player = allPlayers.getPlayerById(playerId);
+		var psoc = require('./socket.js')(player);	
+		psoc.sendPostAuctionSelection({ gameState : self.gameState, money: player.money });					
 	});
 }
 
@@ -353,15 +355,6 @@ Game.prototype.sendAuctionToPlayer = function(player, changedFields, incomeRecei
 	PlayerManager.storePlayer(player,null, function(savedPlayer) {
 		require('./socket.js')(savedPlayer).startAuction(newTurnData);
 	});	
-}
-
-Game.prototype.processNextTurnDoneLLLLL = function(allPlayers, changedFields) {
-	var self = this;
-	allPlayers.forEach(function(doc) {
-		self.sendNewTurnDataForPlayer(doc.value, changedFields);
-	});
-	var GameManager = require("./rule_gamemanager.js");
-	GameManager.storeGame(self, null);		
 }
 
 Game.prototype.resetSuppliesAndCalcBuildstate = function(changedFields) {
