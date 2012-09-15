@@ -1,9 +1,4 @@
-/* Needed for Inheritence */
-Function.prototype.Inherits = function(parent) {
-	this.prototype = new parent();
-	this.prototype.constructor = this;
-	this.prototype.parent = parent.prototype;
-};
+
 
 /* ------------------------------------------ */
 /* class BaseCard */
@@ -22,7 +17,7 @@ BaseCard.prototype.drawText = function(ctx) {
 	if(typeof(this.profitConfig) !== 'undefined') {
 		for(var i = 0 ; i < this.profitConfig.length ; i++) {
 			var pf = this.profitConfig[i];
-			text += " $"+pf.pro+" pPpW für ";
+			text += " ^$"+pf.pro+" pPpW für ";
 			if(pf.ht.length == 1) {
 				text += UIServices.getHouseTypeText(pf.ht[0]);
 			} else {
@@ -39,13 +34,7 @@ BaseCard.prototype.drawText = function(ctx) {
 			}
 			text += ".";
 		}
-	}	
-	if(typeof(this.range) !== 'undefined') {
-		text += " Einflussradius:"+this.range+".";
-	}	
-	if(typeof(this.localLevelMod) !== 'undefined' && this.localLevelMod != 0) {
-		text += " Soziallevel:"+this.localLevelMod+".";
-	}
+	}		
 	if(text.match(/\{.*\}/)) {
 		var originalText = text;
 		var pattern = /{[0-9]+,[0-9]+}/g;
@@ -80,8 +69,14 @@ BaseCard.prototype.drawText = function(ctx) {
 	var line = "";
 	var tmpY = this.y+28;
 
-	ctx.font = '11px sans-serif';	
+	//ctx.font = '11px sans-serif';	
 	for ( var n = 0; n < words.length; n++) {
+		if(words[n].charAt(0) == '^') {
+			ctx.fillText(line, this.x+5, tmpY);			
+			tmpY += 18; //lineHeight			
+			line = "";
+			words[n] = words[n].substring(1);
+		}
 		var testLine = line + words[n] + " ";
 		var metrics = ctx.measureText(testLine);
 		var testWidth = metrics.width;
@@ -94,7 +89,7 @@ BaseCard.prototype.drawText = function(ctx) {
 		}
 	}
 	ctx.fillText(line, this.x+5, tmpY);
-	ctx.font = '10px sans-serif';	
+	//ctx.font = '10px sans-serif';	
 }
 BaseCard.prototype.onclick = function(x, y) {   
 	return this.atPos(x,y);
@@ -110,7 +105,7 @@ BaseCard.prototype.atPos = function(x, y) {
 /* class Card */
 /* ------------------------------------------ */
 Card.Inherits(BaseCard);
-function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,ctx) {
+function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,type,ctx) {
 	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
@@ -120,34 +115,13 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 	this.profitConfig = profitConfig;
 	this.range = range;
 	this.localLevelMod = localLevelMod;
+	this.type = type;
 	this.x = null;
 	this.height = 20;
 	this.y = ctx.canvas.height-this.height;
-	this.width = 220;
+	this.width = 180;
 	this.expanded = false;
 	this.clicked = false;
-	this.draw = function(ctx) {  
-		ctx.beginPath();
-		ctx.rect(this.x,this.y,this.width,this.height);
-		if(this.clicked) {
-			ctx.fillStyle = '#FFFFFF';
-		} else {
-			ctx.fillStyle = '#2ED6FF';
-		}		
-		ctx.fill();
-		ctx.stroke();
-		if(this.expanded) {
-			ctx.moveTo(this.x,this.y+15);
-        	ctx.lineTo(this.x+this.width,this.y+15);
-        	ctx.lineWidth = 1;
-        	ctx.stroke();
-        }
-		ctx.fillStyle = '#000000';
-		ctx.fillText(G.i18n[this.title]/*+" ("+this.id+")"*/, this.x+5, this.y+12);
-		if(this.expanded) {
-			this.drawText(ctx);
-		}
-	};   
 	Card.onDiscardClicked = function(card) {
 		G.serverCommListener.onCardDiscard(card);
 		G.cardLayouter.cards.removeByObj(card);
@@ -171,7 +145,7 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 			this.height = 20;
 			this.y = ctx.canvas.height-this.height;
 		} else {
-			this.height = 200;
+			this.height = 220;
 			this.y = ctx.canvas.height-this.height;
 			var self = this;	
 			if((G.availableActions&this.actionBit)==this.actionBit) {
@@ -181,13 +155,47 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 		}		
 		this.expanded = !this.expanded;
 	};	
+	this.draw = function(ctx) {  
+		ctx.font = '12px Arial';
+		ctx.beginPath();
+		ctx.rect(this.x,this.y,this.width,this.height);
+		if(this.clicked) {
+			ctx.fillStyle = '#FFFFFF';
+		} else {
+			ctx.fillStyle = '#2ED6FF';
+		}		
+		ctx.fill();
+		ctx.stroke();
+		if(this.expanded) {
+			ctx.moveTo(this.x,this.y+15);
+        	ctx.lineTo(this.x+this.width,this.y+15);
+        	ctx.lineWidth = 1;
+        	ctx.stroke();
+        }
+		ctx.fillStyle = '#000000';
+		ctx.fillText(G.i18n[this.title]/*+" ("+this.id+")"*/, this.x+5, this.y+12);
+		if(typeof(this.type) !== 'undefined') {
+			ctx.fillText(UIServices.getFieldType(this.type), this.x+this.width-ctx.measureText(this.type).width-4, this.y+12);
+		}
+		if(this.expanded) {
+			this.drawText(ctx);
+			this.drawText(ctx);
+			if(typeof(this.range) !== 'undefined') {
+				ctx.fillText("E:"+this.range, this.x+5, this.y+this.height-5);
+			}	
+			if(typeof(this.localLevelMod) !== 'undefined' && this.localLevelMod != 0) {
+				var t = "S:"+this.localLevelMod;
+				ctx.fillText(t, this.x+this.width-ctx.measureText(t).width-4, this.y+this.height-5);
+			}		
+		}
+	};   	
 }
 
 /* ------------------------------------------ */
 /* class AuctionCard */
 /* ------------------------------------------ */
 AuctionCard.Inherits(BaseCard);
-function AuctionCard(id,title,text,x,y,profitConfig,range,localLevelMod,ctx) {
+function AuctionCard(id,title,text,x,y,profitConfig,range,localLevelMod,type,ctx) {
 	this.Inherits(BaseCard);
 	this.id = id;
 	this.title = title;
@@ -195,13 +203,15 @@ function AuctionCard(id,title,text,x,y,profitConfig,range,localLevelMod,ctx) {
 	this.profitConfig = profitConfig;
 	this.range = range;
 	this.localLevelMod = localLevelMod;
+	this.type = type;
 	this.x = x;
 	this.y = y;
-	this.height = 160;
-	this.width = 160;
+	this.height = 220;
+	this.width = 180;
 	this.clicked = false;
 	this.removed = false;
 	this.draw = function(ctx) {  
+		ctx.font = '12px Arial';	
 		ctx.beginPath();
 		ctx.rect(this.x,this.y,this.width,this.height);
 		if(this.clicked) {
@@ -219,6 +229,16 @@ function AuctionCard(id,title,text,x,y,profitConfig,range,localLevelMod,ctx) {
     	ctx.stroke();
 		ctx.fillStyle = '#000000';
 		ctx.fillText(G.i18n[this.title]/*+" ("+this.id+")"*/, this.x+5, this.y+12);
+		if(typeof(this.type) !== 'undefined') {
+			ctx.fillText(UIServices.getFieldType(this.type), this.x+this.width-ctx.measureText(this.type).width-4, this.y+12);
+		}
 		this.drawText(ctx);
+		if(typeof(this.range) !== 'undefined') {
+			ctx.fillText("E:"+this.range, this.x+5, this.y+this.height-5);
+		}	
+		if(typeof(this.localLevelMod) !== 'undefined' && this.localLevelMod != 0) {
+			var t = "S:"+this.localLevelMod;
+			ctx.fillText(t, this.x+this.width-ctx.measureText(t).width-4, this.y+this.height-5);
+		}		
 	};    
 }

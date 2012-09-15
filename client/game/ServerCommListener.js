@@ -75,7 +75,7 @@ function ServerCommListener() {
 		console.log("Got card : #" + data.cards.length);
 		for(var i = 0 ; i < data.cards.length ; i++) {
 			var card = data.cards[i];		
-			var newCard = new Card(card.id, card.title, card.text, card.actionBit, card.playType, card.profitConfig, card.range, card.localLevelMod, G.ctx);	
+			var newCard = new Card(card.id, card.title, card.text, card.actionBit, card.playType, card.profitConfig, card.range, card.localLevelMod, card.type, G.ctx);	
 			G.cardLayouter.cards.push(newCard);	
 			if(data.cards.length == 1) {
 				G.cardLayouter.draw(G.ctx); // this calculates the x pos for the new card which is needed for the button's pos in toggle()

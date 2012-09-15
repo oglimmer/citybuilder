@@ -38,6 +38,12 @@ UIServices.getHouseTypeText = function(houseType) {
 UIServices.getHouseTypeTextShort = function(houseType) {
 	return G.i18n.houseTypeTextShort[houseType];
 }
+UIServices.getFieldType = function(type) {
+	return G.i18n.fieldType[type+1];
+}
+UIServices.getFieldTypeLong = function(type) {
+	return G.i18n.fieldTypeLong[type+1];
+}
 UIServices.getMaxPop = function(houseType) {
 	var maxPop;
 	switch(houseType) {

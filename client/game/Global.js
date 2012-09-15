@@ -13,14 +13,6 @@ function Global() {
 	this.serverCommListener = new ServerCommListener();
 	this.fieldPane = new FieldPane();
 	this.turnDoneButton = new Button(this.i18n.button_endRound, this, this.ctx.canvas.width-70, this.ctx.canvas.height-30, null, this.serverCommListener.onTurnDone);	
-	this.switchUiButton = new Button(function() { return UIServices.getUiSwitchButtonText(G.uiMode); }, this, 10, 30, 120, function() { 
-		G.uiMode++; 
-		if(G.uiMode==9) { 
-			G.uiMode = 0; 
-		} 
-		G.fieldPane.repaintTypeInfluence();
-		G.draw(); 
-	});
 	this.infoField = new InfoField(this.ctx);
 	this.cardLayouter = new CardLayouter(this.ctx);
 	this.infoBar = new InfoBar();
@@ -34,7 +26,16 @@ function Global() {
 	
 	this.canvasManagerField = new CanvasManager();
 	this.canvasManagerField.add(0, this.fieldPane);
-	this.canvasManagerField.add(65, this.switchUiButton);
+
+	this.canvasManagerUiMode = new CanvasManagerUIMode();
+	for(var i = 0 ; i < 9 ; i++) {
+		var uiButton = new Button(this.i18n.uiSwitchButtonText_mode[i], this, 10+(105*i), 30, 100, function(parent, self) { self.clicked = true; G.uiMode = self.contextParam ; G.fieldPane.repaintTypeInfluence(); G.draw(); }, i);
+		if(i==0) {
+			this.canvasManagerUiMode.setClicked(uiButton);
+		}
+		this.canvasManagerUiMode.add(65, uiButton);		
+	}
+	this.canvasManagerField.add(65, this.canvasManagerUiMode);
 	this.canvasManagerField.add(70, this.infoField);
 
 	this.canvasManagerAuction = new CanvasManager();

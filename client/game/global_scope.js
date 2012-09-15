@@ -1,5 +1,11 @@
-/* global scope variable, functions */
+/* Needed for Inheritence */
+Function.prototype.Inherits = function(parent) {
+	this.prototype = new parent();
+	this.prototype.constructor = this;
+	this.prototype.parent = parent.prototype;
+};
 
+/* global variables and functions */
 var socket = null;
 var G = null;
 var GL = null;

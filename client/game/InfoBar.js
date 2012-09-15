@@ -13,9 +13,9 @@ function InfoBar() {
 		ctx.fill();
 		ctx.stroke();
 		ctx.fillStyle = '#000000';
-		ctx.fillText(G.i18n.infoBar_cash+": $" + UIServices.addCommas(Math.floor(this.money)), 5, 12);
-		ctx.fillText(G.i18n.infoBar_playernum+":" + this.playerNumber/*+" / "+G.gameState*/, 150, 12);
-		ctx.fillText(G.i18n.infoBar_date+": "+this.currentDate, ctx.canvas.width-170, 12);
+		ctx.fillText(G.i18n.infoBar_cash+": $" + UIServices.addCommas(Math.floor(this.money)), 5, 13);
+		ctx.fillText(G.i18n.infoBar_playernum+":" + this.playerNumber/*+" / "+G.gameState*/, 150, 13);
+		ctx.fillText(G.i18n.infoBar_date+": "+this.currentDate, ctx.canvas.width-170, 13);
 		if(this.showLargeInfo) {
 			this.width = ctx.canvas.width-250;
 			this.height = ctx.canvas.height-200;

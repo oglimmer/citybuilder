@@ -92,7 +92,7 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 1:
 				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType),relocateX+this.drawX+1,relocateY+this.drawY+19);
-				ctx.font= '10px sans-serif';				
+				ctx.font = '12px Arial';
 				break;
 			case 2:
 				ctx.fillText(this.attachedCard.housePopulation,relocateX+this.drawX+12,relocateY+this.drawY+19);
@@ -100,10 +100,10 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 3:
 				ctx.font = '9px Arial';				
 				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+1,relocateY+this.drawY+19);
-				ctx.font = '10px sans-serif';				
+				ctx.font = '12px Arial';			
 				break;*/
 		}
-		ctx.font = '10px sans-serif';						
+		ctx.font = '12px Arial';						
 	} else {
 		ctx.fillText(this.fillText,relocateX+this.drawX+22,relocateY+this.drawY+28);
 	}
@@ -146,45 +146,31 @@ UIElement.prototype.setBaseFillStyle = function() {
 	switch(this.type) {
 		case -1:/*UNKNWON*/
 			this.fillStyleN = '#333333';
-			this.fillText = 'U';
-			this.longText = 'Occupied';
 			break;
 		case 0:/*HOUSE*/
 			this.fillStyleN = '#000000';
-			this.fillText = 'H';
-			this.longText = 'House';
 			break;
 		case 1:/*FOOD*/
 			this.fillStyleN = '#00FF00';
-			this.fillText = 'F';
-			this.longText = 'Food';
 			break;
 		case 2:/*GROCERIES*/
 			this.fillStyleN = '#00FF88';
-			this.fillText = 'G';
-			this.longText = 'Groceries';
 			break;
 		case 3:/*CLOTHING*/
 			this.fillStyleN = '#88FF00';
-			this.fillText = 'C';
-			this.longText = 'Clothing';
 			break;
 		case 4:/*JEWELERY*/
 			this.fillStyleN = '#88FF88';
-			this.fillText = 'J';
-			this.longText = 'Jewelery';
 			break;
 		case 5:/*ELECTRONIC*/
 			this.fillStyleN = '#0088FF';
-			this.fillText = 'E';
-			this.longText = 'Electronic';
 			break;
 		case 6:/*LOCALLEVEL*/
 			this.fillStyleN = '#8888FF';
-			this.fillText = 'P';
-			this.longText = 'Public Services';
 			break;
 	}
+	this.fillText = UIServices.getFieldType(this.type);
+	this.longText = UIServices.getFieldTypeLong(this.type);
 
 	if(this.attachedCard != null && this.type == 0) {
 		if(this.attachedCard.houseType <= 1) {

@@ -57,7 +57,7 @@ var I18n = {
 		gameEnded_winner : 'Winner {0} with ${1}',
 		gameEnded_list : ' got $',
 
-		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Social level differences', 'Food influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services influence' ],
+		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Social level diff', 'Restaurant influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services inf.' ],
 		buildStateText: [ 'no build in progress', 'build in progress', 'build done' ],
 		localLevelTextShort_0 : 'Under',
 		localLevelTextShort_1 : 'UnderMidl',
@@ -71,6 +71,8 @@ var I18n = {
 		localLevelText_4 : 'Upper class',
 		houseTypeText : [ '', 'Villa', 'Residence', 'Duplex house', 'Row house', 'Apartment Building', 'Simple Bungalow', 'Small Tower', 'Large Tower', 'Social', 'Ghetto Tower' ],
 		houseTypeTextShort : [ '', 'Villa', 'Resid', 'Duplx', 'Rowh', 'Apatm', 'Bunga', 'Sm To', 'Lg To', 'Social', 'Ghetto'],
+		fieldType : ['U', 'H', 'R', 'G', 'C', 'J', 'E', 'P'],
+		fieldTypeLong : ['Occupied', 'House', 'Restaurant', 'Groceries', 'Clothing', 'Jewelery', 'Electronic', 'Public Services'],
 
 		c_all_housetypes : 'alle Haustypen',
 

@@ -155,7 +155,7 @@ function FieldPane() {
 		}		
 	}
 
-	this.calcRanges = function(type) {
+	this.calcRanges = function(type) {		
 		for(var i = 0 ; i < this.allElements.length ; i++) {
 			var field = this.allElements[i];
 			if(field.type == 0 ) {
