@@ -44,7 +44,7 @@ function FieldPane() {
 	this.showInfoField = function(field) {
 		G.infoField.visible = !G.infoField.visible;
 		var fieldToUpdate = G.infoField.visible ? field : G.infoField.field;
-		G.infoField.setField(G.infoField.visible?field:null);
+		G.infoField.field = (G.infoField.visible?field:null);
 		if(fieldToUpdate.attachedCard !==null) {
 			var selRange = FieldPane.createSurroundingRange(fieldToUpdate.attachedCard.range);
 			for(var j = 0 ; j < selRange.length ; j++) {

@@ -13,11 +13,16 @@ BaseCard.prototype.Inherits = function(parent) {
 	}
 };
 BaseCard.prototype.drawText = function(ctx) {
-	var text = G.i18n[this.text];
-	if(typeof(this.profitConfig) !== 'undefined') {
-		for(var i = 0 ; i < this.profitConfig.length ; i++) {
-			var pf = this.profitConfig[i];
-			text += " ^$"+pf.pro+" pPpW für ";
+	BaseCard.drawText(ctx, G.i18n[this.text],this.profitConfig,this.x,this.y+28,this.width);
+}
+BaseCard.drawText = function(ctx,text,profitConfig,x,y,width) {
+	if(typeof(profitConfig) !== 'undefined') {
+		for(var i = 0 ; i < profitConfig.length ; i++) {
+			var pf = profitConfig[i];
+			if(text.length > 0 ) {
+				text += " ^";	
+			}
+			text += "$"+pf.pro+" pPpW für ";
 			if(pf.ht.length == 1) {
 				text += UIServices.getHouseTypeText(pf.ht[0]);
 			} else {
@@ -67,28 +72,27 @@ BaseCard.prototype.drawText = function(ctx) {
 	}
 	var words = text.split(" ");
 	var line = "";
-	var tmpY = this.y+28;
 
 	//ctx.font = '11px sans-serif';	
 	for ( var n = 0; n < words.length; n++) {
 		if(words[n].charAt(0) == '^') {
-			ctx.fillText(line, this.x+5, tmpY);			
-			tmpY += 18; //lineHeight			
+			ctx.fillText(line, x+5, y);			
+			y += 18; //lineHeight			
 			line = "";
 			words[n] = words[n].substring(1);
 		}
 		var testLine = line + words[n] + " ";
 		var metrics = ctx.measureText(testLine);
 		var testWidth = metrics.width;
-		if (testWidth > this.width-4) {
-			ctx.fillText(line, this.x+5, tmpY);
+		if (testWidth > width-4) {
+			ctx.fillText(line, x+5, y);
 			line = words[n] + " ";
-			tmpY += 12; //lineHeight
+			y += 12; //lineHeight
 		} else {
 			line = testLine;
 		}
 	}
-	ctx.fillText(line, this.x+5, tmpY);
+	ctx.fillText(line, x+5, y);
 	//ctx.font = '10px sans-serif';	
 }
 BaseCard.prototype.onclick = function(x, y) {   
