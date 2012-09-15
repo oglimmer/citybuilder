@@ -77,10 +77,6 @@ function ServerCommListener() {
 			var card = data.cards[i];		
 			var newCard = new Card(card.id, card.title, card.text, card.actionBit, card.playType, card.profitConfig, card.range, card.localLevelMod, card.type, G.ctx);	
 			G.cardLayouter.cards.push(newCard);	
-			if(data.cards.length == 1) {
-				G.cardLayouter.draw(G.ctx); // this calculates the x pos for the new card which is needed for the button's pos in toggle()
-				G.cardLayouter.toggle(newCard);
-			}
 		}
 	};
 	this.onTurnDone = function() {
@@ -134,6 +130,13 @@ function ServerCommListener() {
 		G.turnDoneButton.enabled = true;
 		G.canvasManagerAuction.enabled = false;
 		G.canvasManagerField.enabled = true;
+
+		if(G.cardLayouter.cards.length > 0) {
+			G.cardLayouter.draw(G.ctx); // this calculates the x pos for the new card which is needed for the button's pos in toggle()
+			var lastCard = G.cardLayouter.cards[G.cardLayouter.cards.length-1];
+			G.cardLayouter.toggle(lastCard);
+		}
+
 		G.draw();
 	};
 	this.postAuctionSelection = function(msg) {

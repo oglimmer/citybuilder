@@ -43,6 +43,14 @@ function InfoBar() {
 			G.serverCommListener.requestAllPlayerData();
 			this.showLargeInfo = !this.showLargeInfo;
 			return true;
+		} else if(this.atPos(x,y) && (G.gameState == 2 || G.gameState == 3)) {
+			if(G.canvasManagerField.enabled) {
+				G.canvasManagerAuction.enabled = true;
+				G.canvasManagerField.enabled = false;
+			} else {
+				G.canvasManagerAuction.enabled = false;
+				G.canvasManagerField.enabled = true;
+			}
 		}
 		return false;
 	};

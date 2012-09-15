@@ -147,11 +147,13 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 		} else {
 			this.height = 220;
 			this.y = ctx.canvas.height-this.height;
-			var self = this;	
-			if((G.availableActions&this.actionBit)==this.actionBit) {
-				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this,this.x,this.y-30,null, Card.onPlayClicked));
+			var self = this;
+			if(G.gameState == 1) {
+				if((G.availableActions&this.actionBit)==this.actionBit) {
+					G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this,this.x,this.y-30,null, Card.onPlayClicked));
+				}
+				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this,this.x+70,this.y-30,null, Card.onDiscardClicked));
 			}
-			G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this,this.x+70,this.y-30,null, Card.onDiscardClicked));
 		}		
 		this.expanded = !this.expanded;
 	};	
