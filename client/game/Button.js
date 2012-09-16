@@ -13,7 +13,7 @@ function Button(label,parent, x, y, width, onclick, contextParam) {
 	this.draw = function(ctx) {
 		ctx.beginPath();
 		ctx.rect(this.x,this.y,this.width,this.height);
-		ctx.fillStyle = this.clicked ? '8ED6BB' : '#8ED6FF';
+		ctx.fillStyle = this.clicked ? '#8ED6BB' : '#8ED6FF';
 		ctx.fill();
 		ctx.stroke();
 		ctx.fillStyle = this.enabled ? '#000000' : '#6ED6FF';
