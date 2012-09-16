@@ -216,9 +216,18 @@ Game.prototype.payBid = function(playerIds, allPlayers, part) {
 		var bid = self.biddings[pId];
 		var cost = bid * part;
 		self.biddings[pId] = {originalBid: bid, acutalCost: cost};
-		logger.debug("[payBid] Player "+player.playerName+" bid "+bid+" by "+part+"="+cost);
+		logger.debug("[payBid] Player "+player.playerName+" bid $"+bid+" by "+part+"= $"+cost);
 		player.money -= cost;
 		PlayerManager.storePlayer(player, null);		
+	});
+	allPlayers.forEach(function(pl) {
+		var player = pl.value;
+		if(player.money < 0) {
+			// pay interest for debts 
+			var interest= player.money*0.03;
+			logger.debug("[payBid] Player "+player.playerName+" paid $"+interest+" interest");
+			player.money -= interest;
+		}
 	});
 }
 

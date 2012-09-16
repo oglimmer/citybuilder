@@ -187,7 +187,7 @@ module.exports = function(io, logger) {
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayer(data.playerId, function(player) {			
-				if(!isNaN(data.bid) && data.bid >= 0 && data.bid <= player.money) {
+				if(!isNaN(data.bid) && data.bid >= 0 ) {
 					GameManager.getGame(player.gameId, function(game) {					
 						GameManager.storeGame(game, function(gameToPrepare) {
 							gameToPrepare.setBidding(player, data.bid);

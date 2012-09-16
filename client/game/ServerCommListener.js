@@ -88,12 +88,15 @@ function ServerCommListener() {
 			G.cardLayouter.colapse();
 		} else if(G.gameState == 2) {
 			var bid = parseInt($('#bid').val());
-			if(isNaN(bid) || bid <0 || bid > G.infoBar.money) {
+			if(isNaN(bid) || bid <0 ) {
 				$('#overlay').hide();
 				G.turnDoneButton.enabled = true;
-				alert(G.i18n.error_not_enough_money);
-			} else {
+				alert(G.i18n.error_illegal_value);
+			} else if (bid <= G.infoBar.money || confirm(G.i18n.error_not_enough_money)) {
 				socket.emit('auctionBid_req', { playerId : G.playerId, bid: bid });
+			} else {
+				$('#overlay').hide();
+				G.turnDoneButton.enabled = true;											
 			}
 		} else if(G.gameState == 3 || G.gameState == 4) {
 			var selectedCardId = G.auctionPanel.currentlyClicked !== null ? G.auctionPanel.currentlyClicked.id : null;
@@ -111,6 +114,11 @@ function ServerCommListener() {
 	}
 	this.startAuction_resp = function(msg) {
 		$('#overlay').hide();
+
+		msg.incomeReceipt.sort(function(a,b) {
+			return b[1]-a[1];
+		});
+
 		/*  */		
 		G.gameState = msg.gameState;
 		self.infoBar(msg.infoBar);
@@ -143,6 +151,9 @@ function ServerCommListener() {
 		}
 
 		if(typeof(msg.lastBids) !== 'undefined') {
+			msg.lastBids.sort(function(a,b) {
+				return b.cost-a.cost;
+			});			
 			G.lastBids = msg.lastBids;
 		}
 

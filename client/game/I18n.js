@@ -6,11 +6,12 @@ var I18n = {
 	en : {
 
 		error_noname : "You need to name yourself!",
-		error_not_enough_money : "You don't have that much money!",
+		error_illegal_value : "Please enter a value equal or larger than 0!",
 		error_field_already_occupied : 'The field you selected is already occupied. Choose another!',
 		error_field_is_not_occupied : 'The field you selected is not occupied. Choose another!',
 		error_housetype_too_low : 'The field you selected has a too low house-type. Choose another!',
 		error_no_card_selected : 'Continue without picking a card?',
+		error_not_enough_money : 'You are bidding more money than you have. You need to pay 3% interest per Month! Do you want to continue?',
 
 		"City Builder": 'City Builder',
 		"A card based multi player board game": 'A card based multi player board game',
