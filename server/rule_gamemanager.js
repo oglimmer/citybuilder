@@ -55,56 +55,57 @@ var GameManager = {
 	},
 
 	storeGame : function(game, prepare, onSuccess, onFail) {
-		try {
-			var self = this;
-			var doInsert = true;
-			if(prepare!=null) {
-				var prepareReturn = prepare(game);
-				if(typeof(prepareReturn) !== 'undefined') {
-					doInsert = prepareReturn;
+		var prepareAndInsert = function(newGame, directInsert) {
+			try {
+				var doInsert = true;
+				if(prepare != null) {
+					var prepareReturn = prepare(newGame);
+					// prepareReturn = {true, false, undefined}
+					if(typeof(prepareReturn) !== 'undefined') {
+						doInsert = prepareReturn;
+					}
 				}
-			}
-			if(doInsert) {
-				db.insert(game, function(err, body) {
-					try {
-						if (err) {
-							logger.error('[GameManager] - storeGame failed. '+(prepare==null?'HARD FAIL!':'will try again...')+' : ', err.message);
-							if(prepare!=null) {
-								self.getGame(game._id, function(newGame) {
-									try {
-										var doInsert = prepare(newGame);
-										if(typeof(doInsert) === 'undefined' || doInsert) {
-											self.storeGame(newGame, prepare, onSuccess);
-										}							
-									} catch(e) {
-										logger.error("Caught exception : " + e);
-										if(typeof(onFail) !== 'undefined') {
-											onFail(e);
-										}
-									}
-								});
-							}
-							return;
-						}
-						game._id = body.id;
-						game._rev = body.rev; // update rev so we can perisit it again
-						if(typeof(onSuccess) !== 'undefined') {
-							onSuccess(game);
-						}
-					} catch(e) {
-						logger.error("Caught exception : " + e);
-						if(typeof(onFail) !== 'undefined') {
-							onFail(e);
-						}
-					}				
-				});
-			}
-		} catch(e) {
-			logger.error("Caught exception : " + e);
-			if(typeof(onFail) !== 'undefined') {
-				onFail(e);
-			}
-		}				
+				if(doInsert) {
+					if(directInsert) {
+						db.insert(game, storeGameInsert.bind(this));				
+					} else {
+						this.storeGame(newGame, prepare, onSuccess, onFail);
+					}
+				} else {
+					logger.warn("[prepareAndInsert] stopped due to doInsert==false");	
+				}
+			} catch(e) {
+				logger.error("[prepareAndInsert] Caught exception : " + e);
+				if(onFail) {
+					onFail(e);
+				}
+			}		
+		};
+		var retryAfterFailed = function(newGame) {
+			prepareAndInsert.apply(this, [ newGame, false ] );
+		};
+		var storeGameInsert = function(err, body) {			
+			try {
+				if (err) {
+					logger.error('[storeGameInsert] - storeGame failed. '+(prepare==null?'HARD FAIL!':'will try again...')+' : ', err.message);
+					if(prepare != null) {
+						this.getGame(game._id, retryAfterFailed.bind(this));
+					}
+				} else {
+					game._id = body.id;
+					game._rev = body.rev; // update rev so we can perisit it again
+					if(onSuccess) {
+						onSuccess(game);
+					}
+				}
+			} catch(e) {
+				logger.error("[storeGameInsert] Caught exception : " + e);
+				if(onFail) {
+					onFail(e);
+				}
+			}							
+		};		
+		prepareAndInsert.apply(this, [ game, true ] );
 	}
 };
 

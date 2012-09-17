@@ -52,24 +52,26 @@ module.exports = function(io, logger) {
 			GameManager.getGame(data.gameId, function(game) {
 				PlayerManager.getPlayer(data.playerId, function(player) {
 					game.rejoinPlayer(socket.id, player, function(savedPlayer) {
-						var psoc = require('./socket.js')(savedPlayer);
-						psoc.emit('sendPlayerData', {gameId:game._id, playerId: savedPlayer._id, playerNo: savedPlayer.no, availableActions: savedPlayer.availableActions }); // sendPlayerData
-						psoc.emit('uiElement', game.gameField.forPlayer(savedPlayer));						
-						psoc.emit('card', savedPlayer.cardHand); // sends all cards
-						psoc.sendToAllPlayersInGame(function(pla) {
-							return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) }; // update the player# for all others
-						})
-						if(game.gameState==1) {
-							psoc.emit('showFieldPane', { gameState : game.gameState });
-						} else if(game.gameState==2) {
-							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
-							psoc.emit('startAuction_resp', newTurnData);
-						} else if(game.gameState==3) {
-							var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
-							psoc.emit('startAuction_resp', newTurnData);
-							psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
+						if(data.reconnect !== true) {
+							var psoc = require('./socket.js')(savedPlayer);
+							psoc.emit('sendPlayerData', {gameId:game._id, playerId: savedPlayer._id, playerNo: savedPlayer.no, availableActions: savedPlayer.availableActions }); // sendPlayerData
+							psoc.emit('uiElement', game.gameField.forPlayer(savedPlayer));						
+							psoc.emit('card', savedPlayer.cardHand); // sends all cards
+							psoc.sendToAllPlayersInGame(function(pla) {
+								return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) }; // update the player# for all others
+							})
+							if(game.gameState==1) {
+								psoc.emit('showFieldPane', { gameState : game.gameState });
+							} else if(game.gameState==2) {
+								var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
+								psoc.emit('startAuction_resp', newTurnData);
+							} else if(game.gameState==3) {
+								var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
+								psoc.emit('startAuction_resp', newTurnData);
+								psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
+							}
+							psoc.emit('showWait');
 						}
-						psoc.emit('showWait');
 					});
 				});
 			});

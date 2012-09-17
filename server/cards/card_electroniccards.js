@@ -17,7 +17,7 @@ function BuildElectronicCard(id,no,range,profitConfig,localLevelMod) {
 /* ------------------------------------------ */
 BuildElectronicSmlCard.Inherits(BuildElectronicCard);
 function BuildElectronicSmlCard(id) {
-	this.Inherits(BuildElectronicCard,id,400,1,[ {ht:[1,7], pro:300}, {ht:[8,10], pro:100} ], 0);
+	this.Inherits(BuildElectronicCard,id,400,1,[ {ht:[1,5], pro:300}, {ht:[6,7], pro:170},{ht:[8,10], pro:50} ], 0);
 }
 
 /* ------------------------------------------ */
@@ -25,5 +25,5 @@ function BuildElectronicSmlCard(id) {
 /* ------------------------------------------ */
 BuildElectronicLrgCard.Inherits(BuildElectronicCard);
 function BuildElectronicLrgCard(id) {
-	this.Inherits(BuildElectronicCard,id,401,3,[ {ht:[1,3], pro:250}, {ht:[4,7], pro:80}, {ht:[8,10], pro:30} ], 0);
+	this.Inherits(BuildElectronicCard,id,401,3,[ {ht:[1,3], pro:750}, {ht:[4,7], pro:40}, {ht:[8,10], pro:20} ], 0);
 }

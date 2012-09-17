@@ -3,6 +3,15 @@
 /* ------------------------------------------ */
 function ServerCommListener() {	
 	var self = this;
+	var time = null;
+	this.showWaitOverlay = function() {
+		$('#overlay').show();
+		time = new Date();
+	}
+	this.hideWaitOverlay = function() {
+		$('#overlay').hide();
+		console.log((new Date()) - time);
+	}
 	/*socket is a global variable*/
 	this.init = function() {
 		socket.on('sendPlayerData', self.sendPlayerData);
@@ -21,6 +30,11 @@ function ServerCommListener() {
 		socket.on('auctionCardRemove', self.auctionCardRemove);
 		socket.on('initialCardSelection', self.initialCardSelection);
 		socket.on('showWait', self.showWait);
+		socket.on('reconnect', self.reconnect);
+		// http://davidchambersdesign.com/getting-started-with-socket.io/
+	};
+	this.reconnect = function() {
+		socket.emit('reJoinGame_req', { reconnect: true, playerId: G.playerId, gameId: Cookie.get("gameId")});
 	};
 	this.requestAllPlayerData = function() {
 		socket.emit('requestAllPlayerData_req', {playerId : G.playerId});
@@ -43,7 +57,7 @@ function ServerCommListener() {
 		$('#winner').html(html);
 		$('#bottom').hide();
 		$('#winner').show();
-		$('#overlay').hide();
+		self.hideWaitOverlay();
 	};
 	this.waitAddPlayer_resp = function (data) {
 		$.each(data.playerName, function(ind, val) {
@@ -80,7 +94,7 @@ function ServerCommListener() {
 		}
 	};
 	this.onTurnDone = function() {
-		$('#overlay').show();
+		self.showWaitOverlay();
 		G.turnDoneButton.enabled = false;		
 		if(G.gameState == 1) {
 			socket.emit('roundEnd_req', { playerId : G.playerId});
@@ -89,13 +103,13 @@ function ServerCommListener() {
 		} else if(G.gameState == 2) {
 			var bid = parseInt($('#bid').val());
 			if(isNaN(bid) || bid <0 ) {
-				$('#overlay').hide();
+				self.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;
 				alert(G.i18n.error_illegal_value);
 			} else if (bid <= G.infoBar.money || confirm(G.i18n.error_not_enough_money)) {
 				socket.emit('auctionBid_req', { playerId : G.playerId, bid: bid });
 			} else {
-				$('#overlay').hide();
+				self.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;											
 			}
 		} else if(G.gameState == 3 || G.gameState == 4) {
@@ -103,7 +117,7 @@ function ServerCommListener() {
 			if(selectedCardId!==null || confirm(G.i18n.error_no_card_selected)) {
 				socket.emit('postAuctionSelect_req', { playerId : G.playerId, cardId: selectedCardId });
 			} else {
-				$('#overlay').hide();
+				self.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;							
 			}
 		}
@@ -113,7 +127,7 @@ function ServerCommListener() {
 		G.draw();
 	}
 	this.startAuction_resp = function(msg) {
-		$('#overlay').hide();
+		self.hideWaitOverlay();
 
 		msg.incomeReceipt.sort(function(a,b) {
 			return b[1]-a[1];
@@ -137,7 +151,7 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.showFieldPane = function(msg) {
-		$('#overlay').hide();
+		self.hideWaitOverlay();
 		G.gameState = msg.gameState;
 		G.turnDoneButton.label = G.i18n.button_endRound;
 		G.turnDoneButton.enabled = true;
@@ -160,7 +174,7 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.postAuctionSelection = function(msg) {
-		$('#overlay').hide();
+		self.hideWaitOverlay();
 		$('#bidInput').hide();
 		G.auctionPanel.currentlyClicked = null;
 		G.gameState = msg.gameState;
@@ -174,7 +188,7 @@ function ServerCommListener() {
 		console.log(msg);
 		$('#waitingForPlayers').hide();
 		$('#bottom').show();
-		$('#overlay').hide();
+		self.hideWaitOverlay();
 		/*  */
 		self.infoBar(msg.infoBar);
 		G.auctionPanel.selectable = true;
@@ -187,25 +201,25 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.onCardPlay = function(card) {
-		$('#overlay').show();		
+		self.showWaitOverlay();		
 		var msgName = card.playType == 0 ? 'directCardPlay_req' : 'prePlayCard_req';
 		socket.emit(msgName, {card : card, playerId : G.playerId });
 	};
 	this.prePlayCard_resp = function(msg) {
-		$('#overlay').hide();		
+		self.hideWaitOverlay();		
 		/* msg = {selectable,range,buildspace} */
 		G.fieldPane.surroundingMatrix = FieldPane.createSurroundingRange(msg.range);
 		G.fieldPane.selectableType = msg.selectable;
 		G.fieldPane.setSelectTargetEnabled(true);
 	};
 	this.playCardSelectTarget = function(field) {
-		$('#overlay').show();
+		self.showWaitOverlay();
 		socket.emit('cardPlaySelectTarget_req', { playerId : G.playerId , cardIdToPlay: G.cardLayouter.currentlyClicked.id, targetFieldId: field.cor()});
 	};
 	this.cardPlaySelectTarget_resp = function(msg) {
 		// update card	
 		if(typeof msg.cardId !== 'undefined') {
-			$('#overlay').hide();
+			self.hideWaitOverlay();
 			G.cardLayouter.cards.removeById(msg.cardId);
 			G.cardLayouter.unlock();
 		}
@@ -222,12 +236,13 @@ function ServerCommListener() {
 		G.draw();
 	}
 	this.cardPlaySelectTargetFailed_resp = function(msg) {
-		$('#overlay').hide();
-		G.cardLayouter.unlock();
+		self.hideWaitOverlay();
+		//G.cardLayouter.unlock();
+		G.fieldPane.setSelectTargetEnabled(true);
 		alert(G.i18n[msg.error]);
 	}
 	this.showWait = function(msg) {
-		$('#overlay').show();
+		self.showWaitOverlay();
 		G.turnDoneButton.enabled = false;		
 		G.cardLayouter.unlock();
 		G.cardLayouter.colapse();

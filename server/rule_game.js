@@ -195,11 +195,11 @@ Game.prototype.processAuctionSelect = function(allPlayers) {
 	allPlayers.forEach(function(pl) {
 		var player = pl.value;
 		var bid = self.biddings[player._id];
-		if(typeof(bid) === 'number') {
+		if(typeof(bid.originalBid) !== 'undefined' && typeof(bid.acutalCost) !== 'undefined') {
+			lastBiddings.push({playerName : player.playerName, bid : bid.originalBid, cost : bid.acutalCost});
+		} else {
 			// the last bid (which pays $0) is not processed, therefore we dont have originalBid and acutalCost
 			lastBiddings.push({playerName : player.playerName, bid : bid,cost:0});
-		} else {
-			lastBiddings.push({playerName : player.playerName, bid : bid.originalBid, cost : bid.acutalCost});
 		}
 	});
 	allPlayers.forEach(function(player) {

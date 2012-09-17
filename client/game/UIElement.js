@@ -165,18 +165,18 @@ UIElement.prototype.setBaseFillStyle = function() {
 	this.longText = UIServices.getFieldTypeLong(this.type);
 
 	if(this.attachedCard != null && this.type == 0) {
-		if(this.attachedCard.houseType <= 1) {
-			this.fillStyleUi0 = "#000000";
-		} else if(this.attachedCard.houseType <= 2) {
-			this.fillStyleUi0 = "#222222";
-		} else if(this.attachedCard.houseType <= 3) {
-			this.fillStyleUi0 = "#444444";
+		if(this.attachedCard.houseType == 1) {
+			this.fillStyleUi0 = "#000000"; // 1
+		} else if(this.attachedCard.houseType == 2) {
+			this.fillStyleUi0 = "#222222"; // 2
 		} else if(this.attachedCard.houseType <= 5) {
-			this.fillStyleUi0 = "#666666";
-		} else if(this.attachedCard.houseType <= 7) {
-			this.fillStyleUi0 = "#888888";
-		} else if(this.attachedCard.houseType <= 9) {
-			this.fillStyleUi0 = "#AAAAAA";
+			this.fillStyleUi0 = "#444444"; // 3,5
+		} else if(this.attachedCard.houseType == 6) {
+			this.fillStyleUi0 = "#777777"; // 6
+		} else if(this.attachedCard.houseType <= 8) {
+			this.fillStyleUi0 = "#AAAAAA"; // 7,8
+		} else if(this.attachedCard.houseType <= 10) {
+			this.fillStyleUi0 = "#CCCCCC"; // 9-10
 		}
 
 		/*
