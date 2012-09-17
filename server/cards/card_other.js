@@ -177,7 +177,7 @@ NewPeopleCard.newPeople = function(field,changedFields) {
 		var rnd = parseInt(Math.random() * currentLocalLevel.buildings.length);
 		var newHouseType = HouseType[currentLocalLevel.buildings[rnd]];
 		var newHousePopulation = parseInt(Math.random() * HouseTypeMaxPop[currentLocalLevel.buildings[rnd]])+1
-		if(newHouseType < field.attachedCard.houseType || newHousePopulation > field.attachedCard.housePopulation) {
+		if((newHouseType < field.attachedCard.houseType && newHouseType != HouseType.SIMPLE_BUNGALOW) || newHousePopulation > field.attachedCard.housePopulation) {
 			field.attachedCard.houseType = newHouseType;
 			field.attachedCard.housePopulation = newHousePopulation;
 			changedFields[field.x+":"+field.y] = field;
