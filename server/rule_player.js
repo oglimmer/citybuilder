@@ -11,7 +11,7 @@ function Player(game, socketId, playerName) {
 	this.socketId = socketId;
 	this.playerName = playerName;
 	this.money = 0;
-	this.availableActions = 1; // a card is deployable
+	this.availableActions = 1; // player is allowed to deploy a card
 	this.cardHand = new CardStack();
 }
 
@@ -30,38 +30,37 @@ Player.prototype.getSocket = function() {
 
 Player.prototype.playCard = function(cardIdToPlay,targetFieldId,onSuccess,onFail) {
 	// check if player is able to deploy a card this turn
-	var self = this;
-	if(self.availableActions & 1 == 0) {
-		logger.debug("[playCard] availableActions="+self.availableActions+", return from playCard");
+	if(this.availableActions & 1 == 0) {
+		logger.debug("[playCard] availableActions="+this.availableActions+", return from playCard");
 		return;
 	}
 	var PlayerManager = require("./rule_playermanager.js");
 	var GameManager = require("./rule_gamemanager.js");
 	// load game by player.gameId
-	GameManager.getGame(self.gameId, function(game) {
+	GameManager.getGame(this.gameId, function(game) {
 		var field = null;
 		var cardPlayReturn;
 		// store the Game with the changed (deployed) field
 		GameManager.storeGame(game, 
 			function(gameToPrepare) {
 				// prepare
-				var card = self.cardHand.getById(cardIdToPlay);
+				var card = this.cardHand.getById(cardIdToPlay);
 				field = gameToPrepare.gameField.fields[targetFieldId];			
-				cardPlayReturn = card.play(field, self, gameToPrepare.gameField.fields);			
-			}, function(savedGame) {					
+				cardPlayReturn = card.play(field, this, gameToPrepare.gameField.fields);			
+			}.bind(this), function(savedGame) {					
 				// onSuccess: safe the player with the removed card
-				PlayerManager.storePlayer(self, function(playerToPrepare) {
+				PlayerManager.storePlayer(this, function(playerToPrepare) {
 					var card = playerToPrepare.cardHand.getById(cardIdToPlay);
 					playerToPrepare.availableActions ^= card.actionBit; // clear deployable action							
 					playerToPrepare.cardHand.removeCardById(cardIdToPlay);							
 				}, function(savedPlayer) {
 					onSuccess(savedPlayer, field, cardPlayReturn);
 				});						
-			}, function(error) {
+			}.bind(this), function(error) {
 				// onFail
 				onFail(error);
 			});
-	});	
+	}.bind(this));	
 }
 
 Player.reinit = function(body) {

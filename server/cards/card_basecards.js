@@ -95,40 +95,37 @@ RentalCard.getTypeFromField = function(field) {
 	return field.type;
 }
 RentalCard.prototype.calcSupplies = function(field, fields) {	
-	var self = this;
-	Card.forEachField(self.range, field, fields, function(surroundingElement) {
+	Card.forEachField(this.range, field, fields, function(surroundingElement) {
 		if(surroundingElement.type == FieldType.HOUSE) {
 			if(typeof surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)] === 'undefined') {
 				surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)] = 0;
 			}
-			if(self.getProfit(surroundingElement) > 0) {
+			if(this.getProfit(surroundingElement) > 0) {
 				surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)]++;
 				logger.debug("[RentalCard.calcSupplies] for "+surroundingElement.x+","+surroundingElement.y+" type:"+RentalCard.getTypeFromField(field)+" to "+surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)]);
 			}			
 		}
-	});
+	}.bind(this));
 };
 RentalCard.prototype.calcLocalLevel = function(field, fields, changedFields) {	
-	var self = this;
-	Card.forEachField(self.range, field, fields, function(surroundingElement) {
+	Card.forEachField(this.range, field, fields, function(surroundingElement) {
 		if(surroundingElement.type == FieldType.HOUSE) {
-			if(typeof self.changeLocalLevel !== 'undefined') {
-				if(self.changeLocalLevel(surroundingElement)) {
+			if(typeof this.changeLocalLevel !== 'undefined') {
+				if(this.changeLocalLevel(surroundingElement)) {
 					logger.debug("[RentalCard.calcLocalLevel] for "+surroundingElement.x+","+surroundingElement.y+" to "+surroundingElement.localLevel);
 					changedFields[surroundingElement.x+":"+surroundingElement.y] = surroundingElement;
 				}
 			}			
 		}
-	});
+	}.bind(this));
 };
 
 RentalCard.prototype.calcRent = function(field, fields) {
 	var totalRent = 0;
-	var self = this;
-	Card.forEachField(self.range, field, fields, function(surroundingElement) {
+	Card.forEachField(this.range, field, fields, function(surroundingElement) {
 		if(surroundingElement.type == FieldType.HOUSE) {
 			if(surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)] > 0) {
-				var profit = self.getProfit(surroundingElement);
+				var profit = this.getProfit(surroundingElement);
 				var rent = profit * surroundingElement.attachedCard.housePopulation / surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)];
 				logger.debug("[RentalCard.calcRent] "+surroundingElement.x+","+surroundingElement.y+" Profit:"+profit +", Pop:"+ surroundingElement.attachedCard.housePopulation+", Supply:"+ surroundingElement.attachedCard.supply[RentalCard.getTypeFromField(field)]+", Total:"+rent);
 				totalRent += rent;
@@ -136,7 +133,7 @@ RentalCard.prototype.calcRent = function(field, fields) {
 				//logger.debug("no supply for "+surroundingElement.x+","+surroundingElement.y);
 			}
 		}
-	});
+	}.bind(this));
 	logger.debug("[RentalCard.calcRent] Total rent for "+field.attachedCard.title+" ("+field.x+","+field.y+") = "+totalRent);
 	return totalRent;
 };

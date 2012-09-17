@@ -64,7 +64,7 @@ function MorePopulationCard(id) {
 MorePopulationCard.prototype.prePlay = function() {
 	return {
 		selectable : 'ALL_UNOCCUPIED',
-		range : 1
+		range : 2
 		//buildspace : '1x1'		
 	};
 };
@@ -103,21 +103,20 @@ function CityGrowsCard(id,no,houseType,baseLocalLevel) {
 	this.baseLocalLevel = baseLocalLevel;
 }
 CityGrowsCard.prototype.playDirect = function(player, onSuccess) {	
-	var self = this;
 	var GameManager = require("../rule_gamemanager.js");
 	var PlayerManager = require("../rule_playermanager.js");	
 	GameManager.getGame(player.gameId, function(game) {
 		var newFieldList;
 		GameManager.storeGame(game,function(gameToPrepare) {
-			newFieldList = gameToPrepare.gameField.add(3,3,self.houseType,MorePopulationCard.getMaxPop(self.houseType),self.baseLocalLevel);
-		},function(savedGame) {
+			newFieldList = gameToPrepare.gameField.add(3,3,this.houseType,MorePopulationCard.getMaxPop(this.houseType),this.baseLocalLevel);
+		}.bind(this),function(savedGame) {
 			PlayerManager.storePlayer(player, function(player) {
-				player.cardHand.removeCardById(self.id);
-			},function() {
+				player.cardHand.removeCardById(this.id);
+			}.bind(this),function() {
 				onSuccess(newFieldList);
 			});
-		});
-	});
+		}.bind(this));
+	}.bind(this));
 };
 
 /* ------------------------------------------ */
