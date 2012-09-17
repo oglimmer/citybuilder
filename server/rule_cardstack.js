@@ -37,15 +37,10 @@ CardStack.prototype.createBlock = function(stage) {
 	}
 }
 
-CardStack.prototype.create = function(stage) {
-	if(stage==0) {
-		this.createBlock(0);
-	} else {
-		var c = 0;	
-		while(c++ < CardStack.NUMBER_PER_CARD) {
-			this.createBlock(0);
-			this.createBlock(1);
-		}
+CardStack.prototype.create = function(stage, count) {
+	var c = 0;	
+	while(c++ < count) {
+		this.createBlock(stage);
 	}
 	logger.debug("[CardStack::create] stack created. New size:" + this.cards.length);
 	this.shuffle();

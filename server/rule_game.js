@@ -33,29 +33,31 @@ function Game() {
 
 	this.currentDate = new MonthHelper();
 	this.gameField = new GameField(this);
-	this.cards = new CardStack();	
+	this.cardsCommercial = new CardStack();
+	this.cardsMisc = new CardStack();
 	this.initTurn();
 }
 
 Game.prototype.startGame = function(playTime, allPlayers) {
 	this.playTime = playTime;
 	this.gameState = 4;
-	this.cards.create(0);
+	this.cardsCommercial.create(0, 1);
 	var self = this;
 	allPlayers.forEach(function(doc) {
 		var player = doc.value;
-		if(self.cards.length() < 4) {
-			self.cards.clear();
-			self.cards.create(0);
+		if(self.cardsCommercial.length() < 4) {
+			self.cardsCommercial.clear();
+			self.cardsCommercial.create(0, 1);
 		}
 		var cardsToSelect = [];
 		for(var i = 0 ; i < 4 ; i++) {
-			cardsToSelect.push(self.cards.removeTop());
+			cardsToSelect.push(self.cardsCommercial.removeTop());
 		}
 		self.cardsToAuction.push({playerId: player._id, cardsToSelect: cardsToSelect});
 	});
-	self.cards.clear();
-	self.cards.create(1);
+	self.cardsCommercial.clear();
+	self.cardsCommercial.create(0, CardStack.NUMBER_PER_CARD);
+	self.cardsMisc.create(1, CardStack.NUMBER_PER_CARD);
 }
 
 Game.prototype.createPlayer = function(socketId, playerName, onCreated) {
@@ -348,9 +350,10 @@ Game.prototype.processNextTurn = function(allPlayers) {
 		this.processEndGame(allPlayers);
 	} else {
 		var cardsToAuction = [];
-		for(var i = 0 ; i < allPlayers.length + 1 ; i++) {
-			cardsToAuction.push(this.cards.removeTop());
+		for(var i = 0 ; i < allPlayers.length ; i++) {
+			cardsToAuction.push(this.cardsCommercial.removeTop());
 		}
+		cardsToAuction.push(this.cardsMisc.removeTop());
 		this.sendAuction(allPlayers, changedFields, cardsToAuction, incomeReceipt);
 	}	
 }
@@ -482,7 +485,8 @@ Game.prototype.setBidding = function(player, bid) {
 
 Game.reinit = function(body) {
 	body.__proto__ = Game.prototype;
-	CardStack.reinit(body.cards);
+	CardStack.reinit(body.cardsCommercial);
+	CardStack.reinit(body.cardsMisc);
 	GameField.reinit(body.gameField);
 	MonthHelper.reinit(body.currentDate);	
 }
