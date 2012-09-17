@@ -43,6 +43,8 @@ var I18n = {
 		infoBar_balances : 'Current balances:',
 		infoBar_income_last_round : 'Income last round:',
 		infoBar_last_bids : 'Bids last round:',
+		infoBar_other_players : 'Other players',
+		infoBar_switch_ui : 'Switch UI',
 
 		infoField_type : 'Type',
 		infoField_pos : 'Pos',
@@ -51,7 +53,7 @@ var I18n = {
 		infoField_housePop : 'House-Population',
 		infoField_localLevel : 'Local-level',
 		infoField_attachedCard : 'Attached-card',
-		infoField_owner : 'Owner',
+		infoField_owner : 'Owner',		
 
 		auctionPanel_title1 : 'These cards are available for auction: ',
 		auctionPanel_title2 : 'Pick a card: ',

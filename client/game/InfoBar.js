@@ -9,6 +9,7 @@ function InfoBar() {
 	this.draw = function(ctx) {  
 		ctx.beginPath();
 		ctx.rect(0,0,ctx.canvas.width,20);
+		ctx.rect(500,0,0,20);
 		ctx.fillStyle = '#8ED6FF';
 		ctx.fill();
 		ctx.stroke();
@@ -16,6 +17,10 @@ function InfoBar() {
 		ctx.fillText(G.i18n.infoBar_cash+": $" + UIServices.addCommas(Math.floor(this.money)), 5, 13);
 		ctx.fillText(G.i18n.infoBar_playernum+":" + this.playerNumber/*+" / "+G.gameState*/, 150, 13);
 		ctx.fillText(G.i18n.infoBar_date+": "+this.currentDate, ctx.canvas.width-170, 13);
+		ctx.fillText(G.i18n.infoBar_other_players, 495-ctx.measureText(G.i18n.infoBar_other_players).width, 13);
+		if(G.gameState == 2 || G.gameState == 3) {
+			ctx.fillText(G.i18n.infoBar_switch_ui, 505, 13);
+		}
 		if(this.showLargeInfo) {
 			this.width = ctx.canvas.width-250;
 			this.height = ctx.canvas.height-200;
@@ -44,17 +49,21 @@ function InfoBar() {
 		}
 	};
 	this.onclick = function(x, y) {
-		if(this.atPos(x,y) && G.gameState == 1) {
-			G.serverCommListener.requestAllPlayerData();
-			this.showLargeInfo = !this.showLargeInfo;
-			return true;
-		} else if(this.atPos(x,y) && (G.gameState == 2 || G.gameState == 3)) {
-			if(G.canvasManagerField.enabled) {
-				G.canvasManagerAuction.enabled = true;
-				G.canvasManagerField.enabled = false;
-			} else {
-				G.canvasManagerAuction.enabled = false;
-				G.canvasManagerField.enabled = true;
+		if(this.atPos(x,y)) {
+			if(x >= 500 && (G.gameState == 2 || G.gameState == 3)) {
+				if(G.canvasManagerField.enabled) {
+					G.canvasManagerAuction.enabled = true;
+					G.canvasManagerField.enabled = false;
+				} else {
+					G.canvasManagerAuction.enabled = false;
+					G.canvasManagerField.enabled = true;
+				}
+				return true;
+			}
+			if(x < 500) {
+				G.serverCommListener.requestAllPlayerData();
+				this.showLargeInfo = !this.showLargeInfo;
+				return true;				
 			}
 		}
 		return false;
