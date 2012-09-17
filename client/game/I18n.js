@@ -60,7 +60,7 @@ var I18n = {
 		gameEnded_winner : 'Winner {0} with ${1}',
 		gameEnded_list : ' got $',
 
-		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Social level diff', 'Restaurant influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services inf.', 'Criminals' ],
+		uiSwitchButtonText_mode: [ 'House types', 'Missing population', 'Restaurant influence', 'Groceries influence', 'Clothing influence', 'Jewelery influence', 'Electronics influence', 'Public Services inf.', 'Criminals' ],
 		buildStateText: [ 'no build in progress', 'build in progress', 'build done' ],
 		localLevelTextShort_0 : 'Under',
 		localLevelTextShort_1 : 'LowerMidl',

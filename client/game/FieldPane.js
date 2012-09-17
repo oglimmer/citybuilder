@@ -150,12 +150,12 @@ function FieldPane() {
 	}
 
 	this.repaintTypeInfluence = function() {	
-		if(G.uiMode>=3&&G.uiMode<=NUMBER_OF_FIELD_TYPES+1) {
-			this.calcRanges(G.uiMode-2);
+		if(G.uiMode>=NUMBER_OF_NON_FIELD_TYPE_MODES&&G.uiMode<=NUMBER_OF_NON_FIELD_TYPE_MODES+NUMBER_OF_FIELD_TYPES) {
+			this.calcRanges(G.uiMode-NUMBER_OF_NON_FIELD_TYPE_MODES+1); // +1 since the first element has index=1
 		}		
 	}
 
-	this.calcRanges = function(type) {		
+	this.calcRanges = function(type) {	
 		for(var i = 0 ; i < this.allElements.length ; i++) {
 			var field = this.allElements[i];
 			if(field.type == 0 ) {

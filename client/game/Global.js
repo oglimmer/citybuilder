@@ -29,7 +29,7 @@ function Global() {
 	this.canvasManagerField.add(0, this.fieldPane);
 
 	this.canvasManagerUiMode = new CanvasManagerUIMode();
-	for(var i = 0 ; i < 2+NUMBER_OF_FIELD_TYPES ; i++) {
+	for(var i = 0 ; i < NUMBER_OF_NON_FIELD_TYPE_MODES+NUMBER_OF_FIELD_TYPES ; i++) {
 		var uiButton = new Button(this.i18n.uiSwitchButtonText_mode[i], this, 10+(105*i), 30, 100, function(parent, self) { self.clicked = true; G.uiMode = self.contextParam ; G.fieldPane.repaintTypeInfluence(); G.draw(); }, i);
 		if(i==0) {
 			this.canvasManagerUiMode.setClicked(uiButton);

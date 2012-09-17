@@ -6,7 +6,8 @@ Function.prototype.Inherits = function(parent) {
 };
 
 /* const */
-var NUMBER_OF_FIELD_TYPES = 8;
+var NUMBER_OF_FIELD_TYPES = 7;
+var NUMBER_OF_NON_FIELD_TYPE_MODES = 2;
 
 /* global variables and functions */
 var socket = null;

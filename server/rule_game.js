@@ -337,7 +337,7 @@ Game.prototype.processNextTurn = function(allPlayers) {
 
 	this.calcLocalLevel(changedFields); // no dependency, set:localLevel
 
-	this.doSocialDowngrades(); // depends on localLevel, set:attachedCard.houseType
+	this.doSocialChanges(); // depends on localLevel, set:attachedCard.houseType
 
 	this.calcSupplies(); // depends on profit(attachedCard.houseType), set:supply
 
@@ -417,11 +417,11 @@ Game.prototype.calcLocalLevel = function(changedFields) {
 	}
 }
 
-Game.prototype.doSocialDowngrades = function() {
+Game.prototype.doSocialChanges = function() {
 	for(var k in this.gameField.fields) {
 		var field = this.gameField.fields[k];			
 		if(field.type === FieldType.HOUSE) {
-			Field.downgrade(field);
+			Field.socialChange(field);
 		}
 	}		
 }

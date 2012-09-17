@@ -41,9 +41,6 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 			case 1:
 				ctx.fillStyle = this.fillStyleUi2;
 				break;
-			case 2:
-				ctx.fillStyle = this.fillStyleUi3;
-				break;
 			default:
 				/* 3-NUMBER_OF_FIELD_TYPES belong to fieldtype influences */
 				ctx.fillStyle = this.fillStyleUi4;
@@ -67,31 +64,10 @@ UIElement.prototype.draw = function(ctx, relocateX, relocateY) {
 	ctx.fillStyle = 'white';
 	if(this.type == 0) {
 		ctx.font = '9px Arial';				
-		switch(G.uiMode) {
-			case 0:
-			case 1:
-			case 2:
-				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+3,relocateY+this.drawY+38);
-			default:
-				/* from here we have the field-type influences */
-				//ctx.fillText("H",relocateX+this.drawX+13,relocateY+this.drawY+14);		
-				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType)+","+this.attachedCard.housePopulation,relocateX+this.drawX+3,relocateY+this.drawY+20);
-				break;
-				/*
-			case 1:
-				ctx.font = '9px Arial';				
-				ctx.fillText(UIServices.getHouseTypeTextShort(this.attachedCard.houseType),relocateX+this.drawX+1,relocateY+this.drawY+19);
-				ctx.font = '12px Arial';
-				break;
-			case 2:
-				ctx.fillText(this.attachedCard.housePopulation,relocateX+this.drawX+12,relocateY+this.drawY+19);
-				break;
-			case 3:
-				ctx.font = '9px Arial';				
-				ctx.fillText(UIServices.getLocalLevelTextShort(this.localLevel),relocateX+this.drawX+1,relocateY+this.drawY+19);
-				ctx.font = '12px Arial';			
-				break;*/
-		}
+		var firstLine = UIServices.getHouseTypeTextShort(this.attachedCard.houseType);
+		ctx.fillText(firstLine,relocateX+this.drawX+26-ctx.measureText(firstLine).width/2,relocateY+this.drawY+20);
+		var secondLine = this.attachedCard.housePopulation;
+		ctx.fillText(secondLine,relocateX+this.drawX+26-ctx.measureText(secondLine).width/2,relocateY+this.drawY+38);
 		ctx.font = '12px Arial';						
 	} else {
 		ctx.fillText(this.fillText,relocateX+this.drawX+22,relocateY+this.drawY+28);
@@ -199,6 +175,7 @@ UIElement.prototype.setBaseFillStyle = function() {
 			this.fillStyleUi2 = "#AAAAAA";
 		}
 
+		/*
 		var diffLevel=0;
 		if(this.localLevel >= 300) {
 			if(this.attachedCard.houseType > 8) {
@@ -246,6 +223,7 @@ UIElement.prototype.setBaseFillStyle = function() {
 				this.fillStyleUi3 = "#000000";
 				break;
 		}
+		*/
 
 		switch(this.influenced) {
 			case 0:
@@ -261,6 +239,7 @@ UIElement.prototype.setBaseFillStyle = function() {
 				this.fillStyleUi4 = "#888888";
 				break;
 		}
+
 
 	}	
 }

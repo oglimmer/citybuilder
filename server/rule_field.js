@@ -41,11 +41,11 @@ Field.forPlayer = function(field, player) {
 	}	
 }
 
-Field.downgrade = function(field) {
+Field.socialChange = function(field) {
 	var oldHouseType = field.attachedCard.houseType;	
 	[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE].forEach(function(locLev) {		
 		if(field.localLevel >= locLev.min && field.localLevel <= locLev.max) {			
-			if(field.attachedCard.houseType < HouseType[locLev.buildings[0]]) {
+			if(field.attachedCard.houseType != HouseType[locLev.buildings[0]]) {
 				var rnd = parseInt(Math.random() * locLev.buildings.length);
 				field.attachedCard.houseType = HouseType[locLev.buildings[rnd]];
 				field.attachedCard.housePopulation = parseInt(Math.random() * HouseTypeMaxPop[locLev.buildings[rnd]])+1
@@ -53,7 +53,7 @@ Field.downgrade = function(field) {
 		}
 	});	
 	if(oldHouseType != field.attachedCard.houseType) {
-		logger.debug("[Field.downgrade] Changed houseType for " + field.x+","+field.y+" from "+oldHouseType+" to "+field.attachedCard.houseType);
+		logger.debug("[Field.socialChange] Changed houseType for " + field.x+","+field.y+" from "+oldHouseType+" to "+field.attachedCard.houseType);
 	}
 }
 
