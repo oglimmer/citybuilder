@@ -157,10 +157,10 @@ UIElement.prototype.setBaseFillStyle = function() {
 
 		/*
 		// Shows black/white where Gentrification makes sense since the current house-type is below the possible locallevel
-		if(this.attachedCard.houseType > 1 && this.localLevel >= 300
-			|| this.attachedCard.houseType > 2 && this.localLevel >= 100
-			|| this.attachedCard.houseType > 5 && this.localLevel >= 30
-			|| this.attachedCard.houseType > 8 && this.localLevel >= 0) {
+		if(this.attachedCard.houseType > 1 && this.localLevel >= LOCALLEVEL_MIN_UPPER
+			|| this.attachedCard.houseType > 2 && this.localLevel >= LOCALLEVEL_MIN_UPPERMIDDLE
+			|| this.attachedCard.houseType > 5 && this.localLevel >= LOCALLEVEL_MIN_MIDDLE
+			|| this.attachedCard.houseType > 8 && this.localLevel >= LOCALLEVEL_MIN_LOWERMIDDLE) {
 			this.fillStyleUi1 = "#000000";
 		} else {
 			this.fillStyleUi1 = "#AAAAAA";
@@ -177,7 +177,7 @@ UIElement.prototype.setBaseFillStyle = function() {
 
 		/*
 		var diffLevel=0;
-		if(this.localLevel >= 300) {
+		if(this.localLevel >= LOCALLEVEL_MIN_UPPER) {
 			if(this.attachedCard.houseType > 8) {
 				diffLevel = 4;
 			} else if(this.attachedCard.houseType > 5) {
@@ -187,7 +187,7 @@ UIElement.prototype.setBaseFillStyle = function() {
 			} else if(this.attachedCard.houseType > 1) {
 				diffLevel = 1;
 			}
-		} else if(this.localLevel >= 100) {
+		} else if(this.localLevel >= LOCALLEVEL_MIN_UPPERMIDDLE) {
 			if(this.attachedCard.houseType > 8) {
 				diffLevel = 3;
 			} else if(this.attachedCard.houseType > 5) {
@@ -195,13 +195,13 @@ UIElement.prototype.setBaseFillStyle = function() {
 			} else if(this.attachedCard.houseType > 2) {
 				diffLevel = 1;
 			}
-		} else if(this.localLevel >= 30) {
+		} else if(this.localLevel >= LOCALLEVEL_MIN_MIDDLE) {
 			if(this.attachedCard.houseType > 8) {
 				diffLevel = 2;
 			} else if(this.attachedCard.houseType > 5) {
 				diffLevel = 1;
 			}
-		} else if(this.localLevel >= 0) {
+		} else if(this.localLevel >= LOCALLEVEL_MIN_LOWERMIDDLE) {
 			if(this.attachedCard.houseType > 8) {
 				diffLevel = 1;
 			}

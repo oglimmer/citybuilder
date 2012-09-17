@@ -9,25 +9,25 @@ UIServices.getBuildStateText = function(buildState) {
 	return G.i18n.buildStateText[buildState];
 }
 UIServices.getLocalLevelTextShort = function(localLevel) {
-	if(localLevel < 0) {
+	if(localLevel < LOCALLEVEL_MIN_LOWERMIDDLE) {
 		return G.i18n.localLevelTextShort_0;
-	} else if(localLevel < 30) {
+	} else if(localLevel < LOCALLEVEL_MIN_MIDDLE) {
 		return G.i18n.localLevelTextShort_1;
-	} else if(localLevel < 100) {
+	} else if(localLevel < LOCALLEVEL_MIN_UPPERMIDDLE) {
 		return G.i18n.localLevelTextShort_2;
-	} else if(localLevel < 300) {
+	} else if(localLevel < LOCALLEVEL_MIN_UPPER) {
 		return G.i18n.localLevelTextShort_3;
 	}
 	return G.i18n.localLevelTextShort_4;
 }
 UIServices.getLocalLevelText = function(localLevel) {
-	if(localLevel < 0) {
+	if(localLevel < LOCALLEVEL_MIN_LOWERMIDDLE) {
 		return G.i18n.localLevelText_0;
-	} else if(localLevel < 30) {
+	} else if(localLevel < LOCALLEVEL_MIN_MIDDLE) {
 		return G.i18n.localLevelText_1;
-	} else if(localLevel < 100) {
+	} else if(localLevel < LOCALLEVEL_MIN_UPPERMIDDLE) {
 		return G.i18n.localLevelText_2;
-	} else if(localLevel < 300) {
+	} else if(localLevel < LOCALLEVEL_MIN_UPPER) {
 		return G.i18n.localLevelText_3;
 	}
 	return G.i18n.localLevelText_4;

@@ -9,6 +9,11 @@ Function.prototype.Inherits = function(parent) {
 var NUMBER_OF_FIELD_TYPES = 7;
 var NUMBER_OF_NON_FIELD_TYPE_MODES = 2;
 
+var LOCALLEVEL_MIN_UPPER = 250;
+var LOCALLEVEL_MIN_UPPERMIDDLE = 100;
+var LOCALLEVEL_MIN_MIDDLE = 30;
+var LOCALLEVEL_MIN_LOWERMIDDLE = 0;
+
 /* global variables and functions */
 var socket = null;
 var G = null;

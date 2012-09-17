@@ -25,7 +25,7 @@ function InfoField(ctx) {
 			if(this.field.type == 0) {
 				ctx.fillText(G.i18n.infoField_houseType+": " + UIServices.getHouseTypeText(this.field.attachedCard.houseType)/*+" ("+this.field.attachedCard.houseType+")"*/, this.x+5, this.y+y); y+=HGAP;
 				ctx.fillText(G.i18n.infoField_housePop+": " + this.field.attachedCard.housePopulation, this.x+5, this.y+y); ; y+=HGAP;
-				ctx.fillText(G.i18n.infoField_localLevel+": "+UIServices.getLocalLevelText(this.field.localLevel)/*+" ("+this.field.localLevel+")"*/, this.x+5, this.y+y); y+=HGAP;				
+				ctx.fillText(G.i18n.infoField_localLevel+": "+UIServices.getLocalLevelText(this.field.localLevel)+" ("+this.field.localLevel+")", this.x+5, this.y+y); y+=HGAP;				
 			} else {
 				//ctx.fillText(G.i18n.infoField_attachedCard+": ", this.x+5, this.y+y); y+=HGAP;
 				ctx.fillText(G.i18n.infoField_owner+": "+this.field.ownerName/*+" ("+this.field.owner+")"*/, this.x+5, this.y+y); y+=HGAP;

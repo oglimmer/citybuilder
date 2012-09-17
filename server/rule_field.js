@@ -43,7 +43,7 @@ Field.forPlayer = function(field, player) {
 
 Field.socialChange = function(field) {
 	var oldHouseType = field.attachedCard.houseType;	
-	[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE].forEach(function(locLev) {		
+	[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE, LocalLevel.UPPERCLASS].forEach(function(locLev) {		
 		if(field.localLevel >= locLev.min && field.localLevel <= locLev.max) {			
 			if(field.attachedCard.houseType != HouseType[locLev.buildings[0]]) {
 				var rnd = parseInt(Math.random() * locLev.buildings.length);

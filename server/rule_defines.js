@@ -77,7 +77,7 @@ var LocalLevel = {
 	LOWER_MIDDLE: {min:0, max:29,buildings:["SIMPLE_BUNGALOW","SMALL_APARTMENT_TOWER","LARGE_APARTMENT_TOWER"]},
 	MIDDLE: {min:30, max:99,buildings:["TWO_FAM_HOUSE","ROW_HOUSE","APARTMENT_BUILDING"]},
 	UPPER_MIDDLE: {min:100, max:299,buildings:["LARGE_HOUSE"]},
-	UPPERCLASS: {min:300, max:99999,buildings:["VILLA"]}
+	UPPERCLASS: {min:250, max:99999,buildings:["VILLA"]}
 }
 
 module.exports.FieldType = FieldType;
