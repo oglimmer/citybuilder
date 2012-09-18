@@ -2,6 +2,7 @@ var FieldType = require("./rule_defines.js").FieldType;
 var LocalLevel = require("./rule_defines.js").LocalLevel;
 var HouseType = require("./rule_defines.js").HouseType;
 var HouseTypeMaxPop = require("./rule_defines.js").HouseTypeMaxPop;
+var HouseTypeReverse = require("./rule_defines.js").HouseTypeReverse;
 var log4js = require('log4js');
 var logger = log4js.getLogger('game');
 
@@ -45,7 +46,7 @@ Field.socialChange = function(field) {
 	var oldHouseType = field.attachedCard.houseType;	
 	[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE, LocalLevel.UPPERCLASS].forEach(function(locLev) {		
 		if(field.localLevel >= locLev.min && field.localLevel <= locLev.max) {			
-			if(field.attachedCard.houseType != HouseType[locLev.buildings[0]]) {
+			if(!locLev.buildings.in( HouseTypeReverse[field.attachedCard.houseType] )) {				
 				var rnd = parseInt(Math.random() * locLev.buildings.length);
 				field.attachedCard.houseType = HouseType[locLev.buildings[rnd]];
 				field.attachedCard.housePopulation = parseInt(Math.random() * HouseTypeMaxPop[locLev.buildings[rnd]])+1

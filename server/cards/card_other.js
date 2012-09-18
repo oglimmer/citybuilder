@@ -60,11 +60,12 @@ MorePopulationCard.Inherits(Card);
 function MorePopulationCard(id) {
 	this.Inherits(Card,id,501);
 	this.playType = 1;
+	this.range = 2;
 }
 MorePopulationCard.prototype.prePlay = function() {
 	return {
 		selectable : 'ALL_UNOCCUPIED',
-		range : 2
+		range : this.range
 		//buildspace : '1x1'		
 	};
 };
@@ -87,7 +88,7 @@ MorePopulationCard.populate = function(field,changedFields) {
 MorePopulationCard.prototype.play = function(field, player, fields) {
 	var changedFields = {};
 	MorePopulationCard.populate(field, changedFields);
-	Card.forEachField(1, field, fields, function(surroundingElement) {
+	Card.forEachField(this.range, field, fields, function(surroundingElement) {
 		MorePopulationCard.populate(surroundingElement, changedFields);
 	});
 	return { changedFields : changedFields, secretPlay : false };

@@ -13,6 +13,14 @@ Array.prototype.findByProp = function(propName, propValue) {
 		}
 	}
 };
+Array.prototype.in = function(elementToFind) {
+	for(var i = 0 ; i < this.length ; i++) {
+		if(this[i] === elementToFind) {
+			return true;
+		}
+	}
+	return false;
+};
 
 var Config = {
 	dbHost : 'http://localhost:5984',
