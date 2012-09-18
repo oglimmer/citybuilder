@@ -51,7 +51,7 @@ var I18n = {
 		infoField_buildState : 'Build-State',
 		infoField_houseType : 'House-Type',
 		infoField_housePop : 'House-Population',
-		infoField_localLevel : 'Local-level',
+		infoField_localLevel : 'Social-level',
 		infoField_attachedCard : 'Attached-card',
 		infoField_owner : 'Owner',		
 
