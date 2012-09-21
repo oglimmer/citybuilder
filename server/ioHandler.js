@@ -70,7 +70,9 @@ module.exports = function(io, logger) {
 								psoc.emit('startAuction_resp', newTurnData);
 								psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
 							}
-							psoc.emit('showWait');
+							if(game.isPlayerDone(savedPlayer)) {
+								psoc.emit('showWait');
+							}
 						}
 					});
 				});

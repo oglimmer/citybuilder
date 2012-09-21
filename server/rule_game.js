@@ -89,8 +89,8 @@ Game.prototype.rejoinPlayer = function(socketId, player, onSuccess) {
 		player.socketId = socketId;	
 	}, function(savedPlayer) {
 		GameManager.storeGame(this, function(gameToPrepare) {
-			gameToPrepare.playerIds[player.no] = player._id;			
-			gameToPrepare.playerNames.push(player.playerName);
+			//gameToPrepare.playerIds[player.no] = player._id;			
+			//gameToPrepare.playerNames.push(player.playerName);
 			//gameToPrepare.playersOnTurn.push(player._id);
 		}, function(savedGame) {
 			onSuccess(savedPlayer);
@@ -106,9 +106,9 @@ Game.removePlayer = function(socketId, onSuccess) {
 			player.socketId = null;	
 			GameManager.getGame(player.gameId, function(game) {
 				GameManager.storeGame(game, function(gameToPrepare) {
-					delete gameToPrepare.playerIds[player.no];
-					gameToPrepare.playerNames.removeByObj(player.playerName);
-					gameToPrepare.playersOnTurn.removeByObj(player._id);					
+					//delete gameToPrepare.playerIds[player.no];
+					//gameToPrepare.playerNames.removeByObj(player.playerName);
+					//gameToPrepare.playersOnTurn.removeByObj(player._id);
 				}, function(savedGame) {
 					onSuccess(savedGame);
 				});
@@ -143,32 +143,44 @@ Game.prototype.isPlayerDone = function(player) {
 	return true;
 }
 
-Game.prototype.allPlayersDone = function() {
-	return this.playersOnTurn.length == 0;
+Game.prototype.allPlayersDone = function(callback) {
+	var PlayerManager = require("./rule_playermanager.js");
+	PlayerManager.getPlayers(this._id, null, function(allPlayers) {
+		var atLeastOnePlayerInTurn = false;
+		this.playersOnTurn.forEach(function(playerIdOnTurn) {
+			var player = allPlayers.getPlayerById(playerIdOnTurn);	
+			if(player.socketId !== null) {
+				atLeastOnePlayerInTurn = true;
+			}
+		}.bind(this));
+		callback(!atLeastOnePlayerInTurn);
+	}.bind(this));
 }
 
 Game.prototype.checkForNextTurn = function() {
 	logger.debug("[checkForNextTurn] gameState="+this.gameState);
-	if(this.allPlayersDone()) {		
-		var PlayerManager = require("./rule_playermanager.js");
-		PlayerManager.getPlayers(this._id, null, function(allPlayers) {			
-			if(this.gameState == 1) {
-				this.processNextTurn(allPlayers);
-			} else if(this.gameState == 2) {
-				this.processAuctionBid(allPlayers);
-			} else if(this.gameState == 3) {
-				if(this.auctionTakeOrder.length > 0) {
-					// no all players picked their card yet
-					this.processPostAuctionSelection();
-				} else {
-					// all cards picked, go to next turn
-					this.processAuctionSelect(allPlayers);
+	this.allPlayersDone(function(allDone) {
+		if(allDone) {
+			var PlayerManager = require("./rule_playermanager.js");
+			PlayerManager.getPlayers(this._id, null, function(allPlayers) {			
+				if(this.gameState == 1) {
+					this.processNextTurn(allPlayers);
+				} else if(this.gameState == 2) {
+					this.processAuctionBid(allPlayers);
+				} else if(this.gameState == 3) {
+					if(this.auctionTakeOrder.length > 0) {
+						// no all players picked their card yet
+						this.processPostAuctionSelection();
+					} else {
+						// all cards picked, go to next turn
+						this.processAuctionSelect(allPlayers);
+					}
+				} else if(this.gameState == 4) {
+					this.initialCardSelectionDone(allPlayers);
 				}
-			} else if(this.gameState == 4) {
-				this.initialCardSelectionDone(allPlayers);
-			}
-		}.bind(this));
-	}
+			}.bind(this));
+		}
+	}.bind(this));
 }
 
 Game.prototype.initialCardSelectionDone = function(allPlayers) {
