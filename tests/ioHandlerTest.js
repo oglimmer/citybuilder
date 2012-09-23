@@ -1,3 +1,6 @@
+var log4js = require('log4js');
+var logger = log4js.getLogger('io');
+
 module.exports = {
     setUp: function (callback) {
 
@@ -52,7 +55,7 @@ module.exports = {
         	}
         }
 
-    	require('../server/ioHandler.js')(io);
+    	require('../server/ioHandler.js')(io, logger);
 
         io.sockets.connection(io.sockets);
 

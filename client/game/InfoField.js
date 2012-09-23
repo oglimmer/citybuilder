@@ -41,4 +41,7 @@ function InfoField(ctx) {
 			}
 		}
 	};
+	this.resize = function() {
+		this.x = ctx.canvas.width-224;
+	}		
 }

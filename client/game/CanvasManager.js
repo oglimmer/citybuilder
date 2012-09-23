@@ -70,7 +70,16 @@ CanvasManager.prototype.getButton = function(x,y) {
 		}
 	}
 	return false;
-}	
+}
+
+CanvasManager.prototype.resize = function() {
+	for(var i = this.elements.length - 1 ; i>= 0 ; i--) {
+		var ele = this.elements[i][2];
+		if(typeof(ele.resize) === 'function') {
+			ele.resize();
+		}
+	}
+}
 
 /* ------------------------------------------ */
 /* class CanvasManagerUIMode */  

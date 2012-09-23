@@ -10,7 +10,7 @@ var logger = log4js.getLogger('game');
 var AllCards = require('./rule_card.js');
 var HouseTypeMaxPop = require("./rule_defines.js").HouseTypeMaxPop;
 var HouseTypeReverse = require("./rule_defines.js").HouseTypeReverse;
-
+var GameStates = require("./rule_defines.js").GameStates;
 
 function Game() {
 	this.clazz = "Game";
@@ -29,7 +29,7 @@ function Game() {
 	 * 3 = select card for auction
 	 * 4 = initial card selection
 	 */
-	this.gameState = 0;
+	this.gameState = GameStates.WAITING_FOR_PLAYERS;
 
 	this.currentDate = new MonthHelper();
 	this.gameField = new GameField(this);
@@ -40,10 +40,9 @@ function Game() {
 
 Game.prototype.startGame = function(playTime, allPlayers) {
 	this.playTime = playTime;
-	this.gameState = 4;
+	this.gameState = GameStates.PICK_INITIAL_CARD;
 	this.cardsCommercial.create(0, 1);
-	allPlayers.forEach(function(doc) {
-		var player = doc.value;
+	allPlayers.forEach(function(player) {
 		if(this.cardsCommercial.length() < 4) {
 			this.cardsCommercial.clear();
 			this.cardsCommercial.create(0, 1);
@@ -98,21 +97,31 @@ Game.prototype.rejoinPlayer = function(socketId, player, onSuccess) {
 	}.bind(this));
 };
 
-Game.removePlayer = function(socketId, onSuccess) {
+Game.removePlayer = function(socketId, onSuccess, onGameDeleted) {
 	var PlayerManager = require('./rule_playermanager.js');
 	var GameManager = require('./rule_gamemanager.js');
-	PlayerManager.getPlayerBySocketId(socketId, function(player) {			
-		PlayerManager.storePlayer(player, function(player) {
-			player.socketId = null;	
-			GameManager.getGame(player.gameId, function(game) {
-				GameManager.storeGame(game, function(gameToPrepare) {
-					//delete gameToPrepare.playerIds[player.no];
-					//gameToPrepare.playerNames.removeByObj(player.playerName);
-					//gameToPrepare.playersOnTurn.removeByObj(player._id);
-				}, function(savedGame) {
-					onSuccess(savedGame);
+	PlayerManager.getPlayerBySocketId(socketId, function(player) {
+		GameManager.getGame(player.gameId, function(game) {
+			if(game.gameState == GameStates.WAITING_FOR_PLAYERS && (game.playerNames.length == 1 || game.playerNames[0] == player.playerName)) {
+				logger.debug("[removePlayer] removed last/first player during WAITING_FOR_PLAYERS...deleting game. %s", game._id);
+				PlayerManager.getPlayers(game._id, null, function(allPlayers) {
+					onGameDeleted(allPlayers);
+					GameManager.deleteGame(game);
+				});				
+			} else {
+				PlayerManager.storePlayer(player, function(player) {
+					player.socketId = null;	
+					GameManager.storeGame(game, function(gameToPrepare) {
+						if(gameToPrepare.gameState == GameStates.WAITING_FOR_PLAYERS) {
+							delete gameToPrepare.playerIds[player.no];
+							gameToPrepare.playerNames.removeByObj(player.playerName);
+							gameToPrepare.playersOnTurn.removeByObj(player._id);
+						}
+					}, function(savedGame) {
+						onSuccess(savedGame);
+					});
 				});
-			});
+			}
 		});
 	});
 };
@@ -146,6 +155,7 @@ Game.prototype.isPlayerDone = function(player) {
 Game.prototype.allPlayersDone = function(callback) {
 	var PlayerManager = require("./rule_playermanager.js");
 	PlayerManager.getPlayers(this._id, null, function(allPlayers) {
+		logger.debug("[allPlayersDone] allPlayers.length="+allPlayers.length);
 		var atLeastOnePlayerInTurn = false;
 		this.playersOnTurn.forEach(function(playerIdOnTurn) {
 			var player = allPlayers.getPlayerById(playerIdOnTurn);	
@@ -153,8 +163,37 @@ Game.prototype.allPlayersDone = function(callback) {
 				atLeastOnePlayerInTurn = true;
 			}
 		}.bind(this));
+		logger.debug("[allPlayersDone] atLeastOnePlayerInTurn="+atLeastOnePlayerInTurn);
 		callback(!atLeastOnePlayerInTurn);
 	}.bind(this));
+}
+
+Game.prototype.allPlayersOffline = function(callback) {
+	var PlayerManager = require("./rule_playermanager.js");
+	PlayerManager.getPlayers(this._id, null, function(allPlayers) {
+		var atLeastOnePlayerOnline = false;
+		allPlayers.forEach(function(player) {
+			if(player.socketId !== null) {
+				atLeastOnePlayerOnline = true;
+			}
+		}.bind(this));
+		logger.debug("[allPlayersOffline] atLeastOnePlayerOnline="+atLeastOnePlayerOnline);
+		callback(!atLeastOnePlayerOnline);
+	}.bind(this));	
+}
+
+Game.prototype.atLeastOneOnline = function(playerIds, callback) {
+	var PlayerManager = require("./rule_playermanager.js");
+	PlayerManager.getPlayers(this._id, null, function(allPlayers) {
+		var atLeastOnePlayerOnline = false;
+		allPlayers.forEach(function(player) {
+			if(player.socketId !== null && playerIds.in(player._id)) {
+				atLeastOnePlayerOnline = true;
+			}
+		}.bind(this));
+		logger.debug("[atLeastOneOnline] atLeastOnePlayerOnline="+atLeastOnePlayerOnline);
+		callback(atLeastOnePlayerOnline);
+	}.bind(this));	
 }
 
 Game.prototype.checkForNextTurn = function() {
@@ -163,11 +202,11 @@ Game.prototype.checkForNextTurn = function() {
 		if(allDone) {
 			var PlayerManager = require("./rule_playermanager.js");
 			PlayerManager.getPlayers(this._id, null, function(allPlayers) {			
-				if(this.gameState == 1) {
+				if(this.gameState == GameStates.CITY_VIEW) {
 					this.processNextTurn(allPlayers);
-				} else if(this.gameState == 2) {
+				} else if(this.gameState == GameStates.SET_BIDDING) {
 					this.processAuctionBid(allPlayers);
-				} else if(this.gameState == 3) {
+				} else if(this.gameState == GameStates.PICK_CARD) {
 					if(this.auctionTakeOrder.length > 0) {
 						// no all players picked their card yet
 						this.processPostAuctionSelection();
@@ -175,7 +214,7 @@ Game.prototype.checkForNextTurn = function() {
 						// all cards picked, go to next turn
 						this.processAuctionSelect(allPlayers);
 					}
-				} else if(this.gameState == 4) {
+				} else if(this.gameState == GameStates.PICK_INITIAL_CARD) {
 					this.initialCardSelectionDone(allPlayers);
 				}
 			}.bind(this));
@@ -184,34 +223,37 @@ Game.prototype.checkForNextTurn = function() {
 }
 
 Game.prototype.initialCardSelectionDone = function(allPlayers) {
-	this.gameState = 1;
+	logger.debug("[initialCardSelectionDone] start");
+
+	this.gameState = GameStates.CITY_VIEW;
 	this.initTurn();
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(this, null);
 	allPlayers.forEach(function(player) {
-		var psoc = require('./socket.js')(player.value);
+		var psoc = require('./socket.js')(player);
 		psoc.sendInitUIElements(this);
 	}.bind(this));
 }
 
 Game.prototype.processAuctionSelect = function(allPlayers) {
-	this.gameState = 1;
+	logger.debug("[processAuctionSelect] start");
+
+	this.gameState = GameStates.CITY_VIEW;
 	this.initTurn();
-	var GameManager = require("./rule_gamemanager.js");
-	GameManager.storeGame(this, null);
 	var lastBiddings = [];
-	allPlayers.forEach(function(pl) {
-		var player = pl.value;
+	allPlayers.forEach(function(player) {
 		var bid = this.biddings[player._id];
-		if(typeof(bid.originalBid) !== 'undefined' && typeof(bid.acutalCost) !== 'undefined') {
+		if(typeof(bid) !== 'undefined') {
 			lastBiddings.push({playerName : player.playerName, bid : bid.originalBid, cost : bid.acutalCost});
 		} else {
-			// the last bid (which pays $0) is not processed, therefore we dont have originalBid and acutalCost
-			lastBiddings.push({playerName : player.playerName, bid : bid,cost:0});
+			lastBiddings.push({playerName : player.playerName, bid:0,cost:0});
 		}
 	}.bind(this));
+	this.biddings = {};
+	var GameManager = require("./rule_gamemanager.js");
+	GameManager.storeGame(this, null);
 	allPlayers.forEach(function(player) {
-		var psoc = require('./socket.js')(player.value);	
+		var psoc = require('./socket.js')(player);	
 		psoc.sentshowFieldPane({ gameState : this.gameState, lastBids : lastBiddings });
 	}.bind(this));
 }
@@ -221,14 +263,13 @@ Game.prototype.payBid = function(playerIds, allPlayers, part) {
 	playerIds.forEach(function(pId) {
 		var player = allPlayers.getPlayerById(pId);
 		var bid = this.biddings[pId];
-		var cost = bid * part;
-		this.biddings[pId] = {originalBid: bid, acutalCost: cost};
-		logger.debug("[payBid] Player "+player.playerName+" bid $"+bid+" by "+part+"= $"+cost);
+		var cost = bid.originalBid * part;
+		bid.acutalCost = cost;
+		logger.debug("[payBid] Player "+player.playerName+" bid $"+bid.originalBid+" by "+part+"= $"+cost);
 		player.money -= cost;
 		PlayerManager.storePlayer(player, null);		
 	}.bind(this));
-	allPlayers.forEach(function(pl) {
-		var player = pl.value;
+	allPlayers.forEach(function(player) {
 		if(player.money < 0) {
 			// pay interest for debts 
 			var interest= player.money*0.03;
@@ -239,34 +280,47 @@ Game.prototype.payBid = function(playerIds, allPlayers, part) {
 }
 
 Game.prototype.processAuctionBid = function(allPlayers) {
-	this.gameState = 3;
+	logger.debug("[processAuctionBid] start. this.biddings=%j", this.biddings);
+
+	this.gameState = GameStates.PICK_CARD;
 	// if a player had left the game and rejoined again his bidding is undefined. So tread this as $0.
-	allPlayers.forEach(function(pla) {
-		var player = pla.value;
+	allPlayers.forEach(function(player) {
 		if(player.socketId !== null && typeof(this.biddings[player._id]) === 'undefined') {
-			this.biddings[player._id] = 0;
+			this.biddings[player._id] = { originalBid: 0, acutalCost: 0 };
+			logger.debug("[processAuctionBid] added 0-bidding:%s", player.playerName);
 		}
 	}.bind(this));
+
 	// order by bid and create turn order
 	this.auctionTakeOrder = [];
 	var tmpBiddings = JSON.parse(JSON.stringify(this.biddings)); // deep-copy
+	var tmpAllPlayers = allPlayers.asIdArray();
+	logger.debug("[processAuctionBid] tmpAllPlayers:%j", tmpAllPlayers);
 	while(Object.keys(tmpBiddings).length !== 0) {
+
+		logger.debug("[processAuctionBid] run:"+Object.keys(tmpBiddings).length);
+
 		var maxBid = -1;
 		var maxBidders;
 		for(var playerId in tmpBiddings) {
-			var bid = parseInt(tmpBiddings[playerId]);
-			if(maxBid < bid) {
-				maxBid = bid;
-				maxBidders = [playerId];
-			} else if(maxBid == bid) {
+			var originalBid = parseInt(tmpBiddings[playerId].originalBid);
+			if(maxBid < originalBid) {
+				maxBid = originalBid;
+				maxBidders = [playerId];				
+			} else if(maxBid == originalBid) {
 				maxBidders.push(playerId);
 			}
 		}
+
+		logger.debug("[processAuctionBid] maxBid:%d, maxBidders:%j", maxBid, maxBidders);
+
 		maxBidders.forEach(function(oneMaxBidder) {
-			delete tmpBiddings[oneMaxBidder];	
+			delete tmpBiddings[oneMaxBidder];
+			tmpAllPlayers.removeByObj(oneMaxBidder);
 		});
 		this.auctionTakeOrder.push(maxBidders);
 	}
+
 	// calc final bid cost and subtract money
 	this.payBid(this.auctionTakeOrder[0], allPlayers, 1);
 	for(var i = 1 ; i < this.auctionTakeOrder.length-1 ; i++) {
@@ -275,10 +329,17 @@ Game.prototype.processAuctionBid = function(allPlayers) {
 		this.payBid(this.auctionTakeOrder[i], allPlayers, part);		
 	}
 
+	// if there are players who haven't bid anything, add them as a last round
+	if(tmpAllPlayers.length > 0) {
+		this.auctionTakeOrder.push(tmpAllPlayers);
+		logger.debug("[processAuctionBid] added final round for non-bidders: %j", tmpAllPlayers);
+	}
+
 	this.doNextAuctionPickCard(allPlayers);
 }
 
 Game.prototype.processPostAuctionSelection = function() {
+	logger.debug("[processPostAuctionSelection] start");
 	var PlayerManager = require("./rule_playermanager.js");
 	PlayerManager.getPlayers(this._id, null, function(allPlayers) {			
 		this.doNextAuctionPickCard(allPlayers);
@@ -286,29 +347,36 @@ Game.prototype.processPostAuctionSelection = function() {
 }
 
 Game.prototype.doNextAuctionPickCard = function(allPlayers) {
-	/* readies the next player(s) for the given bid
-	 * => puts them into playersOnTurn, and send message over */
-	var nextPlayerIds = this.auctionTakeOrder.shift();
+	logger.debug("[doNextAuctionPickCard] start. auctionTakeOrder=%d", this.auctionTakeOrder.length);
+	if(this.auctionTakeOrder.length == 0 ) {
+		this.checkForNextTurn();
+	} else {
+		/* readies the next player(s) for the given bid
+		 * => puts them into playersOnTurn, and send message over */
+		var	nextPlayerIds = this.auctionTakeOrder.shift();
+		logger.debug("[doNextAuctionPickCard] nextPlayerIds=%j", nextPlayerIds);
+		this.atLeastOneOnline(nextPlayerIds, function(atLeastOnePlayerOnline) {
+			if(!atLeastOnePlayerOnline) {
+				this.doNextAuctionPickCard(allPlayers);
+			} else {
+				this.playersOnTurn = JSON.parse(JSON.stringify(nextPlayerIds)); // deep-copy
+				
+				var GameManager = require("./rule_gamemanager.js");
+				GameManager.storeGame(this, null);
 
-	if(typeof(nextPlayerIds) === 'undefined') {
-		console.trace("[doNextAuctionPickCard] nextPlayerIds is undefined")
+				nextPlayerIds.forEach(function(playerId) {
+					var player = allPlayers.getPlayerById(playerId);
+					var psoc = require('./socket.js')(player);	
+					psoc.sendPostAuctionSelection({ gameState : this.gameState, money: player.money });					
+				}.bind(this));
+			}
+		}.bind(this));
 	}
-
-	this.playersOnTurn = JSON.parse(JSON.stringify(nextPlayerIds)); // deep-copy
-	
-	var GameManager = require("./rule_gamemanager.js");
-	GameManager.storeGame(this, null);
-
-	nextPlayerIds.forEach(function(playerId) {
-		var player = allPlayers.getPlayerById(playerId);
-		var psoc = require('./socket.js')(player);	
-		psoc.sendPostAuctionSelection({ gameState : this.gameState, money: player.money });					
-	}.bind(this));
 }
 
 Game.prototype.removeCardFromAuction = function(cardId, playerId) {
 	var c = null;
-	if(this.gameState == 3) {
+	if(this.gameState == GameStates.PICK_CARD) {
 		for(var i = 0 ; i < this.cardsToAuction.length ; i++) {
 			if(this.cardsToAuction[i].id == cardId) {
 				c = this.cardsToAuction[i];
@@ -326,12 +394,14 @@ Game.prototype.removeCardFromAuction = function(cardId, playerId) {
 			}
 		}
 	}
-	logger.debug("removeCardFromAuction = " + (c !== null ? c.title : cardId+" not got!"));
+	logger.debug("[removeCardFromAuction] requested:%d, got:%d",cardId,(c!=null?c.id:"-1"));
 	return c;
 }
 
 Game.prototype.processNextTurn = function(allPlayers) {
-	this.gameState = 2;
+	logger.debug("[processNextTurn] start");
+
+	this.gameState = GameStates.SET_BIDDING;
 
 	var changedFields = this.growCity();
 
@@ -367,8 +437,8 @@ Game.prototype.growCity = function() {
 
 Game.prototype.sendAuction = function(allPlayers, changedFields, cardsToAuction, incomeReceipt) {
 	this.cardsToAuction = cardsToAuction;
-	allPlayers.forEach(function(doc) {
-		this.sendAuctionToPlayer(doc.value, changedFields, incomeReceipt);
+	allPlayers.forEach(function(player) {
+		this.sendAuctionToPlayer(player, changedFields, incomeReceipt);
 	}.bind(this));
 	var GameManager = require("./rule_gamemanager.js");
 	GameManager.storeGame(this, null);		
@@ -432,10 +502,10 @@ Game.prototype.calcIncome = function(allPlayers) {
 	for(var k in this.gameField.fields) {
 		var field = this.gameField.fields[k];
 		if(field.type !== FieldType.HOUSE) {
-			var p = allPlayers.getPlayer(field.owner);
+			var player = allPlayers.getPlayerByNo(field.owner);
 			var fieldIncome = field.attachedCard.calcRent(field, this.gameField.fields);
-			p.money += fieldIncome;
-			incomeReceipt.push([p.playerName,fieldIncome,field.attachedCard.title,field.x,field.y]);
+			player.money += fieldIncome;
+			incomeReceipt.push([player.playerName,fieldIncome,field.attachedCard.title,field.x,field.y]);
 		}
 	}
 	return incomeReceipt;
@@ -443,16 +513,14 @@ Game.prototype.calcIncome = function(allPlayers) {
 
 Game.prototype.processEndGame = function(allPlayers) {
 	var winner = { player: null, maxMoney : -1, scoreList : [] };
-	allPlayers.forEach(function(p) {
-		var player = p.value;
+	allPlayers.forEach(function(player) {
 		if(player.money > winner.maxMoney) {
 			winner.playerName = player.playerName;
 			winner.maxMoney = player.money;
 		}
 		winner.scoreList.push({playerName : player.playerName, money: player.money});
 	});			
-	allPlayers.forEach(function(p) {
-		var player = p.value;
+	allPlayers.forEach(function(player) {
 		require('./socket.js')(player).sendEndGame({ winner: winner});				
 	});
 	var GameManager = require("./rule_gamemanager.js");
@@ -480,8 +548,8 @@ Game.prototype.constructNewTurnData = function(player, changedFields, incomeRece
 }
 
 Game.prototype.setBidding = function(player, bid) {
-	logger.debug("Accepted bid for player "+player.playerName+" : -"+bid+"-");
-	this.biddings[player._id] = bid;	
+	logger.debug("[setBidding] Accepted bid for player "+player.playerName+" : -"+bid+"-");
+	this.biddings[player._id] = { acutalCost: 0, originalBid: bid};	
 }
 
 Game.reinit = function(body) {

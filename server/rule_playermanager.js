@@ -44,36 +44,46 @@ var PlayerManager = {
 				logger.error('[PlayerManager] - getPlayers failed: ', err.message);
 				return;
 			}
+			var fixedAllPlayers = [];
 			body.rows.forEach(function(doc) {
 				var loadedPlayer = doc.value;
 				Player.reinit(loadedPlayer);
 				if(perRow != null) {
 					perRow(loadedPlayer);
 				}
+				fixedAllPlayers.push(loadedPlayer);
 			});
 			if(typeof allRows !== 'undefined' && allRows !== null) {
 
 				// add a method to retrieveByPlayerNo
-				body.rows.getPlayer = function(playerNo) {
-					for(var i = 0 ; i < body.rows.length ; i++) {
-						var p = body.rows[i].value;
+				fixedAllPlayers.getPlayerByNo = function(playerNo) {
+					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
+						var p = fixedAllPlayers[i];
 						if(p.no == playerNo) {
 							return p;
 						}
 					}
 					logger.error("player not found with no="+playerNo);
 				};	
-				body.rows.getPlayerById = function(playerId) {
-					for(var i = 0 ; i < body.rows.length ; i++) {
-						var p = body.rows[i].value;
+				fixedAllPlayers.getPlayerById = function(playerId) {
+					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
+						var p = fixedAllPlayers[i];
 						if(p._id == playerId) {
 							return p;
 						}
 					}
 					logger.error("player not found with id="+getPlayerById);
-				};	
+				};
+				fixedAllPlayers.asIdArray = function() {
+					var retObj = [];
+					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
+						var p = fixedAllPlayers[i];
+						retObj.push(p._id);
+					}
+					return retObj;	
+				};
 							
-				allRows(body.rows);
+				allRows(fixedAllPlayers);
 			}
 		});
 	},	

@@ -12,7 +12,7 @@ function Global() {
 	this.i18n = I18n[Cookie.get("lang")];
 	this.serverCommListener = new ServerCommListener();
 	this.fieldPane = new FieldPane();
-	this.turnDoneButton = new Button(this.i18n.button_endRound, this, this.ctx.canvas.width-70, this.ctx.canvas.height-30, null, this.serverCommListener.onTurnDone);	
+	this.turnDoneButton = new Button(this.i18n.button_endRound, function() { return this.ctx.canvas.width-70}.bind(this), function() { return this.ctx.canvas.height-30}.bind(this), null, this.serverCommListener.onTurnDone.bind(this.serverCommListener));	
 	this.infoField = new InfoField(this.ctx);
 	this.cardLayouter = new CardLayouter(this.ctx);
 	this.infoBar = new InfoBar();
@@ -28,9 +28,22 @@ function Global() {
 	this.canvasManagerField = new CanvasManager();
 	this.canvasManagerField.add(0, this.fieldPane);
 
+	var ButtonContext = function(uiMode) {
+		this.uiMode = uiMode;
+		this.buttonRef = null;
+		this.clicked = function() {
+			this.buttonRef.clicked = true; 
+			G.uiMode = this.uiMode ; 
+			G.fieldPane.repaintTypeInfluence(); 
+			G.draw(); 
+		}
+	}
+
 	this.canvasManagerUiMode = new CanvasManagerUIMode();
 	for(var i = 0 ; i < NUMBER_OF_NON_FIELD_TYPE_MODES+NUMBER_OF_FIELD_TYPES ; i++) {
-		var uiButton = new Button(this.i18n.uiSwitchButtonText_mode[i], this, 10+(105*i), 30, 100, function(parent, self) { self.clicked = true; G.uiMode = self.contextParam ; G.fieldPane.repaintTypeInfluence(); G.draw(); }, i);
+		var buttonContext = new ButtonContext(i);
+		var uiButton = new Button(this.i18n.uiSwitchButtonText_mode[i], 10+(105*i), 30, 100, buttonContext.clicked.bind(buttonContext));
+		buttonContext.buttonRef = uiButton;
 		if(i==0) {
 			this.canvasManagerUiMode.setClicked(uiButton);
 		}
@@ -64,18 +77,9 @@ function Global() {
 	}
 
 	this.resize = function() {
-		this.turnDoneButton.x = this.ctx.canvas.width-70;
-		this.turnDoneButton.y = this.ctx.canvas.height-30;
-		for(var ind in this.cardLayouter.cards) {
-			var card = this.cardLayouter.cards[ind];
-			if(typeof(card) === 'object') {
-				card.y = this.ctx.canvas.height-card.height;
-			}
-		}
-		this.infoField.x = this.ctx.canvas.width-250;	
-		/*for(var i = 0 ; i < this.dynamicButtons.length ; i++) {
-			this.dynamicButtons[i].y = ???
-		}*/		
+		this.canvasManager.resize();
+		this.canvasManagerAuction.resize();
+		this.canvasManagerField.resize();	
 	};
 }
 

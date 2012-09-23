@@ -80,13 +80,13 @@ module.exports = {
 
 	downgradeSucc : function(test) {
 		var f = new Field(1,1,FieldType.HOUSE,{ houseType : HouseType.VILLA, housePopulation: 4, supply: []},100);
-		Field.downgrade(f);
+		Field.socialChange(f);
 		test.ok(f.attachedCard.houseType !== HouseType.VILLA);
 		test.done();
 	},
 	downgradeNo : function(test) {
 		var f = new Field(1,1,FieldType.HOUSE,{ houseType : HouseType.VILLA, housePopulation: 4, supply: []},305);
-		Field.downgrade(f);
+		Field.socialChange(f);
 		test.ok(f.attachedCard.houseType === HouseType.VILLA);
 		test.done();
 	}

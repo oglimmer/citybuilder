@@ -29,6 +29,7 @@ var I18n = {
 		msg_wfp_rounds: 'rounds',
 		msg_wfp_startgame: 'Start now!',
 		msg_wfp_player_in_the_game: 'Players in the game',
+		msg_wfp_wait: 'Wait...',
 
 		button_play : 'Play',
 		button_discard : 'Discard',

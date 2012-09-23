@@ -34,8 +34,8 @@ $(window).load(function() {
 		}
 	});
 
-	if(Cookie.get("playerId")!="" && Cookie.get("gameId") != "") {
-		socket = io.connect(document.domain);
+	if(Cookie.get("playerId")!="" && Cookie.get("gameId") != "") {		
+		G.serverCommListener.init();
 		socket.on('reJoinGameCheck_resp', function(data) {
 			$('<input type="button" value="'+G.i18n.msg_re_join_game+'" onclick="rejoinGame()">').appendTo('#rejoinDiv');		
 		});

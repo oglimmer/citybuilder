@@ -1,16 +1,18 @@
 /* ------------------------------------------ */
 /* class Button */
 /* ------------------------------------------ */
-function Button(label,parent, x, y, width, onclick, contextParam) {
+function Button(label,x, y, width, onclick) {
 	this.label = label;
-	this.x = x;
-	this.y = y;
-	this.contextParam = contextParam;
 	this.width = width != null ? width : 60;
 	this.height = 20;
 	this.enabled = true;
 	this.clicked = false;
-	this.draw = function(ctx) {
+	this.resize = function() {
+		this.x = (typeof(x) === 'function' ? x() : x ) ;
+		this.y = (typeof(y) === 'function' ? y() : y ) ;
+	}
+	this.resize();
+	this.draw = function(ctx) {		
 		ctx.beginPath();
 		ctx.rect(this.x,this.y,this.width,this.height);
 		ctx.fillStyle = this.clicked ? '#8ED6BB' : '#8ED6FF';
@@ -23,7 +25,7 @@ function Button(label,parent, x, y, width, onclick, contextParam) {
 	};  
 	this.onclick = function(x, y) {
 		if(this.atPos(x,y)) {
-			onclick(parent, this);
+			onclick();
 			return true;
 		}
 		return false;

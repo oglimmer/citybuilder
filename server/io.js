@@ -30,6 +30,12 @@ function baseHtmlHandler (req, res) {
 				return res.end('Error loading ' + urlData.pathname );
 			}
 			res.setHeader("Set-Cookie", ["lang="+lang]);
+			if((/\.js$/).test(urlData.pathname)) {
+				res.setHeader("Content-Type", "application/javascript");			
+			}	
+			if((/\.css$/).test(urlData.pathname)) {
+				res.setHeader("Content-Type", "text/css");			
+			}	
 			var dataStr = data.toString();
 			if(dataStr.match(/^importFiles/) !== null) {
 				var importFiles;

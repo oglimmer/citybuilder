@@ -10,17 +10,12 @@ function createGame() {
 	if(validateInput(playerName)) {
 		$('#top').hide();
 		$('#waitingForPlayers').show();
-		if(socket == null) {
-			socket = io.connect(document.domain);
-		}
 		G.serverCommListener.init();
 		socket.emit('createGame_req', { playerName: playerName });
 	}
 }
 function listGames() {
-	if(socket == null) {
-		socket = io.connect(document.domain);
-	}
+	G.serverCommListener.init();
 	socket.on('listGames_resp', listGames_resp);
 	socket.emit('listGames_req');
 }
@@ -41,8 +36,7 @@ function joinGame() {
 	if(validateInput(playerName)) {
 		$('#top').hide();
 		$('#waitingForPlayers').show();
-		var gameId = $("#availGamesSel").val();
-		G.serverCommListener.init();
+		var gameId = $("#availGamesSel").val();		
 		socket.emit('joinGame_req', { gameId: gameId, playerName: playerName });	
 	}
 }
@@ -50,8 +44,7 @@ function rejoinGame() {
 	$('#top').hide();
 	$('#bottom').show();
 	var gameId = Cookie.get("gameId");
-	var playerId = Cookie.get("playerId");
-	G.serverCommListener.init();
+	var playerId = Cookie.get("playerId");	
 	socket.emit('reJoinGame_req', { gameId: gameId, playerId: playerId });	
 }
 function startGame() {

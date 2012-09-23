@@ -126,22 +126,22 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 	this.width = 180;
 	this.expanded = false;
 	this.clicked = false;
-	Card.onDiscardClicked = function(card) {
-		G.serverCommListener.onCardDiscard(card);
-		G.cardLayouter.cards.removeByObj(card);
+	this.onDiscardClicked = function() {
+		G.serverCommListener.onCardDiscard(this);
+		G.cardLayouter.cards.removeByObj(this);
 		G.cardLayouter.colapse();
 		G.draw();
 	}
-	Card.onCancelClicked = function(card) {
+	this.onCancelClicked = function() {
 		G.cardLayouter.unlock();
 		G.draw();
 	}
-	Card.onPlayClicked = function(card) {
-		G.serverCommListener.onCardPlay(card);
+	this.onPlayClicked = function() {
+		G.serverCommListener.onCardPlay(this);
 		//G.cardLayouter.colapse();
 		G.canvasManagerField.clearTemp();
-		G.cardLayouter.lock(card);	
-		G.canvasManagerField.addTemp(67, new Button(G.i18n.button_cancel,card,card.x,card.y-25,70, Card.onCancelClicked));
+		G.cardLayouter.lock(this);	
+		G.canvasManagerField.addTemp(67, new Button(G.i18n.button_cancel,this.x,function() { return this.y-25}.bind(this),70, this.onCancelClicked.bind(this)));
 		G.draw();
 	}
 	this.toggle = function() {
@@ -151,12 +151,11 @@ function Card(id,title,text,actionBit,playType,profitConfig,range,localLevelMod,
 		} else {
 			this.height = 220;
 			this.y = ctx.canvas.height-this.height;
-			var self = this;
 			if(G.gameState == 1) {
 				if((G.availableActions&this.actionBit)==this.actionBit) {
-					G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this,this.x,this.y-30,null, Card.onPlayClicked));
+					G.canvasManagerField.addTemp(67, new Button(G.i18n.button_play,this.x,function() { return this.y-30}.bind(this),null, this.onPlayClicked.bind(this)));
 				}
-				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this,this.x+70,this.y-30,null, Card.onDiscardClicked));
+				G.canvasManagerField.addTemp(67, new Button(G.i18n.button_discard,this.x+70,function() { return this.y-30 }.bind(this),null, this.onDiscardClicked.bind(this)));
 			}
 		}		
 		this.expanded = !this.expanded;

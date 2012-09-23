@@ -6,12 +6,12 @@ module.exports = {
 
 	create : function(test) {
 		var cs = new CardStack();
-		cs.create();
+		cs.create(0,1);
 		test.done();
 	},
 	removeTop : function(test) {
 		var cs = new CardStack();
-		cs.create();
+		cs.create(0,1);
 		var l1 = cs.length();
 		var c = cs.removeTop();
 		var l2 = cs.length();
@@ -22,7 +22,7 @@ module.exports = {
 	},
 	addTop : function(test) {
 		var cs = new CardStack();
-		cs.create();
+		cs.create(0,1);
 		var l1 = cs.length();
 		var c1 = "foo";
 		cs.addTop(c1);
@@ -34,7 +34,7 @@ module.exports = {
 	},
 	removeCardById : function(test) {
 		var cs = new CardStack();
-		cs.create();
+		cs.create(0,1);
 		var l1 = cs.length();
 		cs.removeCardById(0);
 		var l2 = cs.length();
@@ -43,7 +43,7 @@ module.exports = {
 	},
 	getById : function(test) {
 		var cs = new CardStack();
-		cs.create();
+		cs.create(0,1);
 		var l1 = cs.length();
 		var c = cs.getById(0);
 		var l2 = cs.length();

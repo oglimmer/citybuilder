@@ -1,3 +1,4 @@
+var GameStates = require("./rule_defines.js").GameStates;
 var Field = require('./rule_field.js');
 var GameField = require('./rule_gamefield.js');
 var util = require('util');
@@ -15,7 +16,7 @@ module.exports = function(io, logger) {
 			var GameManager = require("./rule_gamemanager.js");
 			GameManager.createGame(function(game) {			
 				game.createPlayer(socket.id, data.playerName, function(player) {
-					socket.emit('waitAddPlayer_resp', { playerName: [ data.playerName ], showStartButton: true}); 
+					socket.emit('waitAddPlayer_resp', { playerName: [ data.playerName ], showStartButton: true, clear: true}); 
 				});
 			});
 		});		
@@ -25,13 +26,8 @@ module.exports = function(io, logger) {
 			var GameManager = require("./rule_gamemanager.js");
 			var PlayerManager = require("./rule_playermanager.js");
 			GameManager.getGame(data.gameId, function(game) {
-				var firstPlayer = game.playerNames.length == 0;
 				game.createPlayer(socket.id, data.playerName, function(player) {
-					var msg = { playerName: game.playerNames};
-					if(firstPlayer) {
-						msg.showStartButton=true;
-					}
-					socket.emit('waitAddPlayer_resp', msg);
+					socket.emit('waitAddPlayer_resp', { playerName: game.playerNames, clear: true } );
 					PlayerManager.getOtherPlayers(player, function(otherPlayer) {
 						otherPlayer.getSocket().emit('waitAddPlayer_resp', { playerName: [ data.playerName ] });
 					});
@@ -60,12 +56,12 @@ module.exports = function(io, logger) {
 							psoc.sendToAllPlayersInGame(function(pla) {
 								return { msg: 'infoBar', payLoad: game.constructMsgInfoBar(pla) }; // update the player# for all others
 							})
-							if(game.gameState==1) {
+							if(game.gameState==GameStates.CITY_VIEW) {
 								psoc.emit('showFieldPane', { gameState : game.gameState });
-							} else if(game.gameState==2) {
+							} else if(game.gameState==GameStates.SET_BIDDING) {
 								var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
 								psoc.emit('startAuction_resp', newTurnData);
-							} else if(game.gameState==3) {
+							} else if(game.gameState==GameStates.PICK_CARD) {
 								var newTurnData = game.constructNewTurnData(savedPlayer, {}, []);	
 								psoc.emit('startAuction_resp', newTurnData);
 								psoc.emit('postAuctionSelection', {gameState: game.gameState, money: savedPlayer.money});
@@ -219,7 +215,7 @@ module.exports = function(io, logger) {
 						if(data.cardId !== null) {
 							selectedCard = gameToPrepare.removeCardFromAuction(data.cardId, player._id);						
 						}
-						logger.debug("Player "+player.playerName+" wanted to select card "+data.cardId+" and got "+(selectedCard!==null?selectedCard.id:"null"));
+						logger.debug("[postAuctionSelect_req] Player "+player.playerName+" wanted to select card "+data.cardId+" and got "+(selectedCard!==null?selectedCard.id:"null"));
 						// if the selected card is already given, use must select another one
 						if(selectedCard !== null || data.cardId === null) {
 							// we got the card or nothing was selected
@@ -231,7 +227,7 @@ module.exports = function(io, logger) {
 					}, function(savedGame) {
 						// either the selected card was successfully retrieved for the user or the user just didn't select anything
 						if(data.cardId !== null) {
-							if(savedGame.gameState == 3) {
+							if(savedGame.gameState == GameStates.PICK_CARD) {
 								// since a card was selected in the auction-phase (initial phase uses this as well) inform other players that this one is removed now
 								PlayerManager.getOtherPlayers(player, function(otherPlayer) {
 									var psoc = require('./socket.js')(otherPlayer);
@@ -260,8 +256,8 @@ module.exports = function(io, logger) {
 			PlayerManager.getPlayer(data.playerId, function(player) {
 				PlayerManager.getPlayers(player.gameId, null, function(allPlayer) {
 					var retList = [];
-					allPlayer.forEach(function(e){
-						retList.push({ name: e.value.playerName, money: e.value.money, conn: (e.value.socketId!==null) });
+					allPlayer.forEach(function(player){
+						retList.push({ name: player.playerName, money: player.money, conn: (player.socketId!==null) });
 					});
 					socket.emit('requestAllPlayerData_resp', retList);
 				});
@@ -272,17 +268,34 @@ module.exports = function(io, logger) {
 			logger.debug("[disconnect] playerId:%s", socket.id);	
 			var Game = require("./rule_game.js");
 			Game.removePlayer(socket.id, function(game) {
-				// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)
-				if(game.playerNames.length > 0) {
-					game.checkForNextTurn();
+				// player removed and game is still available
+				if(game.gameState == GameStates.WAITING_FOR_PLAYERS) {
+					var msg = { playerName: game.playerNames, clear: true};
 					var PlayerManager = require("./rule_playermanager.js");
-					PlayerManager.getPlayers(game._id, function(player) {
-						if(player.socketId !== null) {
-							var psoc = require('./socket.js')(player);
-							psoc.emit('infoBar', game.constructMsgInfoBar(player));
+					PlayerManager.getPlayers(game._id, function(aPlayer) {
+						aPlayer.getSocket().emit('waitAddPlayer_resp', msg);
+					});							
+				} else {
+					// if the last player left the game, don't do anything (if we call checkForNextTurn we would end the turn)
+					logger.debug("[disconnect] game.playerNames=%j", game.playerNames);
+					game.allPlayersOffline(function(allOffline) {
+						if(!allOffline) {
+							game.checkForNextTurn();
+							var PlayerManager = require("./rule_playermanager.js");
+							PlayerManager.getPlayers(game._id, function(player) {
+								if(player.socketId !== null) {
+									var psoc = require('./socket.js')(player);
+									psoc.emit('infoBar', game.constructMsgInfoBar(player));
+								}
+							});
 						}
 					});
 				}
+			}, function(players) {
+				// game was deleted			
+				players.forEach(function(player) {
+					player.getSocket().emit('gameCanceled');
+				});
 			});	
 		});
 	});	

@@ -2,7 +2,6 @@
 /* class ServerCommListener */
 /* ------------------------------------------ */
 function ServerCommListener() {	
-	var self = this;
 	var time = null;
 	this.showWaitOverlay = function() {
 		$('#overlay').show();
@@ -14,28 +13,38 @@ function ServerCommListener() {
 	}
 	/*socket is a global variable*/
 	this.init = function() {
-		socket.on('sendPlayerData', self.sendPlayerData);
-		socket.on('uiElement', self.uiElement);	
-		socket.on('infoBar', self.infoBar);	
-		socket.on('card', self.card);	
-		socket.on('prePlayCard_resp', self.prePlayCard_resp);	
-		socket.on('cardPlaySelectTarget_resp', self.cardPlaySelectTarget_resp);
-		socket.on('cardPlaySelectTargetFailed_resp', self.cardPlaySelectTargetFailed_resp);
-		socket.on('startAuction_resp', self.startAuction_resp);
-		socket.on('waitAddPlayer_resp', self.waitAddPlayer_resp);
-		socket.on('gamedEnded', self.gamedEnded);
-		socket.on('requestAllPlayerData_resp', self.requestAllPlayerData_resp);
-		socket.on('postAuctionSelection', self.postAuctionSelection);
-		socket.on('showFieldPane', self.showFieldPane);
-		socket.on('auctionCardRemove', self.auctionCardRemove);
-		socket.on('initialCardSelection', self.initialCardSelection);
-		socket.on('showWait', self.showWait);
-		socket.on('reconnect', self.reconnect);
-		// http://davidchambersdesign.com/getting-started-with-socket.io/
+		if(socket == null) {
+			socket = io.connect(document.domain);
+			socket.on('sendPlayerData', this.sendPlayerData.bind(this));
+			socket.on('uiElement', this.uiElement.bind(this));	
+			socket.on('infoBar', this.infoBar.bind(this));	
+			socket.on('card', this.card.bind(this));	
+			socket.on('prePlayCard_resp', this.prePlayCard_resp.bind(this));	
+			socket.on('cardPlaySelectTarget_resp', this.cardPlaySelectTarget_resp.bind(this));
+			socket.on('cardPlaySelectTargetFailed_resp', this.cardPlaySelectTargetFailed_resp.bind(this));
+			socket.on('startAuction_resp', this.startAuction_resp.bind(this));
+			socket.on('waitAddPlayer_resp', this.waitAddPlayer_resp.bind(this));
+			socket.on('gamedEnded', this.gamedEnded.bind(this));
+			socket.on('requestAllPlayerData_resp', this.requestAllPlayerData_resp.bind(this));
+			socket.on('postAuctionSelection', this.postAuctionSelection.bind(this));
+			socket.on('showFieldPane', this.showFieldPane.bind(this));
+			socket.on('auctionCardRemove', this.auctionCardRemove.bind(this));
+			socket.on('initialCardSelection', this.initialCardSelection.bind(this));
+			socket.on('showWait', this.showWait.bind(this));
+			socket.on('reconnect', this.reconnect.bind(this));
+			socket.on('gameCanceled', this.gameCanceled.bind(this));
+			// http://davidchambersdesign.com/getting-started-with-socket.io/
+		}
 	};
 	this.reconnect = function() {
 		socket.emit('reJoinGame_req', { reconnect: true, playerId: G.playerId, gameId: Cookie.get("gameId")});
 	};
+	this.gameCanceled = function() {
+		$('#availGamesDiv').html("");
+		$('#playerList').html("");		
+		$('#top').show();
+		$('#waitingForPlayers').hide();		
+	}
 	this.requestAllPlayerData = function() {
 		socket.emit('requestAllPlayerData_req', {playerId : G.playerId});
 	};
@@ -57,10 +66,16 @@ function ServerCommListener() {
 		$('#winner').html(html);
 		$('#bottom').hide();
 		$('#winner').show();
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 	};
 	this.waitAddPlayer_resp = function (data) {
+		console.log(Math.random());
+		console.log(data);
+		if(typeof(data.clear) !== 'undefined' && data.clear === true) {
+			$('#playerList').html("");
+		}
 		$.each(data.playerName, function(ind, val) {
+			console.log("  --adding:"+val);
 			$('#playerList').html($('#playerList').html()+'- '+val+'<br/>');
 		});
 		if(typeof(data.showStartButton) !== 'undefined') {
@@ -94,7 +109,7 @@ function ServerCommListener() {
 		}
 	};
 	this.onTurnDone = function() {
-		self.showWaitOverlay();
+		this.showWaitOverlay();
 		G.turnDoneButton.enabled = false;		
 		if(G.gameState == 1) {
 			socket.emit('roundEnd_req', { playerId : G.playerId});
@@ -103,13 +118,13 @@ function ServerCommListener() {
 		} else if(G.gameState == 2) {
 			var bid = parseInt($('#bid').val());
 			if(isNaN(bid) || bid <0 ) {
-				self.hideWaitOverlay();
+				this.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;
 				alert(G.i18n.error_illegal_value);
 			} else if (bid <= G.infoBar.money || confirm(G.i18n.error_not_enough_money)) {
 				socket.emit('auctionBid_req', { playerId : G.playerId, bid: bid });
 			} else {
-				self.hideWaitOverlay();
+				this.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;											
 			}
 		} else if(G.gameState == 3 || G.gameState == 4) {
@@ -117,7 +132,7 @@ function ServerCommListener() {
 			if(selectedCardId!==null || confirm(G.i18n.error_no_card_selected)) {
 				socket.emit('postAuctionSelect_req', { playerId : G.playerId, cardId: selectedCardId });
 			} else {
-				self.hideWaitOverlay();
+				this.hideWaitOverlay();
 				G.turnDoneButton.enabled = true;							
 			}
 		}
@@ -127,7 +142,7 @@ function ServerCommListener() {
 		G.draw();
 	}
 	this.startAuction_resp = function(msg) {
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 
 		msg.incomeReceipt.sort(function(a,b) {
 			return b[1]-a[1];
@@ -135,8 +150,8 @@ function ServerCommListener() {
 
 		/*  */		
 		G.gameState = msg.gameState;
-		self.infoBar(msg.infoBar);
-		self.uiElement(msg.uiElement);
+		this.infoBar(msg.infoBar);
+		this.uiElement(msg.uiElement);
 		G.availableActions = msg.availableActions;
 		G.auctionPanel.selectable = false;
 		G.auctionPanel.setCards(msg.cardsToAuction);
@@ -151,7 +166,7 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.showFieldPane = function(msg) {
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 		G.gameState = msg.gameState;
 		G.turnDoneButton.label = G.i18n.button_endRound;
 		G.turnDoneButton.enabled = true;
@@ -174,7 +189,7 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.postAuctionSelection = function(msg) {
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 		$('#bidInput').hide();
 		G.auctionPanel.currentlyClicked = null;
 		G.gameState = msg.gameState;
@@ -188,9 +203,9 @@ function ServerCommListener() {
 		console.log(msg);
 		$('#waitingForPlayers').hide();
 		$('#bottom').show();
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 		/*  */
-		self.infoBar(msg.infoBar);
+		this.infoBar(msg.infoBar);
 		G.auctionPanel.selectable = true;
 		G.auctionPanel.setCards(msg.cardsToSelect);
 		G.canvasManagerAuction.enabled = true;
@@ -201,25 +216,25 @@ function ServerCommListener() {
 		G.draw();
 	};
 	this.onCardPlay = function(card) {
-		self.showWaitOverlay();		
+		this.showWaitOverlay();		
 		var msgName = card.playType == 0 ? 'directCardPlay_req' : 'prePlayCard_req';
 		socket.emit(msgName, {card : card, playerId : G.playerId });
 	};
 	this.prePlayCard_resp = function(msg) {
-		self.hideWaitOverlay();		
+		this.hideWaitOverlay();		
 		/* msg = {selectable,range,buildspace} */
 		G.fieldPane.surroundingMatrix = FieldPane.createSurroundingRange(msg.range);
 		G.fieldPane.selectableType = msg.selectable;
 		G.fieldPane.setSelectTargetEnabled(true);
 	};
 	this.playCardSelectTarget = function(field) {
-		self.showWaitOverlay();
+		this.showWaitOverlay();
 		socket.emit('cardPlaySelectTarget_req', { playerId : G.playerId , cardIdToPlay: G.cardLayouter.currentlyClicked.id, targetFieldId: field.cor()});
 	};
 	this.cardPlaySelectTarget_resp = function(msg) {
 		// update card	
 		if(typeof msg.cardId !== 'undefined') {
-			self.hideWaitOverlay();
+			this.hideWaitOverlay();
 			G.cardLayouter.cards.removeById(msg.cardId);
 			G.cardLayouter.unlock();
 		}
@@ -236,13 +251,13 @@ function ServerCommListener() {
 		G.draw();
 	}
 	this.cardPlaySelectTargetFailed_resp = function(msg) {
-		self.hideWaitOverlay();
+		this.hideWaitOverlay();
 		//G.cardLayouter.unlock();
 		G.fieldPane.setSelectTargetEnabled(true);
 		alert(G.i18n[msg.error]);
 	}
 	this.showWait = function(msg) {
-		self.showWaitOverlay();
+		this.showWaitOverlay();
 		G.turnDoneButton.enabled = false;		
 		G.cardLayouter.unlock();
 		G.cardLayouter.colapse();

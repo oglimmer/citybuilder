@@ -47,6 +47,14 @@ function CardLayouter(ctx) {
 		}
 		return false;
 	};  
+	this.resize = function() {
+		for(var ind in this.cards) {
+			var card = this.cards[ind];
+			if(typeof(card) === 'object') {
+				card.y = ctx.canvas.height-card.height;
+			}
+		}
+	}	
 	this.isExpanded = function() {
 		return this.currentlyExpanded !== null;	
 	}

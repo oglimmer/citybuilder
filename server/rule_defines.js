@@ -2,9 +2,10 @@ Array.prototype.removeByObj = function(obj) {
 	for(var i = 0 ; i < this.length ; i++) {
 		if(this[i] === obj) {
 			this.splice(i,1);
-			break;
+			return;
 		}
 	}
+	console.trace("[removeByObj] failed for " + obj);
 };
 Array.prototype.findByProp = function(propName, propValue) {
 	for(var i = 0 ; i < this.length ; i++) {
@@ -88,9 +89,18 @@ var LocalLevel = {
 	UPPERCLASS: {min:250, max:99999,buildings:["VILLA"]}
 }
 
+var GameStates = {
+	WAITING_FOR_PLAYERS : 0,
+	CITY_VIEW : 1,
+	SET_BIDDING : 2,
+	PICK_CARD : 3,
+	PICK_INITIAL_CARD : 4
+}
+
 module.exports.FieldType = FieldType;
 module.exports.HouseType = HouseType;
 module.exports.HouseTypeReverse = HouseTypeReverse;
 module.exports.HouseTypeMaxPop = HouseTypeMaxPop;
 module.exports.LocalLevel = LocalLevel;
 module.exports.Config = Config;
+module.exports.GameStates = GameStates;

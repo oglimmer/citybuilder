@@ -9,3 +9,5 @@ nodeunit tests/fieldTest.js
 nodeunit tests/gameCreatePlayerTest.js
 nodeunit tests/gameChangePlayerTest.js
 nodeunit tests/gameBiddingTest.js
+nodeunit tests/gameRemoveCardFromAuctionTest.js
+nodeunit tests/rentalcardProfitTest.js
