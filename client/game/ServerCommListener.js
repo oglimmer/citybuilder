@@ -44,6 +44,7 @@ function ServerCommListener() {
 		$('#playerList').html("");		
 		$('#top').show();
 		$('#waitingForPlayers').hide();		
+		changeHelp(0);
 	}
 	this.requestAllPlayerData = function() {
 		socket.emit('requestAllPlayerData_req', {playerId : G.playerId});
@@ -163,7 +164,8 @@ function ServerCommListener() {
 		G.incomeReceipt = msg.incomeReceipt;
 		G.infoBar.showLargeInfo = false;
 		$('#bidInput').show();
-		G.draw();
+		G.draw();		
+		changeHelp(6);
 	};
 	this.showFieldPane = function(msg) {
 		this.hideWaitOverlay();
@@ -187,6 +189,7 @@ function ServerCommListener() {
 		}
 
 		G.draw();
+		changeHelp(5);
 	};
 	this.postAuctionSelection = function(msg) {
 		this.hideWaitOverlay();
@@ -198,6 +201,7 @@ function ServerCommListener() {
 		G.turnDoneButton.label = G.i18n.button_pick_card;
 		G.turnDoneButton.enabled = true;
 		G.draw();	
+		changeHelp(7);
 	};
 	this.initialCardSelection = function(msg) {
 		console.log(msg);
@@ -214,6 +218,7 @@ function ServerCommListener() {
 		G.turnDoneButton.label = G.i18n.button_pick_card;
 		G.turnDoneButton.enabled = true;
 		G.draw();
+		changeHelp(4);
 	};
 	this.onCardPlay = function(card) {
 		this.showWaitOverlay();		

@@ -1,3 +1,6 @@
+function changeHelp(helpId) {
+	$('#help').html(G.i18n["help_"+helpId]);
+}
 function validateInput(playerName) {
 	if(playerName == '') {
 		alert(G.i18n.error_noname);
@@ -12,6 +15,7 @@ function createGame() {
 		$('#waitingForPlayers').show();
 		G.serverCommListener.init();
 		socket.emit('createGame_req', { playerName: playerName });
+		changeHelp(1);
 	}
 }
 function listGames() {
@@ -30,6 +34,7 @@ function listGames_resp(data) {
 		$('<br/>').appendTo('#availGamesDiv');
 		$('<input type="button" value="'+G.i18n.msg_join_selected_game+'" onclick="joinGame()">').appendTo('#availGamesDiv');		
 	}
+	changeHelp(2);
 }
 function joinGame() {
 	var playerName = $("#playerName").val();	
@@ -38,6 +43,7 @@ function joinGame() {
 		$('#waitingForPlayers').show();
 		var gameId = $("#availGamesSel").val();		
 		socket.emit('joinGame_req', { gameId: gameId, playerName: playerName });	
+		changeHelp(3);
 	}
 }
 function rejoinGame() {

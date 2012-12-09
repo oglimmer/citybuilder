@@ -67,7 +67,7 @@ function GlobalListeners() {
 	}, false);
 
 	$(window).resize(function() {
-		$("#gameCanvas").attr('width', $(window).width()-25).attr('height', $(window).height()-35);
+		$("#gameCanvas").attr('width', $(window).width()-225).attr('height', $(window).height()-35);
 		G.resize();
 		G.draw();
 	});

@@ -20,7 +20,7 @@ var G = null;
 var GL = null;
 
 $(window).load(function() {
-	$("#gameCanvas").attr('width', $(window).width()-25).attr('height', $(window).height()-35);
+	$("#gameCanvas").attr('width', $(window).width()-225).attr('height', $(window).height()-35);
 
 	G = new Global();
 	GL = new GlobalListeners();
