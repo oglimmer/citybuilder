@@ -80,106 +80,106 @@ var I18n = {
 		fieldType : ['U', 'H', 'R', 'G', 'C', 'J', 'E', 'P', 'X'],
 		fieldTypeLong : ['Occupied', 'House', 'Restaurant', 'Groceries', 'Clothing', 'Jewelery', 'Electronic', 'Public Services', 'Criminals'],
 
-		c_all_housetypes : 'alle Haustypen',
+		c_all_housetypes : 'all house types',
 
-		c0_1 : 'Italienisches Bistro',
-		c0_2 : 'Baue ein "Italienisches Bistro" anstelle eines beliebigen Wohnhauses.',
+		c0_1 : 'Italian Bistro',
+		c0_2 : 'Replace a home field by an "Italian Bistro".',
 
-		c1_1 : 'Italienisches Restaurant',
-		c1_2 : 'Baue ein "Italienisches Restaurant" anstelle eines beliebigen Wohnhauses.',
+		c1_1 : 'Italian Restaurant',
+		c1_2 : 'Replace a home field by an "Italian Restaurant".',
 
-		c2_1 : 'Nobel Italiener',
-		c2_2 : 'Baue ein "Italienisches Nobelrestaurant" anstelle eines beliebigen Wohnhauses.',
+		c2_1 : 'Ritzy Italian Place',
+		c2_2 : 'Replace a home field by a "Ritzy Italian Place".',
 
-		c3_1 : 'Griechisches Restaurant',
-		c3_2 : 'Bau ein "Griechisches Restaurant" anstelle eines beliebigen Wohnhauses,',
+		c3_1 : 'Greek Restaurant',
+		c3_2 : 'Replace a home field by a "Greek Restaurant".',
 
-		c4_1 : 'Chinesischer Schnellimbiss',
-		c4_2 : 'Baue einen "Chinesischen Schnellimbiss" anstelle eines beliebigen Wohnhauses.',
+		c4_1 : 'Chinese snack bar',
+		c4_2 : 'Replace a home field by a "Chinese snack bar".',
 
-		c5_1 : 'Mongolischer Grill',
-		c5_2 : 'Baue einen "Mongolischen Grill" anstelle eines beliebigen Wohnhauses.',
+		c5_1 : 'Mongolian Grill',
+		c5_2 : 'Replace a home field by a "Mongolian Grill".',
 
-		c6_1 : 'Steakhaus',
-		c6_2 : 'Baue ein "Steakhaus" anstelle eines beliebigen Wohnhauses.',
+		c6_1 : 'Steakhouse',
+		c6_2 : 'Replace a home field by a "Steakhouse".',
 
 		c7_1 : 'Haute cuisine',
-		c7_2 : 'Baue ein "Haute cuisine Restaurant" anstelle eines beliebigen Wohnhauses.',
+		c7_2 : 'Replace a home field by a "Haute cuisine Restaurant".',
 
 		c8_1 : 'McDonalds',
-		c8_2 : 'Baue ein "McDonalds Restaurant" anstelle eines beliebigen Wohnhauses.',
+		c8_2 : 'Replace a home field by a "McDonalds Restaurant".',
 
 		c9_1 : 'Burger King',
-		c9_2 : 'Baue ein "Burger King Restaurant" anstelle eines beliebigen Wohnhauses.',
+		c9_2 : 'Replace a home field by a "Burger King Restaurant".',
 
 		c10_1 : 'KFC',
-		c10_2 : 'Baue ein "KFC Restaurant" anstelle eines beliebigen Wohnhauses.',
+		c10_2 : 'Replace a home field by a "KFC Restaurant".',
 
-		c100_1 : 'Gemüseladen',
-		c100_2 : 'Baue einen "Gemüseladen" anstelle eines beliebigen Wohnhauses.',
+		c100_1 : 'Greengrocery',
+		c100_2 : 'Replace a home field by a "Greengrocery".',
 
 		c101_1 : 'Aldi',
-		c101_2 : 'Baue einen "Aldi" anstelle eines beliebigen Wohnhauses.',
+		c101_2 : 'Replace a home field by an "Aldi".',
 
-		c102_1 : 'Netto',
-		c102_2 : 'Baue einen "Netto Markt" anstelle eines beliebigen Wohnhauses.',
+		c102_1 : 'Food4Less',
+		c102_2 : 'Replace a home field by a "Food4Less".',
 
 		c103_1 : 'Lidl',
-		c103_2 : 'Baue einen "Lidl" anstelle eines beliebigen Wohnhauses.',
+		c103_2 : 'Replace a home field by a "Lidl".',
 
-		c104_1 : 'Real Super Store',
-		c104_2 : 'Baue einen "Real Super Store" anstelle eines beliebigen Wohnhauses.',
+		c104_1 : 'Walmart Super Store',
+		c104_2 : 'Replace a home field by a "Walmart Super Store".',
 
-		c105_1 : 'Reformhaus',
-		c105_2 : 'Baue ein "Reformhaus" anstelle eines beliebigen Wohnhauses.',
+		c105_1 : 'Indep. Health food store',
+		c105_2 : 'Replace a home field by an "independent Health food store".',
 
-		c106_1 : 'Tegut',
-		c106_2 : 'Baue einen "Tegut Markt" anstelle eines beliebigen Wohnhauses.',
+		c106_1 : 'Fresh-n-Easy',
+		c106_2 : 'Replace a home field by a "Fresh-n-Easy Neighbor Market".',
 	
-		c200_1 : 'Kik',
-		c200_2 : 'Baue einen "Kik Kleidermarkt" anstelle eines beliebigen Wohnhauses.',
+		c200_1 : 'Woolworth',
+		c200_2 : 'Replace a home field by a "Woolworth" clothing store.',
 
-		c201_1 : 'Adler',
-		c201_2 : 'Baue einen "Adler Kleidermarkt" anstelle eines beliebigen Wohnhauses.',
+		c201_1 : 'JC Penney',
+		c201_2 : 'Replace a home field by a "JC Penney" clothing store..',
 
-		c202_1 : 'C&A',
-		c202_2 : 'Baue einen "C&A Kleidermarkt" anstelle eines beliebigen Wohnhauses.',
+		c202_1 : 'Macy`s',
+		c202_2 : 'Replace a home field by a "Macy`s" clothing store..',
 
 		c203_1 : 'H&M',
-		c203_2 : 'Baue einen "H&M Kleidergeschäft" anstelle eines beliebigen Wohnhauses.',
+		c203_2 : 'Replace a home field by a "H&M".',
 
 		c204_1 : 'D&G',
-		c204_2 : 'Baue einen "D&G Kleidergeschäft" anstelle eines beliebigen Wohnhauses.',
+		c204_2 : 'Replace a home field by a "D&G".',
 
 		c205_1 : 'Chanel',
-		c205_2 : 'Baue ein "Chanel Boutique" anstelle eines beliebigen Wohnhauses.',
+		c205_2 : 'Replace a home field by a "Chanel".',
 
-		c206_1 : 'Ulla Popken',
-		c206_2 : 'Baue einen "Ulla Popken Kleidergeschäft" anstelle eines beliebigen Wohnhauses.',
+		c206_1 : 'Victorias Secret',
+		c206_2 : 'Replace a home field by a "Victoria`s Secret".',
 
-		c207_1 : 'Breuninger',
-		c207_2 : 'Baue einen "Breuninger Kleidergeschäft" anstelle eines beliebigen Wohnhauses.',
+		c207_1 : 'Banana Republic',
+		c207_2 : 'Replace a home field by a "Banana Republic".',
 
 		c208_1 : 'Abercrombie & Fitch',
-		c208_2 : 'Baue einen "Abercrombie & Fitch" anstelle eines beliebigen Wohnhauses.',
+		c208_2 : 'Replace a home field by a "Abercrombie & Fitch".',
 
 		c300_1 : 'Bijou Brigitte',
-		c300_2 : 'Baue einen "Bijou Brigitte" anstelle eines beliebigen Wohnhauses.',
+		c300_2 : 'Replace a home field by a "Bijou Brigitte".',
 
-		c301_1 : 'Juwelier',
-		c301_2 : 'Baue einen "Juwelier" anstelle eines beliebigen Wohnhauses.',
+		c301_1 : 'Jewelry',
+		c301_2 : 'Replace a home field by a "Jewelry" shop.',
 
 		c302_1 : 'Tiffany & Co',
-		c302_2 : 'Baue einen "Tiffany & Co" anstelle eines beliebigen Wohnhauses.',
+		c302_2 : 'Replace a home field by a "Tiffany & Co".',
 
 		c400_1 : 'TV & Hifi',
-		c400_2 : 'Baue einen "TV & Hifi - Laden" anstelle eines beliebigen Wohnhauses.',
+		c400_2 : 'Replace a home field by a "TV & Hifi".',
 
-		c401_1 : 'Elektronikmarkt',
-		c401_2 : 'Baue einen "Elektronikmarkt" anstelle eines beliebigen Wohnhauses.',
+		c401_1 : 'Best Buy',
+		c401_2 : 'Replace a home field by a "Best Buy".',
 
-		c500_1 : 'Gentrifizierung',
-		c500_2 : 'Wähle ein Wohnhaus das gentrifiziert werden soll.',
+		c500_1 : 'Gentrification',
+		c500_2 : 'Pick a home field for gentrification.',
 
 		c501_1 : 'Bevölkerungszuwachs',
 		c501_2 : 'Wähle ein Wohnhaus das mehr Bevökerung bekommen soll.',
