@@ -86,8 +86,8 @@ function ServerCommListener() {
 	this.sendPlayerData = function (data) {
 		G.playerId = data.playerId;
 		G.playerNo = data.playerNo;		
-		Cookie.set("playerId", data.playerId, 7);
-		Cookie.set("gameId", data.gameId, 7);
+		Cookie.set("playerId", data.playerId);
+		Cookie.set("gameId", data.gameId);
 		G.availableActions = data.availableActions;
 	};
 	this.uiElement = function (data) {
