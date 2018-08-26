@@ -19,7 +19,7 @@ Player.prototype.getSocket = function() {
 	var io = require("./io.js");	
 	var socket;
 	if(this.socketId !== null) {
-		socket = io.sockets.socket(this.socketId);
+		socket = io.sockets.sockets[this.socketId];
 	} else {
 		socket = {
 			emit : function() {}

@@ -3,9 +3,15 @@ citybuilder
 
 A Card Based Multi Player Board Game
 
+How to run (new)
+================
 
-How to run
-==========
+1.) run `./run_local.sh`
+
+2.) access the game at http://localhost:1337
+
+How to run (old)
+================
 
 1.) install Apache CouchDB (http://couchdb.apache.org) and run it
 

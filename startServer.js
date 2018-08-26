@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var log4js = require('log4js');
-log4js.clearAppenders();
 log4js.configure('./log4js_config.json', { reloadSecs: 300 });
 
 var Config = require('./server/rule_defines.js').Config;

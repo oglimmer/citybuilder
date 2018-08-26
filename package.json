@@ -1,0 +1,33 @@
+{
+  "name": "citybuilder",
+  "version": "1.0.0",
+  "description": "A multiplayer online game",
+  "main": "startServer.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "nodeunit tests/ && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oglimmer/citybuilder.git"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "javascript"
+  ],
+  "author": "Oli Zimpasser",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oglimmer/citybuilder/issues"
+  },
+  "homepage": "https://github.com/oglimmer/citybuilder#readme",
+  "dependencies": {
+    "log4js": "^3.0.5",
+    "nano": "^7.0.0",
+    "nodeunit": "^0.11.3",
+    "socket.io": "^2.1.1"
+  }
+}

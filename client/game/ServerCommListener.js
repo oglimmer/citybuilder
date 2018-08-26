@@ -14,7 +14,7 @@ function ServerCommListener() {
 	/*socket is a global variable*/
 	this.init = function() {
 		if(socket == null) {
-			socket = io.connect(document.domain);
+			socket = io();
 			socket.on('sendPlayerData', this.sendPlayerData.bind(this));
 			socket.on('uiElement', this.uiElement.bind(this));	
 			socket.on('infoBar', this.infoBar.bind(this));	
