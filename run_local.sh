@@ -445,7 +445,7 @@ if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
       fi
     fi
     
-    if [ -n "$VERBOSE" ]; then echo "debug...."; fi
+    if [ -n "$VERBOSE" ]; then echo "docker run --rm -d $dockerCouchRef -p 1337:1337 -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  -v $(pwd):/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js"; fi
     dockerContainerIDnode=$(docker run --rm -d $dockerCouchRef -p 1337:1337 \
         -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  \
         -v "$(pwd)":/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js)

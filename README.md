@@ -13,12 +13,12 @@ How to run (new)
 How to run (old)
 ================
 
-1.) install Apache CouchDB (http://couchdb.apache.org) and run it
+1.) install Apache CouchDB V1.x (http://couchdb.apache.org) and run it
 
-2.) install node.js (http://nodejs.org)
+2.) install node (v>=8) and npm
 
-3.) install some required node modules: "npm -g install log4js nano nodeunit socket.io" (make sure NODE_PATH is set properly)
+3.) install dependencies via `npm i`
 
-4.) run the main js-script "startServer.js"
+4.) run `./startServer.js`
 
 5.) access the game at http://localhost:1337
