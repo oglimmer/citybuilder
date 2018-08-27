@@ -1,4 +1,4 @@
-var Config = require('./rule_defines.js').Config;
+var Config = require('./config');
 var db = require('nano')(Config.db);
 var Game = require("./rule_game.js");
 var Player = require("./rule_player.js");
@@ -26,18 +26,19 @@ var GameManager = {
 		db.destroy(game._id,game._rev);
 	},
 
-	getGame : function(gameId, onLoad) {	
+	getGame : async (gameId, onLoad) => {	
 		if(typeof gameId === "undefined") {
 			logger.error("Error in getGame - gameId is undefined");
+			return;
 		}		
-		db.get(gameId, { revs_info: false }, function(err, body) {
-			if (err) {
-				logger.error('[GameManager] - getGame failed for id '+gameId+': ', err.message);
-				return;
-			}	
+		try {
+			const body = await db.get(gameId, { revs_info: false });
 			Game.reinit(body);
 			onLoad(body);
-		});
+		} catch (err) {
+			logger.error('[GameManager] - getGame failed for id '+gameId+': ', err.message);
+		}
+
 	},
 
 	listAllGames : function(onLoad) {

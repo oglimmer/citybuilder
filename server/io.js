@@ -1,7 +1,7 @@
 var http = require('http')
 var socketIO = require('socket.io');
 var fs = require('fs');
-var Config = require('./rule_defines.js').Config;
+var Config = require('./config');
 var log4js = require('log4js');
 var LogWrapper = require('./util/logger.js');
 var logger = log4js.getLogger('io');
@@ -61,8 +61,8 @@ var app = http.createServer(baseHtmlHandler);
 var io = socketIO.listen(app, {
 	'logger': new LogWrapper()
 });
-app.listen(Config.httpPort, "127.0.0.1");
-logger.info("Server listen on " + Config.httpPort);
+app.listen(Config.httpPort, Config.httpHost);
+logger.info(`Server listen on ${Config.httpHost}:${Config.httpPort}`);
 
 require('./ioHandler.js')(io,logger);
 

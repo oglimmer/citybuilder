@@ -1,0 +1,18 @@
+{
+	"_id": "_design/game",
+	"language": "javascript",
+	"views": {
+		"allGames": {
+			"map": "function(doc) { if(doc.clazz == 'Game' && doc.gameState == 0) emit(doc._id, doc.playerNames);}"
+		},
+		"playersByGameId": {
+			"map": "function(doc) { if(doc.clazz == 'Player') emit(doc.gameId, doc);}"
+		},
+        "playersBySocketId": {
+            "map": "function(doc) { if(doc.clazz == 'Player') emit(doc.socketId, doc);}"
+        },
+        "activePlayers": {
+            "map": "function(doc) { if(doc.clazz == 'Player' && doc.socketId != null) emit(1,1);}"
+        }
+	}
+}

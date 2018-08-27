@@ -1,4 +1,4 @@
-var Config = require('./rule_defines.js').Config;
+var Config = require('./config');
 var db = require('nano')(Config.db);
 var CardStack = require("./rule_cardstack.js");
 var CardFactory = require("./rule_cardfactory.js");

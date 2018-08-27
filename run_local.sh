@@ -23,7 +23,7 @@ cleanup()
   echo "Stopping software .....please wait...."
   echo "****************************************************************"
 
-  ALL_COMPONENTS=(couchdb)
+  ALL_COMPONENTS=(couchdb node)
   for keepRunningAllElement in "${ALL_COMPONENTS[@]}"; do
     IFS=',' read -r -a array <<< "$KEEP_RUNNING"
     found=0
@@ -40,6 +40,14 @@ cleanup()
         if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
          docker rm -f $dockerContainerIDcouchdb
          rm -f .couchdb
+        fi
+        
+      fi
+      if [ "$keepRunningAllElement" == "node" ]; then
+        echo "Stopping $keepRunningAllElement ..."
+        if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
+         docker rm -f $dockerContainerIDnode
+         rm -f .node
         fi
         
       fi
@@ -71,6 +79,8 @@ where:
 Details:
  -t couchdb:local #reuse a local, running CouchDB installation, does not start/stop this CouchDB
  -t couchdb:docker:[1.7|2] #start docker image \`couchdb:X\`
+ -t node:local #reuse a local node installation
+ -t node:docker:[6|8|10] #start docker image \`node:X\`
 "
 
 cd $(cd "$(dirname "$0")";pwd -P)
@@ -137,6 +147,7 @@ fi
 #------------
 
 TYPE_SOURCE_COUCHDB=docker
+TYPE_SOURCE_NODE=local
 
 
 
@@ -312,15 +323,37 @@ done
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# NodePlugin // citybuilder
+# NodePlugin // node
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if [ -n "$VERBOSE" ]; then echo "NodePlugin // citybuilder"; fi
+if [ -n "$VERBOSE" ]; then echo "NodePlugin // node"; fi
 
 
 #------------
 # PrepareCompBuilder
 #------------
 
+
+
+IFS=',' read -r -a array <<< "$TYPE_SOURCE"
+for typeSourceElement in "${array[@]}"; do
+  IFS=: read comp type pathOrVersion <<< "$typeSourceElement"
+  if [ "$comp" == "node" ]; then
+    TYPE_SOURCE_NODE=$type
+    if [ "$TYPE_SOURCE_NODE" == "local" ]; then
+      TYPE_SOURCE_NODE_PATH=$pathOrVersion
+    else
+      TYPE_SOURCE_NODE_VERSION=$pathOrVersion
+    fi
+  fi
+
+done
+
+if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
+  if [ -z "$TYPE_SOURCE_NODE_VERSION" ]; then
+    TYPE_SOURCE_NODE_VERSION=10
+  fi
+  
+fi
 
 
 
@@ -377,8 +410,74 @@ if [ -n "$VERBOSE" ]; then echo "NodePlugin // citybuilder"; fi
 
 
 
-      ./startServer.js
+if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
+  if [ -f .node ] && [ "$(<.node)" == "download" ]; then
+    echo "node running but started from different source type"
+    exit 1
+  fi
+  if [ ! -f ".node" ]; then
     
+    mkdir -p localrun/webapps/
+    
+  mkdir -p localrun/91c32670
+  > localrun/91c32670/citybuilder.properties
+  echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
+  echo "httpPort=1337">>localrun/91c32670/citybuilder.properties
+  echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
+    ## logic to connect any DATA_SOURCE to this Tomcat running Docker
+    if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
+      dockerCouchRef="--link $dockerContainerIDcouchdb"
+    
+      echo "dbHost=http://$dockerContainerIDcouchdb:5984">>localrun/91c32670/citybuilder.properties
+    
+
+      echo "db=http://$dockerContainerIDcouchdb:5984/citybuilder">>localrun/91c32670/citybuilder.properties
+    
+    elif [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
+      if [ "$(uname)" != "Linux" ]; then 
+        echo "dbHost=http://host.docker.internal:5984">>localrun/91c32670/citybuilder.properties
+    
+
+        echo "db=http://host.docker.internal:5984/citybuilder">>localrun/91c32670/citybuilder.properties
+    
+      else 
+        dockerCouchRef="--net=host"
+      fi
+    fi
+    
+    if [ -n "$VERBOSE" ]; then echo "debug...."; fi
+    dockerContainerIDnode=$(docker run --rm -d $dockerCouchRef -p 1337:1337 \
+        -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  \
+        -v "$(pwd)":/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js)
+    echo "$dockerContainerIDnode">.node
+  else
+    dockerContainerIDnode=$(<.node)
+  fi
+  tailCmd="docker logs -f $dockerContainerIDnode"
+fi
+
+
+
+if [ "$TYPE_SOURCE_NODE" == "local" ]; then
+  if [ -f .node ]; then
+    echo "node running but started from different source type"
+    exit 1
+  fi
+  
+      
+  mkdir -p localrun/91c32670
+  > localrun/91c32670/citybuilder.properties
+  echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
+  echo "httpPort=1337">>localrun/91c32670/citybuilder.properties
+  echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
+  echo "dbHost=http://localhost:5984">>localrun/91c32670/citybuilder.properties
+  echo "db=http://localhost:5984/citybuilder">>localrun/91c32670/citybuilder.properties
+  export CITYBUILDER_PROPERTIES="localrun/91c32670/citybuilder.properties"
+    
+  ./startServer.js
+  echo "$dockerContainerIDnode">.node
+fi
+
 
 
 
@@ -409,7 +508,7 @@ if [ "$TAIL" == "YES" ]; then
   $tailCmd
 else
   echo "$tailCmd"
-  echo "<return> to rebuild, ctrl-c to stop CouchDB"
+  echo "<return> to rebuild, ctrl-c to stop CouchDB, Node"
   while true; do
     read </dev/tty
     f_build

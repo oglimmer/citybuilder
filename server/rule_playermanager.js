@@ -1,4 +1,4 @@
-var Config = require('./rule_defines.js').Config;
+var Config = require('./config');
 var db = require('nano')(Config.db);
 var Game = require("./rule_game.js");
 var Player = require("./rule_player.js");

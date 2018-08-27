@@ -23,13 +23,6 @@ Array.prototype.in = function(elementToFind) {
 	return false;
 };
 
-var Config = {
-	dbHost : 'http://localhost:5984',
-	db : 'http://localhost:5984/citybuilder',
-	dbSchema : 'citybuilder',
-	httpPort : 1337
-}
-
 var FieldType = {
 	UNKNOWN : -1,
 	HOUSE : 0,
@@ -102,5 +95,4 @@ module.exports.HouseType = HouseType;
 module.exports.HouseTypeReverse = HouseTypeReverse;
 module.exports.HouseTypeMaxPop = HouseTypeMaxPop;
 module.exports.LocalLevel = LocalLevel;
-module.exports.Config = Config;
 module.exports.GameStates = GameStates;
