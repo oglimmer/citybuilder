@@ -49,6 +49,10 @@ cleanup()
          docker rm -f $dockerContainerIDnode
          rm -f .node
         fi
+        if [ "$TYPE_SOURCE_NODE" == "local" ]; then
+         ps -p $processIdnode >/dev/null && kill $processIdnode
+         rm -f .node
+        fi
         
       fi
     fi
@@ -75,6 +79,7 @@ where:
   -t [component:type:[path|version]] run component inside [docker] container, [download] component (default) or [local] use installed component from path
   -V                         enable Verbose
   -v                         start VirtualBox via vagrant, install all dependencies, ssh into the VM and run
+  -f                         tail the nodejs log at the end
 
 Details:
  -t couchdb:local #reuse a local, running CouchDB installation, does not start/stop this CouchDB
@@ -86,7 +91,7 @@ Details:
 cd $(cd "$(dirname "$0")";pwd -P)
 
 BUILD=local
-while getopts ':hsc:k:t:Vv' option; do
+while getopts ':hsc:k:t:Vvf' option; do
   case "$option" in
     h) echo "$usage"
        exit;;
@@ -101,6 +106,7 @@ while getopts ':hsc:k:t:Vv' option; do
     t) TYPE_SOURCE=$OPTARG;;
     V) VERBOSE=YES;;
     v) VAGRANT=YES;;
+    f) TAIL=YES;;
     :) printf "missing argument for -%s\n" "$OPTARG" >&2
        echo "$usage" >&2
        exit 1;;
@@ -380,8 +386,16 @@ fi
 
 
 
-      if [ "$SKIP_BUILD" != "YES" ]; then
+      f_build() {
+        if [ "$VERBOSE" == "YES" ]; then echo "npm i --save-prod"; fi
         npm i --save-prod
+      }
+      if [ "$SKIP_BUILD" != "YES" ]; then
+        if [ -n "$CLEAN" ]; then
+          if [ "$VERBOSE" == "YES" ]; then echo "rm -rf node_modules/"; fi
+          rm -rf node_modules/
+        fi
+        f_build        
       fi
     
 
@@ -411,10 +425,10 @@ fi
 
 
 if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
-  if [ -f .node ] && [ "$(<.node)" == "download" ]; then
-    echo "node running but started from different source type"
-    exit 1
-  fi
+  #if [ -f .node ] && [ "$(<.node)" == "download" ]; then
+  #  echo "node running but started from different source type"
+  #  exit 1
+  #fi
   if [ ! -f ".node" ]; then
     
     mkdir -p localrun/webapps/
@@ -422,7 +436,7 @@ if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
   mkdir -p localrun/91c32670
   > localrun/91c32670/citybuilder.properties
   echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
-  echo "httpPort=1337">>localrun/91c32670/citybuilder.properties
+  echo "httpPort=8080">>localrun/91c32670/citybuilder.properties
   echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
     ## logic to connect any DATA_SOURCE to this Tomcat running Docker
     if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
@@ -445,8 +459,8 @@ if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
       fi
     fi
     
-    if [ -n "$VERBOSE" ]; then echo "docker run --rm -d $dockerCouchRef -p 1337:1337 -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  -v $(pwd):/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js"; fi
-    dockerContainerIDnode=$(docker run --rm -d $dockerCouchRef -p 1337:1337 \
+    if [ -n "$VERBOSE" ]; then echo "docker run --rm -d $dockerCouchRef -p 8080:8080 -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  -v $(pwd):/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js"; fi
+    dockerContainerIDnode=$(docker run --rm -d $dockerCouchRef -p 8080:8080 \
         -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  \
         -v "$(pwd)":/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js)
     echo "$dockerContainerIDnode">.node
@@ -459,23 +473,33 @@ fi
 
 
 if [ "$TYPE_SOURCE_NODE" == "local" ]; then
-  if [ -f .node ]; then
-    echo "node running but started from different source type"
-    exit 1
-  fi
-  
+  #if [ -f .node ]; then
+  #  echo "node running but started from different source type"
+  #  exit 1
+  #fi
+  if [ ! -f ".node" ]; then
+      cat > localrun/noint.js <<EOF
+      process.on( "SIGINT", function() {} );
+      require('../startServer.js');
+EOF
+    
       
   mkdir -p localrun/91c32670
   > localrun/91c32670/citybuilder.properties
   echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
-  echo "httpPort=1337">>localrun/91c32670/citybuilder.properties
+  echo "httpPort=8080">>localrun/91c32670/citybuilder.properties
   echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
   echo "dbHost=http://localhost:5984">>localrun/91c32670/citybuilder.properties
   echo "db=http://localhost:5984/citybuilder">>localrun/91c32670/citybuilder.properties
   export CITYBUILDER_PROPERTIES="localrun/91c32670/citybuilder.properties"
     
-  ./startServer.js
-  echo "$dockerContainerIDnode">.node
+    node localrun/noint.js >localrun/noint.out 2>&1 & 
+    processIdnode=$!
+    echo "$processIdnode">.node
+  else
+    processIdnode=$(<.node)
+  fi
+  tailCmd="tail -f localrun/noint.out"
 fi
 
 

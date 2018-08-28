@@ -16,6 +16,7 @@ module.exports = {
     "node": {
       Source: "node",
       Artifact: "startServer.js",
+      ExposedPort: 8080,
       configFile: {
         Name: "citybuilder.properties",
         Connections: [
@@ -24,7 +25,7 @@ module.exports = {
         ],
         Content: [
           "dbSchema=citybuilder",
-          "httpPort=1337",
+          "httpPort=8080",
           "httpHost=0.0.0.0"
         ],
         AttachAsEnvVar: ["CITYBUILDER_PROPERTIES", "$$SELF_NAME$$"]
