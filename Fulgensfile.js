@@ -1,10 +1,14 @@
 module.exports = {
 
   config: {
+    FulgensVersion: '1.0.0',
     Name: "citybuilder",
     Vagrant: {
       Box: 'ubuntu/xenial64',
-      Install: 'npm docker.io'
+      BeforeInstall: [
+        "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -"
+      ],
+      Install: 'nodejs docker.io'
     }
   },
 
