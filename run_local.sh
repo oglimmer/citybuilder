@@ -4,9 +4,12 @@ trap cleanup 2
 set -e
 
 
+
 #------------
 # FunctionsBuilder
 #------------
+
+
 
 
 
@@ -34,27 +37,32 @@ cleanup()
       fi
     done
     if [ "$found" -eq 0 ]; then
-
+      
       if [ "$keepRunningAllElement" == "couchdb" ]; then
         echo "Stopping $keepRunningAllElement ..."
+        
         if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
          docker rm -f $dockerContainerIDcouchdb
-         rm -f .couchdb
+         rm -f .couchdbPid
         fi
         
       fi
+      
       if [ "$keepRunningAllElement" == "node" ]; then
         echo "Stopping $keepRunningAllElement ..."
+        
         if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
          docker rm -f $dockerContainerIDnode
-         rm -f .node
+         rm -f .nodePid
         fi
+        
         if [ "$TYPE_SOURCE_NODE" == "local" ]; then
          ps -p $processIdnode >/dev/null && kill $processIdnode
-         rm -f .node
+         rm -f .nodePid
         fi
         
       fi
+      
     fi
   done
 
@@ -64,13 +72,15 @@ cleanup()
 
 
 
+
+
+
 #------------
 # OptionsBuilder
 #------------
 
 
-
-usage="$(basename "$0") - Builds, deploys and run citybuilder
+usage="$(basename "$0") - Builds, deploys and run ${name}
 where:
   -h                         show this help text
   -s                         skip any build
@@ -80,15 +90,18 @@ where:
   -V                         enable Verbose
   -v                         start VirtualBox via vagrant, install all dependencies, ssh into the VM and run
   -f                         tail the nodejs log at the end
+  
 
 Details:
  -t couchdb:local #reuse a local, running CouchDB installation, does not start/stop this CouchDB
- -t couchdb:docker:[1.7|2] #start docker image \`couchdb:X\`
+ -t couchdb:docker:[1.7|2] #start docker image couchdb:X
  -t node:local #reuse a local node installation
- -t node:docker:[6|8|10] #start docker image \`node:X\`
+ -t node:docker:[6|8|10] #start docker image node:X
+
 "
 
-cd $(cd "$(dirname "$0")";pwd -P)
+cd "$(cd "$(dirname "$0")";pwd -P)"
+BASE_PWD=$(pwd)
 
 BUILD=local
 while getopts ':hsc:k:t:Vvf' option; do
@@ -105,18 +118,23 @@ while getopts ':hsc:k:t:Vvf' option; do
     k) KEEP_RUNNING=$OPTARG;;
     t) TYPE_SOURCE=$OPTARG;;
     V) VERBOSE=YES;;
+
     v) VAGRANT=YES;;
+
     f) TAIL=YES;;
-    :) printf "missing argument for -%s\n" "$OPTARG" >&2
+
+    :) printf "missing argument for -%s\\n" "$OPTARG" >&2
        echo "$usage" >&2
        exit 1;;
-   \?) printf "illegal option: -%s\n" "$OPTARG" >&2
+   \\?) printf "illegal option: -%s\\n" "$OPTARG" >&2
        echo "$usage" >&2
        exit 1;;
   esac
 done
 shift $((OPTIND - 1))
 TYPE_PARAM="$1"
+
+
 
 
 
@@ -132,19 +150,22 @@ npm --version 1>/dev/null || exit 1;
 
 
 
+# clean if requested
+if [ -n "$CLEAN" ]; then
+  if [ "$CLEAN" == "all" ]; then
+    if [ "$VERBOSE" == "YES" ]; then echo "rm -rf localrun"; fi
+    rm -rf localrun
+  fi
+  
+
 #------------
 # CleanBuilder
 #------------
 
 
-# clean if requested
-if [ -n "$CLEAN" ]; then
-  if [ "$CLEAN" == "all" ]; then
-    rm -rf localrun
-  fi
-  
-fi
 
+
+fi
 
 
 
@@ -152,17 +173,24 @@ fi
 # GlobalVariablesBuilder
 #------------
 
-TYPE_SOURCE_COUCHDB=docker
-TYPE_SOURCE_NODE=local
+
+      if [ "$VERBOSE" == "YES" ]; then echo "DEFAULT: TYPE_SOURCE_COUCHDB=docker"; fi
+      TYPE_SOURCE_COUCHDB=docker
+    
+
+      if [ "$VERBOSE" == "YES" ]; then echo "DEFAULT: TYPE_SOURCE_NODE=local"; fi
+      TYPE_SOURCE_NODE=local
+    
+
+
+
+mkdir -p localrun
 
 
 
 #------------
 # PrepareBuilder
 #------------
-
-
-mkdir -p localrun
 
 
 
@@ -181,25 +209,43 @@ Vagrant.configure("2") do |config|
     vb.memory = "1024"
   end
   config.vm.provision "shell", inline: <<-SHELL
+  	
+    apt-get update    
     
-    apt-get update
-    apt-get install -y npm docker.io
+      if [ "\$(cat /etc/*release|grep ^ID=)" = "ID=debian"  ]; then \\
+        if [ "\$(cat /etc/debian_version)" = "8.11" ]; then \\
+           curl -sL https://deb.nodesource.com/setup_6.x | bash -; apt-get -qy install nodejs docker.io; \\
+        elif [ "\$(cat /etc/debian_version)" = "9.5" ]; then \\
+          curl -sL https://deb.nodesource.com/setup_6.x | bash -; apt-get -qy install nodejs docker.io; \\
+        else curl -sL https://deb.nodesource.com/setup_10.x | bash -; apt-get -qy install nodejs docker.io; fi \\
+      elif [ "\$(cat /etc/*release|grep ^ID=)" = "ID=ubuntu"  ]; then \\
+        curl -sL https://deb.nodesource.com/setup_10.x | bash -; apt-get -qy install nodejs docker.io; \\
+      else \\
+        echo "only debian or ubuntu are supported."; \\
+        exit 1; \\
+      fi \\
+    
+    
     
     echo "Now continue with..."
     echo "\$ cd /share_host"
-    echo "\$ ./run_local.sh -f"
+    echo "\$ sudo ./run_local.sh -f"
     echo "...then browse to http://localhost:8080/XXXX"
   SHELL
 end
 EOF
   vagrant up
   if [ -f "../run_local.sh" ]; then
-    vagrant ssh -c "cd /share_host && ./run_local.sh -f"
+    vagrant ssh -c "cd /share_host && sudo ./run_local.sh -f"
   else
     echo "Save the fulgens output into a bash script (e.g. run_local.sh) and use it inside the new VM"
   fi
   exit 1
 fi
+
+
+
+
 
 
 
@@ -210,15 +256,19 @@ fi
 if [ -n "$VERBOSE" ]; then echo "CouchdbPlugin // couchdb"; fi
 
 
+
+
 #------------
-# PrepareCompBuilder
+# Plugin-PrepareComp
 #------------
+
 
 
 
 IFS=',' read -r -a array <<< "$TYPE_SOURCE"
 for typeSourceElement in "${array[@]}"; do
   IFS=: read comp type pathOrVersion <<< "$typeSourceElement"
+
   if [ "$comp" == "couchdb" ]; then
     TYPE_SOURCE_COUCHDB=$type
     if [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
@@ -230,85 +280,111 @@ for typeSourceElement in "${array[@]}"; do
 
 done
 
+
+
 if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
   if [ -z "$TYPE_SOURCE_COUCHDB_VERSION" ]; then
     TYPE_SOURCE_COUCHDB_VERSION=1.7
   fi
-  
+    
+fi
+
+
+
+if [ "$VERBOSE" == "YES" ]; then
+  echo "TYPE_SOURCE_COUCHDB = $TYPE_SOURCE_COUCHDB // TYPE_SOURCE_COUCHDB_PATH = $TYPE_SOURCE_COUCHDB_PATH // TYPE_SOURCE_COUCHDB_VERSION = $TYPE_SOURCE_COUCHDB_VERSION"
 fi
 
 
 
 
-#------------
-# GetsourceBuilder
-#------------
-
-
 
 
 
 #------------
-# PrebuildBuilder
+# Plugin-GetSource
 #------------
 
 
 
 
 
-#------------
-# BuildBuilder
-#------------
-
-
-
 
 
 #------------
-# PostbuildBuilder
+# Plugin-PreBuild
 #------------
 
 
 
 
 
-#------------
-# PrestartBuilder
-#------------
-
-
-
 
 
 #------------
-# StartBuilder
+# Plugin-Build
 #------------
+
+
+
+
+
+
+
+#------------
+# Plugin-PostBuild
+#------------
+
+
+
+
+
+
+
+#------------
+# Plugin-PreStart
+#------------
+
+
+
+
+
+
+
+#------------
+# Plugin-Start
+#------------
+
+
 
 
 
 if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
   # run in docker
-  if [ ! -f ".couchdb" ]; then
-    dockerContainerIDcouchdb=$(docker run --rm -d -p 5984:5984 couchdb:$TYPE_SOURCE_COUCHDB_VERSION)
-    echo "$dockerContainerIDcouchdb">.couchdb
+  if [ ! -f ".couchdbPid" ]; then
+    
+    if [ "$VERBOSE" == "YES" ]; then echo "docker run --rm -d -p 5984:5984 $dockerCouchdbExtRef   couchdb:$TYPE_SOURCE_COUCHDB_VERSION"; fi
+    dockerContainerIDcouchdb=$(docker run --rm -d -p 5984:5984 $dockerCouchdbExtRef \
+        couchdb:$TYPE_SOURCE_COUCHDB_VERSION)
+    echo "$dockerContainerIDcouchdb">.couchdbPid
   else
-    dockerContainerIDcouchdb=$(<.couchdb)
+    dockerContainerIDcouchdb=$(<.couchdbPid)
   fi
 fi
 if [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
-  if [ -f .couchdb ]; then
-    echo "couchdb running but started from different source type"
+  if [ -f ".couchdbPid" ]; then
+    echo "couchdb couchdb running but started from different source type"
     exit 1
   fi
 fi
 
 
 
+#------------
+# Plugin-PostStart
+#------------
 
 
-#------------
-# PoststartBuilder
-#------------
 
 
 
@@ -320,9 +396,12 @@ done
 
 
 
+
 #------------
-# LeaveCompBuilder
+# Plugin-LeaveComp
 #------------
+
+
 
 
 
@@ -334,15 +413,19 @@ done
 if [ -n "$VERBOSE" ]; then echo "NodePlugin // node"; fi
 
 
+
+
 #------------
-# PrepareCompBuilder
+# Plugin-PrepareComp
 #------------
+
 
 
 
 IFS=',' read -r -a array <<< "$TYPE_SOURCE"
 for typeSourceElement in "${array[@]}"; do
   IFS=: read comp type pathOrVersion <<< "$typeSourceElement"
+
   if [ "$comp" == "node" ]; then
     TYPE_SOURCE_NODE=$type
     if [ "$TYPE_SOURCE_NODE" == "local" ]; then
@@ -354,150 +437,197 @@ for typeSourceElement in "${array[@]}"; do
 
 done
 
+
+
 if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
   if [ -z "$TYPE_SOURCE_NODE_VERSION" ]; then
     TYPE_SOURCE_NODE_VERSION=10
   fi
-  
+    
+fi
+
+
+
+if [ "$VERBOSE" == "YES" ]; then
+  echo "TYPE_SOURCE_NODE = $TYPE_SOURCE_NODE // TYPE_SOURCE_NODE_PATH = $TYPE_SOURCE_NODE_PATH // TYPE_SOURCE_NODE_VERSION = $TYPE_SOURCE_NODE_VERSION"
 fi
 
 
 
 
-#------------
-# GetsourceBuilder
-#------------
-
-
 
 
 
 #------------
-# PrebuildBuilder
+# Plugin-GetSource
 #------------
 
 
 
 
 
-#------------
-# BuildBuilder
-#------------
-
-
-
-      f_build() {
-        if [ "$VERBOSE" == "YES" ]; then echo "npm i --save-prod"; fi
-        npm i --save-prod
-      }
-      if [ "$SKIP_BUILD" != "YES" ]; then
-        if [ -n "$CLEAN" ]; then
-          if [ "$VERBOSE" == "YES" ]; then echo "rm -rf node_modules/"; fi
-          rm -rf node_modules/
-        fi
-        f_build        
-      fi
-    
-
-
 
 
 #------------
-# PostbuildBuilder
+# Plugin-PreBuild
 #------------
 
 
 
 
 
-#------------
-# PrestartBuilder
-#------------
-
-
-
 
 
 #------------
-# StartBuilder
+# Plugin-Build
 #------------
+
+
+
+
+
+f_build() {
+  if [ "$VERBOSE" == "YES" ]; then echo "npm i --save-prod"; fi
+  
+  npm i --save-prod
+  
+}
+if [ "$SKIP_BUILD" != "YES" ]; then
+  if [ -n "$CLEAN" ]; then
+    if [ "$VERBOSE" == "YES" ]; then echo "rm -rf node_modules/"; fi
+    rm -rf node_modules/
+  fi
+  f_build        
+fi
+
+
+
+#------------
+# Plugin-PostBuild
+#------------
+
+
+
+
+
+
+
+#------------
+# Plugin-PreStart
+#------------
+
+
+
+
+
+
+
+#------------
+# Plugin-Start
+#------------
+
+
 
 
 
 if [ "$TYPE_SOURCE_NODE" == "docker" ]; then
-  #if [ -f .node ] && [ "$(<.node)" == "download" ]; then
+  #if [ -f ".nodePid" ] && [ "$(<.nodePid)" == "download" ]; then
   #  echo "node running but started from different source type"
   #  exit 1
   #fi
-  if [ ! -f ".node" ]; then
-    
-    mkdir -p localrun/webapps/
-    
-  mkdir -p localrun/91c32670
-  > localrun/91c32670/citybuilder.properties
-  echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
-  echo "httpPort=8080">>localrun/91c32670/citybuilder.properties
-  echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
-    ## logic to connect any DATA_SOURCE to this Tomcat running Docker
-    if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
-      dockerCouchRef="--link $dockerContainerIDcouchdb"
-    
-      echo "dbHost=http://$dockerContainerIDcouchdb:5984">>localrun/91c32670/citybuilder.properties
-    
+  if [ ! -f ".nodePid" ]; then
+    mkdir -p localrun/91c32670
 
-      echo "db=http://$dockerContainerIDcouchdb:5984/citybuilder">>localrun/91c32670/citybuilder.properties
-    
-    elif [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
-      if [ "$(uname)" != "Linux" ]; then 
-        echo "dbHost=http://host.docker.internal:5984">>localrun/91c32670/citybuilder.properties
-    
 
-        echo "db=http://host.docker.internal:5984/citybuilder">>localrun/91c32670/citybuilder.properties
+if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
+  dockerNodeExtRef="--link $dockerContainerIDcouchdb"
+  
+  REPLVARdbHost="http://$dockerContainerIDcouchdb:5984"
+  
+  REPLVARdb="http://$dockerContainerIDcouchdb:5984/citybuilder"
+  
+elif [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
+  if [ "$(uname)" != "Linux" ]; then 
     
-      else 
-        dockerCouchRef="--net=host"
-      fi
-    fi
+    REPLVARdbHost="http://host.docker.internal:5984"
     
-    if [ -n "$VERBOSE" ]; then echo "docker run --rm -d $dockerCouchRef -p 8080:8080 -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  -v $(pwd):/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js"; fi
-    dockerContainerIDnode=$(docker run --rm -d $dockerCouchRef -p 8080:8080 \
-        -v $(pwd)/localrun/91c32670:/tmp/91c32670 -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  \
-        -v "$(pwd)":/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION ./startServer.js)
-    echo "$dockerContainerIDnode">.node
-  else
-    dockerContainerIDnode=$(<.node)
+    REPLVARdb="http://host.docker.internal:5984/citybuilder"
+    
+  else 
+    dockerNodeExtRef="--net=host"
   fi
-  tailCmd="docker logs -f $dockerContainerIDnode"
 fi
 
 
 
+mkdir -p localrun/91c32670
+
+cat <<EOT91c32670 > localrun/91c32670/citybuilder.properties
+
+	dbSchema=citybuilder
+
+	httpPort=8080
+
+	httpHost=0.0.0.0
+
+
+	dbHost=$REPLVARdbHost
+
+	db=$REPLVARdb
+
+EOT91c32670
+
+
+    if [ -n "$VERBOSE" ]; then echo "docker run --rm -d $dockerNodeExtRef -p 8080:8080 -v "$(pwd)/localrun/91c32670:/tmp/91c32670" -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  -v $(pwd):/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION node  ./startServer.js"; fi
+    dockerContainerIDnode=$(docker run --rm -d $dockerNodeExtRef -p 8080:8080 \
+        -v "$(pwd)/localrun/91c32670:/tmp/91c32670" -e CITYBUILDER_PROPERTIES="/tmp/91c32670/citybuilder.properties"  \
+        -v "$(pwd)":/home/node/exec_env -w /home/node/exec_env node:$TYPE_SOURCE_NODE_VERSION node  ./startServer.js)
+    echo "$dockerContainerIDnode">.nodePid
+  else
+    dockerContainerIDnode=$(<.nodePid)
+  fi
+  tailCmd="docker logs -f $dockerContainerIDnode"
+fi
+
 if [ "$TYPE_SOURCE_NODE" == "local" ]; then
-  #if [ -f .node ]; then
+  #if [ -f ".nodePid" ]; then
   #  echo "node running but started from different source type"
   #  exit 1
   #fi
-  if [ ! -f ".node" ]; then
-      cat > localrun/noint.js <<EOF
+  if [ ! -f ".nodePid" ]; then
+    cat <<-'    EOF' > localrun/noint.js
       process.on( "SIGINT", function() {} );
       require('../startServer.js');
-EOF
+    EOF
+    if [ -n "$VERBOSE" ]; then echo " node  localrun/noint.js >localrun/noint.out 2>&1 &"; fi
     
+      REPLVARdbHost="http://localhost:5984"
+REPLVARdb="http://localhost:5984/citybuilder"
       
-  mkdir -p localrun/91c32670
-  > localrun/91c32670/citybuilder.properties
-  echo "dbSchema=citybuilder">>localrun/91c32670/citybuilder.properties
-  echo "httpPort=8080">>localrun/91c32670/citybuilder.properties
-  echo "httpHost=0.0.0.0">>localrun/91c32670/citybuilder.properties
-  echo "dbHost=http://localhost:5984">>localrun/91c32670/citybuilder.properties
-  echo "db=http://localhost:5984/citybuilder">>localrun/91c32670/citybuilder.properties
+mkdir -p localrun/91c32670
+
+cat <<EOT91c32670 > localrun/91c32670/citybuilder.properties
+
+	dbSchema=citybuilder
+
+	httpPort=8080
+
+	httpHost=0.0.0.0
+
+
+	dbHost=$REPLVARdbHost
+
+	db=$REPLVARdb
+
+EOT91c32670
+
   export CITYBUILDER_PROPERTIES="localrun/91c32670/citybuilder.properties"
     
-    node localrun/noint.js >localrun/noint.out 2>&1 & 
+     node  localrun/noint.js >localrun/noint.out 2>&1 & 
     processIdnode=$!
-    echo "$processIdnode">.node
+    echo "$processIdnode">.nodePid
   else
-    processIdnode=$(<.node)
+    processIdnode=$(<.nodePid)
   fi
   tailCmd="tail -f localrun/noint.out"
 fi
@@ -507,16 +637,21 @@ fi
 
 
 #------------
-# PoststartBuilder
+# Plugin-PostStart
 #------------
 
 
 
 
 
+
+
 #------------
-# LeaveCompBuilder
+# Plugin-LeaveComp
 #------------
+
+
+
 
 
 
@@ -526,19 +661,19 @@ fi
 # WaitBuilder
 #------------
 
-
 # waiting for ctrl-c
 if [ "$TAIL" == "YES" ]; then
   $tailCmd
 else
   echo "$tailCmd"
-  echo "<return> to rebuild, ctrl-c to stop CouchDB, Node"
+  echo "<return> to rebuild, ctrl-c to stop couchdb, node"
   while true; do
     read </dev/tty
     f_build
     f_deploy
   done
 fi
-    
+
+
 
 
