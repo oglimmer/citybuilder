@@ -185,7 +185,7 @@ fi
 
 if [ "$SKIP_HASH_CHECK" != "YES" ]; then
 	if which md5 1>/dev/null; then
-		declare SELF_HASH_MD5="a8b62bfb031acc70e2b356627da84519"
+		declare SELF_HASH_MD5="e6edf7517c3e7c33148fb9addf35f786"
 		declare SOURCE_FILES=(Fulgensfile Fulgensfile.js)
 		for SOURCE_FILE in ${SOURCE_FILES[@]}; do
 			declare SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
@@ -420,20 +420,11 @@ if [ "$START_NODE" = "YES" ]; then
 		#fi
 		if [ ! -f ".nodePid" ]; then
 			startDockerNetwork
-			mkdir -p localrun/91c32670
 
 			if [ "$TYPE_SOURCE_COUCHDB" == "docker" ]; then
-
-				REPLVARdbHost="http://couchdb:5984"
-
-				REPLVARdb="http://couchdb:5984/citybuilder"
-
+				REPLVAR_NODE_COUCHDB="couchdb"
 			elif [ "$TYPE_SOURCE_COUCHDB" == "local" ]; then
-
-				REPLVARdbHost="http://host.docker.internal:5984"
-
-				REPLVARdb="http://host.docker.internal:5984/citybuilder"
-
+				REPLVAR_NODE_COUCHDB="host.docker.internal"
 			fi
 
 			mkdir -p localrun/91c32670
@@ -446,10 +437,9 @@ httpPort=8080
 
 httpHost=0.0.0.0
 
+dbHost=http://$REPLVAR_NODE_COUCHDB:5984
 
-dbHost=$REPLVARdbHost
-
-db=$REPLVARdb
+db=http://$REPLVAR_NODE_COUCHDB:5984/citybuilder
 
 EOT91c32670
 
@@ -472,14 +462,13 @@ EOT91c32670
 		#  exit 1
 		#fi
 		if [ ! -f ".nodePid" ]; then
-			cat <<-'    EOF' >localrun/noint.js
+			cat <<-EOF >localrun/noint.js
 				      process.on( "SIGINT", function() {} );
 				      require('../startServer.js');
-			    EOF
+			EOF
 			verbosePrint " node  localrun/noint.js >localrun/noint.out 2>&1 &"
 
-			REPLVARdbHost="http://localhost:5984"
-			REPLVARdb="http://localhost:5984/citybuilder"
+			REPLVAR_NODE_COUCHDB="localhost"
 
 			mkdir -p localrun/91c32670
 
@@ -491,10 +480,9 @@ httpPort=8080
 
 httpHost=0.0.0.0
 
+dbHost=http://$REPLVAR_NODE_COUCHDB:5984
 
-dbHost=$REPLVARdbHost
-
-db=$REPLVARdb
+db=http://$REPLVAR_NODE_COUCHDB:5984/citybuilder
 
 EOT91c32670
 

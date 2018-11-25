@@ -30,13 +30,13 @@ module.exports = {
       configFile: {
         Name: "citybuilder.properties",
         Connections: [
-          { Source:"couchdb", Var: "dbHost", Content: "http://$$VALUE$$:5984" },
-          { Source:"couchdb", Var: "db", Content: "http://$$VALUE$$:5984/citybuilder" },
+          { Source:"couchdb", Line: "dbHost=http://$$VALUE$$:5984" },
+          { Source:"couchdb", Line: "db=http://$$VALUE$$:5984/citybuilder" },
         ],
         Content: [
-          "dbSchema=citybuilder",
-          "httpPort=8080",
-          "httpHost=0.0.0.0"
+          { Line: "dbSchema=citybuilder" },
+          { Line: "httpPort=8080" },
+          { Line: "httpHost=0.0.0.0" }
         ],
         AttachAsEnvVar: ["CITYBUILDER_PROPERTIES", "$$SELF_NAME$$"]
       }
