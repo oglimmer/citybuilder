@@ -10,7 +10,7 @@ module.exports = {
   },
 
   versions: {
-    couchdb: {
+    pouchdb: {
       TestedWith: "1.7 & 2.0"
     },
     node: {
@@ -19,19 +19,22 @@ module.exports = {
   },
 
   software: {
-    couchdb: {
-      Source: "couchdb"
+    pouchdb: {
+      Source: "couchdb",
+      DockerImage: "oglimmer/pouchdb",
+      DockerMemory: "50M"
     },
 
     node: {
       Source: "node",
       Start: "startServer.js",
       ExposedPort: 8080,
+      DockerMemory: "50M",
       configFile: {
         Name: "citybuilder.properties",
         Connections: [
-          { Source:"couchdb", Line: "dbHost=http://$$VALUE$$:5984" },
-          { Source:"couchdb", Line: "db=http://$$VALUE$$:5984/citybuilder" },
+          { Source:"pouchdb", Line: "dbHost=http://$$VALUE$$:5984" },
+          { Source:"pouchdb", Line: "db=http://$$VALUE$$:5984/citybuilder" },
         ],
         Content: [
           { Line: "dbSchema=citybuilder" },
