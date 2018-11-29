@@ -32,11 +32,9 @@ module.exports = {
       DockerMemory: "50M",
       configFile: {
         Name: "citybuilder.properties",
-        Connections: [
+        Content: [
           { Source:"pouchdb", Line: "dbHost=http://$$VALUE$$:5984" },
           { Source:"pouchdb", Line: "db=http://$$VALUE$$:5984/citybuilder" },
-        ],
-        Content: [
           { Line: "dbSchema=citybuilder" },
           { Line: "httpPort=8080" },
           { Line: "httpHost=0.0.0.0" }
