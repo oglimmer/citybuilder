@@ -14,8 +14,12 @@ const nano = require('nano')(Config.dbHost);
   } catch(err) {
     // just ignore
   }
-  await nano.db.create(Config.dbSchema);
-  await nano.use(Config.dbSchema).insert(fs.readFileSync('./db/_design-game-view.json'));
+  try {
+    await nano.db.create(Config.dbSchema);
+    await nano.use(Config.dbSchema).insert(fs.readFileSync('./db/_design-game-view.json'));
+  } catch(err) {
+    // just ignore
+  }
 
   require("./server/io.js");
 })();
