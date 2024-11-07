@@ -22,7 +22,7 @@ BaseCard.drawText = function(ctx,text,profitConfig,x,y,width) {
 			if(text.length > 0 ) {
 				text += " ^";	
 			}
-			text += "$"+pf.pro+" pPpW für ";
+			text += "$"+pf.pro+" pPpW for ";
 			if(pf.ht.length == 1) {
 				text += UIServices.getHouseTypeText(pf.ht[0]);
 			} else {
