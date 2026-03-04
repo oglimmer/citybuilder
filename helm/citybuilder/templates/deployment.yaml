@@ -36,15 +36,15 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              cat > /tmp/citybuilder.properties <<EOF
-              dbHost=http://${DB_USER}:${DB_PASSWORD}@${COUCHDB_HOST}:${COUCHDB_PORT}
-              dbSchema=${COUCHDB_SCHEMA}
-              db=http://${DB_USER}:${DB_PASSWORD}@${COUCHDB_HOST}:${COUCHDB_PORT}/${COUCHDB_SCHEMA}
-              httpPort=${HTTP_PORT}
-              httpHost=${HTTP_HOST}
-              adminUser=${ADMIN_USER}
-              adminPassword=${ADMIN_PASSWORD}
-              EOF
+              {
+              echo "dbHost=http://$DB_USER:$DB_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT"
+              echo "dbSchema=$COUCHDB_SCHEMA"
+              echo "db=http://$DB_USER:$DB_PASSWORD@$COUCHDB_HOST:$COUCHDB_PORT/$COUCHDB_SCHEMA"
+              echo "httpPort=$HTTP_PORT"
+              echo "httpHost=$HTTP_HOST"
+              echo "adminUser=$ADMIN_USER"
+              echo "adminPassword=$ADMIN_PASSWORD"
+              } > /tmp/citybuilder.properties
               export CITYBUILDER_PROPERTIES=/tmp/citybuilder.properties
               exec node startServer.js
           env:
