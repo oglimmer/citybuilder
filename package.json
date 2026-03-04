@@ -2,12 +2,15 @@
   "name": "citybuilder",
   "version": "1.0.0",
   "description": "A multiplayer online game",
+  "type": "module",
   "main": "startServer.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "nodeunit tests/ && exit 1"
+    "test": "vitest run",
+    "dev": "vite",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
@@ -25,10 +28,14 @@
   },
   "homepage": "https://github.com/oglimmer/citybuilder#readme",
   "dependencies": {
-    "log4js": "^3.0.5",
-    "nano": "^7.0.0",
-    "nodeunit": "^0.11.3",
+    "log4js": "^6.9.1",
+    "nano": "^10.1.4",
     "properties": "^1.2.1",
-    "socket.io": "^2.1.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0",
+    "vitest": "^3.0.0"
   }
 }

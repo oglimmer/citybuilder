@@ -1,18 +1,10 @@
-var fs=require('fs');
-
-var CARDS_DIRECTORY = '/cards';
-
-var imports=[];
-var files = fs.readdirSync(__dirname + CARDS_DIRECTORY); 
-
-files.forEach(function(file){
-	if((/\.js$/).test(file)) {
-		imports.push( require('.' + CARDS_DIRECTORY + '/' + file) );
-	}
-});
-
-imports.forEach(function(e) {
-	for(var m in e) {
-		module.exports[m] = e[m];
-	}	
-})
+export { BaseObject, Card, RentalCard } from './cards/card_basecards.js';
+export { BuildRestaurantCard, BuildRestaurantItaSmCard, BuildRestaurantItaMidCard, BuildRestaurantItaPreCard, BuildRestaurantGreekMidCard, BuildRestaurantChinSmCard, BuildRestaurantChinLrgCard, BuildRestaurantSteakPreCard, BuildRestaurantFrePreCard, BuildRestaurantUSFF1Card, BuildRestaurantUSFF2Card, BuildRestaurantUSFF3Card } from './cards/card_restaurantcards.js';
+export { BuildClothingCard, BuildClothingUltraCheapCard, BuildClothingCheapCard, BuildClothingCheapLrgCard, BuildClothingCheapYoungCard, BuildClothingLux1Card, BuildClothingLux2Card, BuildClothingFatCard, BuildClothingRegLrgCard, BuildClothingTeenPreCard } from './cards/card_clothingcards.js';
+export { BuildCriminalCard, AddCriminals1Card, AddCriminals2Card, AddCriminals3Card } from './cards/card_criminalcards.js';
+export { BuildElectronicCard, BuildElectronicSmlCard, BuildElectronicLrgCard } from './cards/card_electroniccards.js';
+export { BuildGroceriesCard, BuildGroceriesSmCard, BuildGroceriesDisc1Card, BuildGroceriesDisc2Card, BuildGroceriesDisc3Card, BuildGroceriesSuperMartCard, BuildGroceriesBioSmCard, BuildGroceriesBioLrgCard } from './cards/card_groceriescards.js';
+export { BuildJeweleryCard, BuildJeweleryCheapCard, BuildJeweleryMidCard, BuildJeweleryPreCard } from './cards/card_jewelerycards.js';
+export { BuildLocalLevelCard, BuildLocalLevelPoliceCard, BuildLocalLevelHospitalCard, BuildLocalLevelFirestationCard } from './cards/card_locallevelcards.js';
+export { GentrificationCard, MorePopulationCard, CityGrowsCard, CityGrowsLowerMiddleclassCard, CityGrowsMiddleclassCard, CityGrowsUnderclassCard, NewPeopleCard } from './cards/card_other.js';
+export { RemoveBuildingCard, RemoveFoodCard, RemoveClothingCard, RemoveGroceriesCard, RemoveJeweleryCard, RemoveElectronicCard, RemoveLocalLevelCard } from './cards/card_removers.js';

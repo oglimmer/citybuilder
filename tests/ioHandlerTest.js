@@ -1,50 +1,44 @@
-var log4js = require('log4js');
-var logger = log4js.getLogger('io');
+import { describe, it, expect, beforeEach } from 'vitest';
+import { readFileSync } from 'fs';
+import log4js from 'log4js';
+import Config from '../server/config.js';
+import Nano from 'nano';
 
-module.exports = {
-    setUp: async (callback) => {
+const logger = log4js.getLogger('io');
 
-  		var Config = require('../server/config');
-  		var nano = require('nano')(Config.dbHost);
+describe.skip('ioHandler (requires CouchDB)', () => {
 
-      try {
-        await nano.db.destroy(Config.dbSchema);
-      } catch(err) {
-        // just ignore
-      }
+	beforeEach(async () => {
+		const nano = Nano(Config.dbHost);
+		try {
+			await nano.db.destroy(Config.dbSchema);
+		} catch (err) {
+			// just ignore
+		}
+		await nano.db.create(Config.dbSchema);
+		await nano.use(Config.dbSchema).insert(JSON.parse(readFileSync('./db/_design-game-view.json', 'utf8')));
+	});
 
-      await nano.db.create(Config.dbSchema);
-      await nano.use(Config.dbSchema).insert(fs.readFileSync('../db/_design-game-view.json'));
+	it('createGame', async () => {
+		const { default: ioHandler } = await import('../server/ioHandler.js');
 
-      callback();
-    },
-    tearDown: function (callback) {
-        // clean up
-        callback();
-    },
-    createGame: function (test) {
-        
-        var io = {
-        	sockets : {       		
-        		on : function(name, eventHandler) {
-        			this[name] = eventHandler;
-        		},
-	        	emit : function(name, payLoad) {
-	        		if(name == 'waitAddPlayer_resp') {
-		        		test.equal(payLoad.playerName, "oli");
-		        		test.equal(payLoad.showStartButton, true);
-	        		} else {
-	        			test.ok(false);
-	        		}
-	        		test.done();
-	        	}
-        	}
-        }
+		const emitted = {};
+		const io = {
+			sockets: {
+				on(name, eventHandler) {
+					this[name] = eventHandler;
+				},
+				emit(name, payLoad) {
+					emitted[name] = payLoad;
+				}
+			}
+		};
 
-    	require('../server/ioHandler.js')(io, logger);
+		ioHandler(io, logger);
+		await io.sockets.connection(io.sockets);
+		await io.sockets.createGame_req({ playerName: "oli" });
 
-        io.sockets.connection(io.sockets);
-
-        io.sockets.createGame_req({ playerName : "oli" });        
-    }
-};
+		expect(emitted.waitAddPlayer_resp.playerName).toEqual(["oli"]);
+		expect(emitted.waitAddPlayer_resp.showStartButton).toBe(true);
+	});
+});

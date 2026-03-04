@@ -1,62 +1,57 @@
-var FieldType = require("./rule_defines.js").FieldType;
-var LocalLevel = require("./rule_defines.js").LocalLevel;
-var HouseType = require("./rule_defines.js").HouseType;
-var HouseTypeMaxPop = require("./rule_defines.js").HouseTypeMaxPop;
-var HouseTypeReverse = require("./rule_defines.js").HouseTypeReverse;
-var log4js = require('log4js');
-var logger = log4js.getLogger('game');
+import { FieldType, LocalLevel, HouseType, HouseTypeMaxPop, HouseTypeReverse } from './rule_defines.js';
+import log4js from 'log4js';
 
+const logger = log4js.getLogger('game');
 
-function Field(x,y,type,houseCard,localLevel) {
-	this.x = x; // 0..n logical x coordiate on field 
-	this.y = y; // 0..n logical y coordiate on field 
-	this.type = type; // field type HOUSE, FOOD 
-	this.owner = null; // player.no
-	this.ownerName = null; // player.playerName
-	this.attachedCard = houseCard; // a card doc which was played on this field
-	this.buildState = 0; // 0:nothing build, 1:build in progress, 2: done
-	this.localLevel = localLevel; // base for lower-class
-	this.baseLocalLevel = this.localLevel;
-}
+export default class Field {
+	constructor(x, y, type, houseCard, localLevel) {
+		this.x = x;
+		this.y = y;
+		this.type = type;
+		this.owner = null;
+		this.ownerName = null;
+		this.attachedCard = houseCard;
+		this.buildState = 0;
+		this.localLevel = localLevel;
+		this.baseLocalLevel = this.localLevel;
+	}
 
-/* Field must not have methods on its objects, since we don't reinit after loading */
+	/* Field must not have methods on its objects, since we don't reinit after loading */
 
-Field.cor = function(field) {
-	return field.x+":"+field.y;
-}
+	static cor(field) {
+		return `${field.x}:${field.y}`;
+	}
 
-Field.asFields = function(field) {
-	var fields = {};
-	fields[Field.cor(field)] = field;
-	return fields;
-}
+	static asFields(field) {
+		const fields = {};
+		fields[Field.cor(field)] = field;
+		return fields;
+	}
 
-Field.forPlayer = function(field, player) {
-	if(field.owner == player.no || field.buildState != 1) {
-		return field;
-	} else {
-		var obj = JSON.parse(JSON.stringify(field));
-		obj.attachedCard = null;
-		obj.type = FieldType.UNKNOWN;
-		return obj;
-	}	
-}
-
-Field.socialChange = function(field) {
-	var oldHouseType = field.attachedCard.houseType;	
-	[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE, LocalLevel.UPPERCLASS].forEach(function(locLev) {		
-		if(field.localLevel >= locLev.min && field.localLevel <= locLev.max) {			
-			if(!locLev.buildings.in( HouseTypeReverse[field.attachedCard.houseType] )) {				
-				var rnd = parseInt(Math.random() * locLev.buildings.length);
-				field.attachedCard.houseType = HouseType[locLev.buildings[rnd]];
-				field.attachedCard.housePopulation = parseInt(Math.random() * HouseTypeMaxPop[locLev.buildings[rnd]])+1
-			}
+	static forPlayer(field, player) {
+		if (field.owner == player.no || field.buildState != 1) {
+			return field;
+		} else {
+			const obj = JSON.parse(JSON.stringify(field));
+			obj.attachedCard = null;
+			obj.type = FieldType.UNKNOWN;
+			return obj;
 		}
-	});	
-	if(oldHouseType != field.attachedCard.houseType) {
-		logger.debug("[Field.socialChange] Changed houseType for " + field.x+","+field.y+" from "+oldHouseType+" to "+field.attachedCard.houseType);
+	}
+
+	static socialChange(field) {
+		const oldHouseType = field.attachedCard.houseType;
+		[LocalLevel.UNDERCLASS, LocalLevel.LOWER_MIDDLE, LocalLevel.MIDDLE, LocalLevel.UPPER_MIDDLE, LocalLevel.UPPERCLASS].forEach((locLev) => {
+			if (field.localLevel >= locLev.min && field.localLevel <= locLev.max) {
+				if (!locLev.buildings.includes(HouseTypeReverse[field.attachedCard.houseType])) {
+					const rnd = parseInt(Math.random() * locLev.buildings.length);
+					field.attachedCard.houseType = HouseType[locLev.buildings[rnd]];
+					field.attachedCard.housePopulation = parseInt(Math.random() * HouseTypeMaxPop[locLev.buildings[rnd]]) + 1;
+				}
+			}
+		});
+		if (oldHouseType != field.attachedCard.houseType) {
+			logger.debug(`[Field.socialChange] Changed houseType for ${field.x},${field.y} from ${oldHouseType} to ${field.attachedCard.houseType}`);
+		}
 	}
 }
-
-
-module.exports = Field;

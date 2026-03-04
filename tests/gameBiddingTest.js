@@ -1,171 +1,135 @@
-var Game = require("../server/rule_game.js");
-var Player = require("../server/rule_player.js");
-var PlayerManager = require('../server/rule_playermanager.js');
-var GameManager = require('../server/rule_gamemanager.js');
+import { describe, it, expect, beforeEach } from 'vitest';
+import Game from '../server/rule_game.js';
+import PlayerManager, { PlayerCollection } from '../server/rule_playermanager.js';
 
-var Helper = {
+const players = [
+	{ "_id": "A", "socketId": "foo1", "playerName": "Mr. White", "money": 150 },
+	{ "_id": "B", "socketId": "foo2", "playerName": "Mr. Black", "money": 100 },
+	{ "_id": "C", "socketId": "foo3", "playerName": "Mr. Green", "money": 50 }
+];
 
-	players : [ 
-		{"_id":"A","socketId":"foo1","playerName":"Mr. White","money":150},
-		{"_id":"B","socketId":"foo2","playerName":"Mr. Black","money":100},
-		{"_id":"C","socketId":"foo3","playerName":"Mr. Green","money":50} 
-	],
-
-	getAllPlayers : function(i) {
-		var arr = [];
-		for(var j = 0 ; j < i ; j++) {
-			arr.push(this.players[j]);
-		}
-		arr.getPlayerByNo = function(playerNo) {
-			for(var i = 0 ; i < arr.length ; i++) {
-				var p = arr[i];
-				if(p.no == playerNo) {
-					return p;
-				}
-			}
-			logger.error("player not found with no="+playerNo);
-		};	
-		arr.getPlayerById = function(playerId) {
-			for(var i = 0 ; i < arr.length ; i++) {
-				var p = arr[i];
-				if(p._id == playerId) {
-					return p;
-				}
-			}
-			logger.error("player not found with id="+getPlayerById);
-		};
-		arr.asIdArray = function() {
-			var retObj = [];
-			for(var i = 0 ; i < arr.length ; i++) {
-				var p = arr[i];
-				retObj.push(p._id);
-			}
-			return retObj;	
-		};
-		return arr;
+function getAllPlayers(count) {
+	const arr = new PlayerCollection();
+	for (let j = 0; j < count; j++) {
+		arr.push({ ...players[j] });
 	}
+	return arr;
 }
 
-module.exports = {
+describe('Game Bidding', () => {
 
-	setUp: function (callback) {
-		PlayerManager.storePlayer = function(player, prepare, onSuccess) {
-		}
-		callback();
-	},
+	beforeEach(() => {
+		PlayerManager.storePlayer = async (player, prepare) => {
+			if (prepare != null) prepare(player);
+			return player;
+		};
+	});
 
-	bids1Simple : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 5, acutalCost:0} };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(1);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ [ 'A' ] ]);
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-5);
-		test.equal(g.biddings['A'].acutalCost, 5);
-		test.done();
-	},
+	it('bids1Simple', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 5, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(1);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 5);
+		expect(g.biddings['A'].acutalCost).toBe(5);
+	});
 
-	bids2Simple : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 2, acutalCost:0}, 'B': {originalBid: 1, acutalCost:0}  };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(2);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ [ 'A' ], [ 'B' ] ]);
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-2);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB);
-		test.equal(g.biddings['A'].acutalCost, 2);
-		test.equal(g.biddings['B'].acutalCost, 0);
-		test.done();
-	},
+	it('bids2Simple', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 2, acutalCost: 0 }, 'B': { originalBid: 1, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(2);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A'], ['B']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 2);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB);
+		expect(g.biddings['A'].acutalCost).toBe(2);
+		expect(g.biddings['B'].acutalCost).toBe(0);
+	});
 
-	bids3Simple : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 10, acutalCost:0}, 'B': {originalBid: 5, acutalCost:0}, 'C': {originalBid: 20, acutalCost:0}  };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(3);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		var moneyPlayerC = allPlayers.getPlayerById('C').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ [ 'C' ], [ 'A' ], [ 'B' ] ]);
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-5);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB);
-		test.equal(allPlayers.getPlayerById('C').money, moneyPlayerC-20);
-		test.equal(g.biddings['A'].acutalCost, 5);
-		test.equal(g.biddings['B'].acutalCost, 0);
-		test.equal(g.biddings['C'].acutalCost, 20);
-		test.done();
-	},
+	it('bids3Simple', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 10, acutalCost: 0 }, 'B': { originalBid: 5, acutalCost: 0 }, 'C': { originalBid: 20, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(3);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		const moneyPlayerC = allPlayers.getPlayerById('C').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['C'], ['A'], ['B']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 5);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB);
+		expect(allPlayers.getPlayerById('C').money).toBe(moneyPlayerC - 20);
+		expect(g.biddings['A'].acutalCost).toBe(5);
+		expect(g.biddings['B'].acutalCost).toBe(0);
+		expect(g.biddings['C'].acutalCost).toBe(20);
+	});
 
-	bids2Equal : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 2, acutalCost:0}, 'B': {originalBid: 2, acutalCost:0}  };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(2);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ [ 'A', 'B' ] ]);
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-2);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB-2);
-		test.equal(g.biddings['A'].acutalCost, 2);
-		test.equal(g.biddings['B'].acutalCost, 2);		
-		test.done();
-	},
+	it('bids2Equal', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 2, acutalCost: 0 }, 'B': { originalBid: 2, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(2);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A', 'B']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 2);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB - 2);
+		expect(g.biddings['A'].acutalCost).toBe(2);
+		expect(g.biddings['B'].acutalCost).toBe(2);
+	});
 
-	bids3Equal : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 2, acutalCost:0}, 'B': {originalBid: 2, acutalCost:0}, 'C': {originalBid: 2, acutalCost:0}  };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(3);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		var moneyPlayerC = allPlayers.getPlayerById('C').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ [ 'A', 'B', 'C' ] ]);
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-2);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB-2);
-		test.equal(allPlayers.getPlayerById('C').money, moneyPlayerC-2);
-		test.equal(g.biddings['A'].acutalCost, 2);
-		test.equal(g.biddings['B'].acutalCost, 2);
-		test.equal(g.biddings['C'].acutalCost, 2);
-		test.done();
-	},
+	it('bids3Equal', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 2, acutalCost: 0 }, 'B': { originalBid: 2, acutalCost: 0 }, 'C': { originalBid: 2, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(3);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		const moneyPlayerC = allPlayers.getPlayerById('C').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A', 'B', 'C']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 2);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB - 2);
+		expect(allPlayers.getPlayerById('C').money).toBe(moneyPlayerC - 2);
+		expect(g.biddings['A'].acutalCost).toBe(2);
+		expect(g.biddings['B'].acutalCost).toBe(2);
+		expect(g.biddings['C'].acutalCost).toBe(2);
+	});
 
-	bids2 : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 10, acutalCost:0}, 'B': {originalBid: 5, acutalCost:0}  };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(2);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ ['A'] , ['B'] ] );
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-10);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB-0);
-		test.equal(g.biddings['A'].acutalCost, 10);
-		test.equal(g.biddings['B'].acutalCost, 0);				
-		test.done();
-	},
+	it('bids2', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 10, acutalCost: 0 }, 'B': { originalBid: 5, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(2);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A'], ['B']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 10);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB);
+		expect(g.biddings['A'].acutalCost).toBe(10);
+		expect(g.biddings['B'].acutalCost).toBe(0);
+	});
 
-	bids1Missing1 : function(test) {
-		var g = new Game();
-		g.biddings = { 'A': {originalBid: 10, acutalCost:0} };
-		g.doNextAuctionPickCard = function() {};
-		var allPlayers = Helper.getAllPlayers(2);
-		var moneyPlayerA = allPlayers.getPlayerById('A').money;
-		var moneyPlayerB = allPlayers.getPlayerById('B').money;
-		g.processAuctionBid(allPlayers);
-		test.deepEqual(g.auctionTakeOrder, [ ['A'] , ['B'] ] );
-		test.equal(allPlayers.getPlayerById('A').money, moneyPlayerA-10);
-		test.equal(allPlayers.getPlayerById('B').money, moneyPlayerB-0);
-		test.equal(g.biddings['A'].acutalCost, 10);
-		test.equal(g.biddings['B'].acutalCost, 0);				
-		test.done();
-	}
-}
+	it('bids1Missing1', async () => {
+		const g = new Game();
+		g.biddings = { 'A': { originalBid: 10, acutalCost: 0 } };
+		g.doNextAuctionPickCard = async () => {};
+		const allPlayers = getAllPlayers(2);
+		const moneyPlayerA = allPlayers.getPlayerById('A').money;
+		const moneyPlayerB = allPlayers.getPlayerById('B').money;
+		await g.processAuctionBid(allPlayers);
+		expect(g.auctionTakeOrder).toEqual([['A'], ['B']]);
+		expect(allPlayers.getPlayerById('A').money).toBe(moneyPlayerA - 10);
+		expect(allPlayers.getPlayerById('B').money).toBe(moneyPlayerB);
+		expect(g.biddings['A'].acutalCost).toBe(10);
+		expect(g.biddings['B'].acutalCost).toBe(0);
+	});
+});

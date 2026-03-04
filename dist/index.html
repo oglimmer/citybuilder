@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>CityBuilder</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+	<script type="importmap">{"imports":{"socket.io-client":"/socket.io/socket.io.esm.min.js"}}</script>
+  <script type="module" crossorigin src="/assets/index-rmtCqtn-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CxomN3S9.css">
+</head>
+<body>
+    <div id="help">
+        Here you can find information how the game works.<br/><br/>This is a multi-player computer-based card game.<br/><br/>You can either join a game somebody else created or create a game by yourself. Either way you have to put your name into the text field.
+    </div>
+	<div id="top">
+		<h1 class="translate">City Builder</h1>
+		<h3 class="translate">A fast-paced, city-building, card-based, multiplayer, online board game.</h3>
+		<div>
+			<span class="translate">Your name</span>: <input id="playerName" name="playerName" value=""/>
+		</div>
+		<div>
+			<br/>
+			<span class="translate">You could create or join a game</span>:<br/>
+			<input type="button" value="List available Games" onclick="listGames()"/>
+			<input type="button" value="Create Game" onclick="createGame()"/>
+			<span id="rejoinDiv"></span>
+		</div>
+		<div id="availGamesDiv"></div>
+    <div>
+      We have stored 3 session cookies on your computer. They don't store any personal information and are just used to identify your computer on subsequent http calls unless you will close your browser. If you are not okay with those cookies, just leave this page and your browser will delete them as soon as you terminate your browser application.<br/>
+    </div>
+	</div>
+	<div id="waitingForPlayers">
+		<h1 class="translate">msg_wfp_title</h1>
+		<div id="startButtonDiv">
+			<span class="translate">msg_wfp_playtime</span>: <select id="playTime" name="playTime">
+				<option>4</option>
+				<option>6</option>
+				<option>8</option>
+				<option>10</option>
+				<option selected="selected">12</option>
+				<option>24</option>
+				<option>36</option>
+				<option>48</option>
+				<option>60</option>
+				<option>72</option>
+			</select><span class="translate">msg_wfp_rounds</span>.
+			<input type="button" value="msg_wfp_startgame" onclick="startGame()" />
+		</div>
+		<br/><br/>
+		<h3 class="translate">msg_wfp_player_in_the_game</h3>
+		<div id="playerList"></div>
+	</div>
+	<div id="bottom">
+		<canvas id="gameCanvas"></canvas>
+	</div>
+	<div id="winner"></div>
+	<div id="overlay"><div id="darkenlayer"></div><div id="infolayer"><div><p class="translate">msg_wfp_wait</p></div></div></div>
+	<div id="bidInput"><input name="bid" id="bid"/></div>
+
+	<div id="copyright">Copyright 2012-2024 by oglimmer.de - Oliver Zimpasser - All rights reserved.</div>
+</body>
+</html>

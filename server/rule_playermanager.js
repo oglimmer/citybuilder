@@ -1,131 +1,77 @@
-var Config = require('./config');
-var db = require('nano')(Config.db);
-var Game = require("./rule_game.js");
-var Player = require("./rule_player.js");
-var CardStack = require("./rule_cardstack.js");
-var GameField = require("./rule_gamefield.js");
-var Card = require("./rule_cardstack.js");
-var CardFactory = require("./rule_cardfactory.js");
-var log4js = require('log4js');
-var logger = log4js.getLogger('game');
+import Config from './config.js';
+import Nano from 'nano';
+import Player from './rule_player.js';
+import log4js from 'log4js';
 
-/* Database Operation class */
+const db = Nano(Config.db);
+const logger = log4js.getLogger('game');
 
-var PlayerManager = {
+export class PlayerCollection extends Array {
+	getPlayerByNo(playerNo) {
+		return this.find(p => p.no == playerNo);
+	}
 
-	getPlayer : function(playerId, onLoad) {
-		if(typeof playerId === "undefined") {
+	getPlayerById(playerId) {
+		return this.find(p => p._id == playerId);
+	}
+
+	asIdArray() {
+		return this.map(p => p._id);
+	}
+}
+
+const PlayerManager = {
+
+	async getPlayer(playerId) {
+		if (typeof playerId === "undefined") {
 			logger.error("Error in getPlayer - playerId is undefined");
+			return;
 		}
-		db.get(playerId, { revs_info: false }, function(err, body) {
-			if (err) {
-				logger.error("[PlayerManager] - failed to load player with id " + playerId + " : " + err.message);
-				return;
-			}	
-			Player.reinit(body);
-			onLoad(body);
-		});
+		const body = await db.get(playerId, { revs_info: false });
+		await Player.reinit(body);
+		return body;
 	},
 
-	getOtherPlayers : function(player, perRow) {
-		this.getPlayers(player.gameId, function(loadedPlayer) {
-			if(loadedPlayer.no !== player.no) {
-				perRow(loadedPlayer);
-			}
-		});		
+	async getOtherPlayers(player) {
+		const allPlayers = await this.getPlayers(player.gameId);
+		return allPlayers.filter(p => p.no !== player.no);
 	},
 
-	getPlayers : function(gameId, perRow, allRows) {
-		if(typeof gameId === "undefined") {
+	async getPlayers(gameId) {
+		if (typeof gameId === "undefined") {
 			logger.error("Error in getPlayers - gameId is undefined");
+			return;
 		}
-		db.view("game", "playersByGameId", { key : gameId }, function(err, body) {
-			if (err) {
-				logger.error('[PlayerManager] - getPlayers failed: ', err.message);
-				return;
-			}
-			var fixedAllPlayers = [];
-			body.rows.forEach(function(doc) {
-				var loadedPlayer = doc.value;
-				Player.reinit(loadedPlayer);
-				if(perRow != null) {
-					perRow(loadedPlayer);
-				}
-				fixedAllPlayers.push(loadedPlayer);
-			});
-			if(typeof allRows !== 'undefined' && allRows !== null) {
-
-				// add a method to retrieveByPlayerNo
-				fixedAllPlayers.getPlayerByNo = function(playerNo) {
-					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
-						var p = fixedAllPlayers[i];
-						if(p.no == playerNo) {
-							return p;
-						}
-					}
-					logger.error("player not found with no="+playerNo);
-				};	
-				fixedAllPlayers.getPlayerById = function(playerId) {
-					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
-						var p = fixedAllPlayers[i];
-						if(p._id == playerId) {
-							return p;
-						}
-					}
-					logger.error("player not found with id="+getPlayerById);
-				};
-				fixedAllPlayers.asIdArray = function() {
-					var retObj = [];
-					for(var i = 0 ; i < fixedAllPlayers.length ; i++) {
-						var p = fixedAllPlayers[i];
-						retObj.push(p._id);
-					}
-					return retObj;	
-				};
-							
-				allRows(fixedAllPlayers);
-			}
-		});
-	},	
-
-	getPlayerBySocketId : function(socketId, onLoad) {
-		if(typeof socketId === "undefined") {
-			logger.error("Error in getPlayerBySocketId - socketId is undefined");
+		const body = await db.view("game", "playersByGameId", { key: gameId });
+		const players = new PlayerCollection();
+		for (const doc of body.rows) {
+			const loadedPlayer = doc.value;
+			await Player.reinit(loadedPlayer);
+			players.push(loadedPlayer);
 		}
-		db.view('game', 'playersBySocketId', {key : socketId}, function(err, body) {
-			if(err) {
-				logger.error('[PlayerManager] - getPlayerBySocketId failed: ', err.message);
-				return;
-			}
-			body.rows.forEach(function(doc) {
-				onLoad(doc.value);
-			});
-		});		
+		return players;
 	},
 
-	storePlayer : function(player, prepare, onSuccess) {
-		if(prepare!=null) {
+	async getPlayerBySocketId(socketId) {
+		if (typeof socketId === "undefined") {
+			logger.error("Error in getPlayerBySocketId - socketId is undefined");
+			return;
+		}
+		const body = await db.view('game', 'playersBySocketId', { key: socketId });
+		if (body.rows.length > 0) {
+			return body.rows[0].value;
+		}
+	},
+
+	async storePlayer(player, prepare) {
+		if (prepare != null) {
 			prepare(player);
 		}
-		db.insert(player, function(err, body) {
-			if (err) {
-				console.trace("Here I am!")
-				logger.error('[PlayerManager] - storePlayer failed: ', err.message);
-				if(prepare!=null) {
-					this.getGame(game.id, function(newPlayer) {
-						prepare(newPlayer);
-						this.storePlayer(newPlayer, prepare, onSuccess);
-					});
-				}
-				return;
-			}
-			player._id = body.id;
-			player._rev = body.rev; // update rev so we can perisit it again			
-			if(typeof onSuccess !== 'undefined') {
-				onSuccess(player);
-			}
-		});
-	}	
+		const body = await db.insert(player);
+		player._id = body.id;
+		player._rev = body.rev;
+		return player;
+	}
 };
 
-module.exports = PlayerManager
+export default PlayerManager;

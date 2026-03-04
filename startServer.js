@@ -1,25 +1,26 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
+import { readFileSync } from 'fs';
+import log4js from 'log4js';
+import Config from './server/config.js';
+import Nano from 'nano';
 
-const log4js = require('log4js');
-log4js.configure('./log4js_config.json', { reloadSecs: 300 });
+log4js.configure('./log4js_config.json');
 
-const Config = require('./server/config');
-const nano = require('nano')(Config.dbHost);
+const nano = Nano(Config.dbHost);
 
 (async () => {
-  try {
-    await nano.db.destroy(Config.dbSchema);
-  } catch(err) {
-    // just ignore
-  }
-  try {
-    await nano.db.create(Config.dbSchema);
-    await nano.use(Config.dbSchema).insert(fs.readFileSync('./db/_design-game-view.json'));
-  } catch(err) {
-    // just ignore
-  }
+	try {
+		await nano.db.destroy(Config.dbSchema);
+	} catch (err) {
+		// just ignore
+	}
+	try {
+		await nano.db.create(Config.dbSchema);
+		await nano.use(Config.dbSchema).insert(JSON.parse(readFileSync('./db/_design-game-view.json', 'utf8')));
+	} catch (err) {
+		// just ignore
+	}
 
-  require("./server/io.js");
+	await import('./server/io.js');
 })();

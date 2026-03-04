@@ -1,0 +1,49 @@
+services:
+  couchdb:
+    image: couchdb:3
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  couchdb-setup:
+    image: curlimages/curl
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    restart: "no"
+    volumes:
+      - ./db:/data:ro
+    command: ["sh", "-c", "curl -sf -X POST http://admin:password@couchdb:5984/_cluster_setup -H 'Content-Type: application/json' -d '{\"action\":\"enable_single_node\",\"bind_address\":\"0.0.0.0\"}' && curl -sf -X PUT http://admin:password@couchdb:5984/citybuilder && curl -sf -X PUT http://admin:password@couchdb:5984/citybuilder/_design/game -H 'Content-Type: application/json' -d @/data/_design-game-view.json && echo 'CouchDB initialized'"]
+
+  app:
+    build: .
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    environment:
+      CITYBUILDER_PROPERTIES: /app/citybuilder.properties
+    configs:
+      - source: app_properties
+        target: /app/citybuilder.properties
+    ports:
+      - "1337:1337"
+
+configs:
+  app_properties:
+    content: |
+      dbHost=http://admin:password@couchdb:5984
+      dbSchema=citybuilder
+      db=http://admin:password@couchdb:5984/citybuilder
+      httpPort=1337
+      httpHost=0.0.0.0
+
+volumes:
+  couchdb_data:

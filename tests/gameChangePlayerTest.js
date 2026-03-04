@@ -1,83 +1,71 @@
-var Game = require("../server/rule_game.js");
-var Player = require("../server/rule_player.js");
-var PlayerManager = require('../server/rule_playermanager.js');
-var GameManager = require('../server/rule_gamemanager.js');
+import { describe, it, expect, beforeEach } from 'vitest';
+import Game from '../server/rule_game.js';
+import { GameStates } from '../server/rule_defines.js';
+import Player from '../server/rule_player.js';
+import PlayerManager, { PlayerCollection } from '../server/rule_playermanager.js';
+import GameManager from '../server/rule_gamemanager.js';
 
-module.exports = {
-	setUp: function (callback) {
+describe('Game Change Player', () => {
+	let game;
+	let currentPlayer;
 
-		// THIS IS THE USED GAME
-		this.game = new Game();
-		this.game._id = 'gameFakeId';
+	beforeEach(() => {
+		game = new Game();
+		game._id = 'gameFakeId';
 
-		// WHEN STORE A PLAYER, CREATE AN ID THE FIRST TIME
-		PlayerManager.storePlayer = function(player, prepare, onSuccess) {
-			if(prepare!=null) {
+		PlayerManager.storePlayer = async (player, prepare) => {
+			if (prepare != null) {
 				prepare(player);
 			}
-			if(player._id === null || typeof(player._id) === 'undefined') {
+			if (player._id == null || typeof player._id === 'undefined') {
 				player._id = 'fakeId';
 			}
-			if(typeof onSuccess !== 'undefined') {
-				onSuccess(player);
+			return player;
+		};
+
+		PlayerManager.getPlayerBySocketId = async (socketId) => {
+			return currentPlayer;
+		};
+
+		PlayerManager.getPlayers = async (gameId) => {
+			const arr = new PlayerCollection();
+			if (currentPlayer) arr.push(currentPlayer);
+			return arr;
+		};
+
+		GameManager.getGame = async (gameId) => {
+			return game;
+		};
+
+		GameManager.storeGame = async (g, prepare) => {
+			if (prepare != null) {
+				prepare(g);
 			}
-		}
+			return g;
+		};
 
-		// WHEN YOU TRY TO LOAD A PLAYER FROM DB RETURN THE "THIS.PLAYER"
-		PlayerManager.getPlayerBySocketId = function(socketId, onLoad) {
-			onLoad(this.player);
-		}.bind(this);
+		GameManager.deleteGame = async () => {};
+	});
 
-		// WHEN YOU TRY TO LOAD A GAME FROM DB RETURN THE ONE INSTANCE FROM ABOVE
-		GameManager.getGame = function(gameId, onLoad) {
-			onLoad(this.game);
-		}.bind(this);
+	it('changePlayer', async () => {
+		const createdPlayer = await game.createPlayer("socket", "player");
+		currentPlayer = createdPlayer;
 
-		// WHEN YOU TRY TO STORE A GAME, DO NOTHING AT ALL
-		GameManager.storeGame = function(game, prepare, onSuccess) {
-			if(prepare!=null) {
-				prepare(game);
-			}
-			if(typeof onSuccess !== 'undefined') {
-				onSuccess(game);
-			}
-		}
-		callback();
-	},
-	changePlayer : function(test) {
-		// CREATE A NEW PLAYER AND REGISTER IN THE GAME
-		this.game.createPlayer("socket","player", function(createdPlayer) {
+		expect(game.playerIds).toEqual({ "0": "fakeId" });
+		expect(game.playerNames).toEqual(['player']);
+		expect(game.playersOnTurn).toEqual(['fakeId']);
+		expect(createdPlayer.socketId).not.toBeNull();
 
-			// SAVE THIS NEW PLAYER IN "THIS.PLAYER" (SO THE PLAYERMANAGER MOCKS USE IT)
-			this.player = createdPlayer;
+		// Change game state so removePlayer doesn't delete the game
+		game.gameState = GameStates.CITY_VIEW;
 
-			test.deepEqual(this.game.playerIds,{ "0": "fakeId" });
-			test.deepEqual(this.game.playerNames,['player']);
-			test.deepEqual(this.game.playersOnTurn,['fakeId']);
-			test.ok(createdPlayer.socketId !== null);
-	
-			Game.removePlayer("socket", function(loadedGame) {
-				
-				test.deepEqual(loadedGame.playerIds,{ });
-				test.deepEqual(loadedGame.playerNames,[]);
-				test.deepEqual(loadedGame.playersOnTurn,[]);
-				test.ok(createdPlayer.socketId === null);
+		const result = await Game.removePlayer("socket");
 
-				loadedGame.rejoinPlayer("socket", this.player, function(joinedPlayer) {
-					
-					test.deepEqual(loadedGame.playerIds,{ "0": "fakeId" });
-					test.deepEqual(loadedGame.playerNames,['player']);
-					test.deepEqual(loadedGame.playersOnTurn,['fakeId']);
-					test.ok(joinedPlayer.socketId !== null);
+		expect(result.type).toBe('playerRemoved');
+		expect(createdPlayer.socketId).toBeNull();
 
-					test.done();	
-				})			
+		const joinedPlayer = await game.rejoinPlayer("socket", currentPlayer);
 
-			}.bind(this), function(allPlayers) {
-				test.done();
-			});
-
-		}.bind(this));
-	}
-
-}
+		expect(joinedPlayer.socketId).not.toBeNull();
+	});
+});

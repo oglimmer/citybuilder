@@ -1,93 +1,101 @@
-/* ------------------------------------------ */
-/* class CardLayouter */
-/* ------------------------------------------ */
-function CardLayouter(ctx) {
+import { G } from './state.js';
 
-	this.cards = [];
-	this.maxWidth = 600;
-	this.currentlyExpanded = null;
-	this.currentlyClicked = null;
+export default class CardLayouter {
+	constructor(ctx) {
+		this.cards = [];
+		this.maxWidth = 600;
+		this.currentlyExpanded = null;
+		this.currentlyClicked = null;
+		this._ctx = ctx;
+	}
 
-	this.draw = function(ctx) {  
-		for(var i = 0 ; i < this.cards.length ; i++) {
-			var j = i < this.cards.length - 1 && this.cards[i].expanded ? i+1 : ( i>0 && this.cards[i-1].expanded ? i-1 : i);
-			var card = this.cards[j];
-			card.x = 10 + j*Math.min(this.maxWidth/this.cards.length, card.width+5);
+	draw(ctx) {
+		for (let i = 0; i < this.cards.length; i++) {
+			const j = i < this.cards.length - 1 && this.cards[i].expanded ? i + 1 : (i > 0 && this.cards[i - 1].expanded ? i - 1 : i);
+			const card = this.cards[j];
+			card.x = 10 + j * Math.min(this.maxWidth / this.cards.length, card.width + 5);
 			card.draw(ctx);
 		}
-	};
-	this.toggle = function(card) {
+	}
+
+	toggle(card) {
 		G.canvasManagerField.clearTemp();
-		card.toggle();			
-		if(this.currentlyExpanded!==null&&this.currentlyExpanded!==card) {
+		card.toggle();
+		if (this.currentlyExpanded !== null && this.currentlyExpanded !== card) {
 			this.currentlyExpanded.toggle();
 		}
-		this.currentlyExpanded = card.expanded ? card : null;		
-	};
-	this.onclick = function(x, y) {
-		if(this.currentlyClicked===null) {
-			for(var i = this.cards.length-1 ; i >= 0 ; i--) {
-				var card = this.cards[i];
-				if(card.onclick(x,y)) {
+		this.currentlyExpanded = card.expanded ? card : null;
+	}
+
+	onclick(x, y) {
+		if (this.currentlyClicked === null) {
+			for (let i = this.cards.length - 1; i >= 0; i--) {
+				const card = this.cards[i];
+				if (card.onclick(x, y)) {
 					this.toggle(card);
 					return true;
 				}
 			}
 		}
 		return false;
-	};  	
-	this.atPos = function(x, y) {
-		if(this.currentlyClicked===null) {
-			for(var i = this.cards.length-1 ; i >= 0 ; i--) {
-				var card = this.cards[i];
-				if(card.atPos(x,y)) {					
+	}
+
+	atPos(x, y) {
+		if (this.currentlyClicked === null) {
+			for (let i = this.cards.length - 1; i >= 0; i--) {
+				const card = this.cards[i];
+				if (card.atPos(x, y)) {
 					return true;
 				}
 			}
 		}
 		return false;
-	};  
-	this.resize = function() {
-		for(var ind in this.cards) {
-			var card = this.cards[ind];
-			if(typeof(card) === 'object') {
-				card.y = ctx.canvas.height-card.height;
-			}
-		}
-	}	
-	this.isExpanded = function() {
-		return this.currentlyExpanded !== null;	
 	}
-	this.expand = function(card) {
-		if(this.isExpanded()) {
+
+	resize() {
+		for (const card of this.cards) {
+			card.y = this._ctx.canvas.height - card.height;
+		}
+	}
+
+	isExpanded() {
+		return this.currentlyExpanded !== null;
+	}
+
+	expand(card) {
+		if (this.isExpanded()) {
 			this.colapse();
 		}
 		this.currentlyExpanded = card;
 		this.currentlyExpanded.toggle();
 	}
-	this.colapse = function() {
-		if(this.isExpanded()) {
+
+	colapse() {
+		if (this.isExpanded()) {
 			G.canvasManagerField.clearTemp();
-			this.currentlyExpanded.toggle();			
+			this.currentlyExpanded.toggle();
 			this.currentlyExpanded = null;
 		}
 	}
-	this.isLocked = function() {
+
+	isLocked() {
 		return this.currentlyClicked !== null;
-	}	
-	this.lock = function(card) {
-		if(this.isLocked()) {
+	}
+
+	lock(card) {
+		if (this.isLocked()) {
 			this.unlock();
 		}
 		this.currentlyClicked = card;
 		this.currentlyClicked.clicked = true;
 	}
-	this.unlock = function() {
-		if(this.isLocked()) {
+
+	unlock() {
+		if (this.isLocked()) {
 			this.colapse();
-			G.canvasManagerField.clearTemp(); // there could be buttons even not expanded
+			G.canvasManagerField.clearTemp();
 			this.currentlyClicked.clicked = false;
-			this.currentlyClicked = null;				
+			this.currentlyClicked = null;
 			G.fieldPane.setSelectTargetEnabled(false);
 		}
 	}
