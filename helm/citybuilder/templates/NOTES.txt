@@ -1,0 +1,25 @@
+CityBuilder has been deployed!
+
+{{- if .Values.ingress.enabled }}
+Access the application at:
+{{- range .Values.ingress.hosts }}
+  {{- range .paths }}
+  {{- if $.Values.ingress.tls }}
+  https://{{ (index $.Values.ingress.hosts 0).host }}{{ .path }}
+  {{- else }}
+  http://{{ (index $.Values.ingress.hosts 0).host }}{{ .path }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+
+Socket.IO endpoint:
+  {{- if .Values.ingress.tls }}
+  wss://{{ (index .Values.ingress.hosts 0).host }}/socket.io
+  {{- else }}
+  ws://{{ (index .Values.ingress.hosts 0).host }}/socket.io
+  {{- end }}
+{{- else }}
+Get the application URL by running:
+  kubectl port-forward svc/{{ include "citybuilder.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  Then open http://localhost:{{ .Values.service.port }}
+{{- end }}

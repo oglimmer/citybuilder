@@ -41,6 +41,21 @@ const GameManager = {
 		return body.rows.map(doc => ({ gameId: doc.id, players: doc.value }));
 	},
 
+	async listAllGamesAdmin() {
+		const body = await db.view("game", "allGamesAdmin");
+		return body.rows.map(doc => ({
+			gameId: doc.id,
+			playerNames: doc.value.playerNames,
+			gameState: doc.value.gameState,
+			maxPlayerNumber: doc.value.maxPlayerNumber,
+		}));
+	},
+
+	async deleteGameById(gameId) {
+		const game = await db.get(gameId, { revs_info: false });
+		await this.deleteGame(game);
+	},
+
 	async storeGame(game, prepare) {
 		while (true) {
 			try {

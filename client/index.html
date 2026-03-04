@@ -20,11 +20,12 @@
 			<span class="translate">Your name</span>: <input id="playerName" name="playerName" value=""/>
 		</div>
 		<div>
-			<br/>
 			<span class="translate">You could create or join a game</span>:<br/>
-			<input type="button" value="List available Games" onclick="listGames()"/>
-			<input type="button" value="Create Game" onclick="createGame()"/>
-			<span id="rejoinDiv"></span>
+			<div style="margin-top: 10px;">
+				<input type="button" value="List available Games" onclick="listGames()"/>
+				<input type="button" value="Create Game" onclick="createGame()"/>
+				<span id="rejoinDiv"></span>
+			</div>
 		</div>
 		<div id="availGamesDiv"></div>
     <div>
@@ -48,8 +49,7 @@
 			</select><span class="translate">msg_wfp_rounds</span>.
 			<input type="button" value="msg_wfp_startgame" onclick="startGame()" />
 		</div>
-		<br/><br/>
-		<h3 class="translate">msg_wfp_player_in_the_game</h3>
+		<h3 class="translate" style="margin-top: 28px;">msg_wfp_player_in_the_game</h3>
 		<div id="playerList"></div>
 	</div>
 	<div id="bottom">

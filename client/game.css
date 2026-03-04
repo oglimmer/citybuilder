@@ -24,19 +24,20 @@ h2 {
 h3 {
 	color: #a0a0b8;
 	font-weight: 400;
+	margin-bottom: 24px;
 }
 
 div#help {
 	background-color: rgba(22, 33, 62, 0.9);
 	border: 1px solid #2a2a4a;
 	border-radius: 8px;
-	padding: 12px 16px;
-	margin: 10px;
+	padding: 16px 20px;
+	margin: 30px 20px;
 	width: 200px;
 	float: right;
 	font-size: 13px;
 	color: #a0a0b8;
-	line-height: 1.5;
+	line-height: 1.6;
 }
 
 div#top,
@@ -45,11 +46,16 @@ div#winner {
 	background-color: #16213e;
 	border: 1px solid #2a2a4a;
 	border-radius: 12px;
-	padding: 24px 32px 32px;
+	padding: 32px 40px 40px;
 	width: auto;
 	max-width: 900px;
-	margin: 20px auto;
+	margin: 30px auto;
 	overflow: hidden;
+}
+
+div#top > div,
+div#waitingForPlayers > div {
+	margin-top: 16px;
 }
 
 #bottom {
@@ -113,6 +119,11 @@ button:active {
 	transform: scale(0.98);
 }
 
+input[type="button"] + input[type="button"],
+button + button {
+	margin-left: 10px;
+}
+
 select {
 	background-color: #1a1a2e;
 	color: #e0e0e0;
@@ -136,11 +147,18 @@ select option {
 	color: #e0e0e0;
 }
 
+div#top > div:last-of-type {
+	margin-top: 24px;
+	font-size: 12px;
+	color: #6a6a80;
+	line-height: 1.6;
+}
+
 div#copyright {
 	font-size: 11px;
 	color: #4a4a60;
 	text-align: center;
-	padding: 12px;
+	padding: 16px;
 }
 
 #darkenlayer,
@@ -179,7 +197,7 @@ div#copyright {
 #bidInput {
 	position: absolute;
 	bottom: 36px;
-	right: 300px;
+	right: 350px;
 	display: none;
 }
 
@@ -195,4 +213,9 @@ div#copyright {
 #playerList {
 	color: #a0a0b8;
 	line-height: 1.8;
+	margin-top: 8px;
+}
+
+#startButtonDiv {
+	margin-top: 8px;
 }

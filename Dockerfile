@@ -22,5 +22,7 @@ COPY --from=build /app/dist/ client/
 COPY client/images/ client/images/
 COPY client/preview-portal.html client/
 
+RUN mkdir -p logs && chown 10001:10001 logs
+
 EXPOSE 1337
 CMD ["node", "startServer.js"]

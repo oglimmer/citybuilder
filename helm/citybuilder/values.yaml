@@ -1,0 +1,66 @@
+replicaCount: 1
+
+image:
+  repository: registry.oglimmer.com/citybuilder
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets:
+  - name: oglimmerregistrykey
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podSecurityContext:
+  fsGroup: 10001
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+service:
+  type: ClusterIP
+  port: 1337
+
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: "oglimmer-com-dns"
+  hosts:
+    - host: cb.oglimmer.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: tls-citybuilder-ingress-dns
+      hosts:
+        - cb.oglimmer.com
+
+# CouchDB connection
+couchdb:
+  host: couchdb-prod-couchdb.couchdb.svc.cluster.local
+  port: 5984
+  schema: citybuilder
+
+# App server config
+app:
+  httpPort: 1337
+  httpHost: "0.0.0.0"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

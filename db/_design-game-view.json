@@ -13,6 +13,9 @@
         },
         "activePlayers": {
             "map": "function(doc) { if(doc.clazz == 'Player' && doc.socketId != null) emit(1,1);}"
-        }
+        },
+		"allGamesAdmin": {
+			"map": "function(doc) { if(doc.clazz == 'Game') emit(doc._id, {playerNames: doc.playerNames, gameState: doc.gameState, maxPlayerNumber: doc.maxPlayerNumber});}"
+		}
 	}
 }

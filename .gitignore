@@ -1,4 +1,6 @@
 logs/
 node_modules/
 localrun/
+dist/
+helm/citybuilder/secret.yaml
 

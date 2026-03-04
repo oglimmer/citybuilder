@@ -52,7 +52,7 @@ export default class AuctionPanel {
 
 		if (G.gameState == 2) {
 			ctx.fillStyle = THEME.auctionText;
-			ctx.fillText(`${G.i18n.auctionPanel_enter_bid} $`, ctx.canvas.width - ctx.measureText(`${G.i18n.auctionPanel_enter_bid} $`).width - 140, ctx.canvas.height - 17);
+			ctx.fillText(`${G.i18n.auctionPanel_enter_bid} $`, ctx.canvas.width - ctx.measureText(`${G.i18n.auctionPanel_enter_bid} $`).width - 190, ctx.canvas.height - 17);
 		}
 	}
 

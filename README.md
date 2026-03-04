@@ -66,3 +66,82 @@ The `Dockerfile` uses a two-stage build:
 The game server serves files from its `client/` directory. In the Docker image, the Vite build output is placed there, so no server code changes are needed.
 
 The database connection is configured via a Docker Compose `configs` block that injects a properties file pointing to the `couchdb` service hostname instead of `localhost`.
+
+## Kubernetes Deployment (Helm)
+
+The `helm/citybuilder/` directory contains a Helm chart for deploying to Kubernetes. The chart assumes an existing CouchDB instance is available in the cluster.
+
+### Prerequisites
+
+- [Helm 3](https://helm.sh/)
+- [kubeseal](https://github.com/bitnami-labs/sealed-secrets) — for encrypting secrets
+- A Kubernetes cluster with:
+  - [cert-manager](https://cert-manager.io/) configured with a `oglimmer-com-dns` ClusterIssuer
+  - [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) controller installed
+  - Access to `registry.oglimmer.com` (image pull secret `oglimmerregistrykey` must exist)
+
+### 1. Create the sealed secret
+
+CouchDB credentials are never stored in plain text in the repository. Create a local `secret.yaml` (gitignored) with the actual password, then seal it:
+
+```bash
+cd helm/citybuilder
+
+# Edit secret.yaml with the real DB_PASSWORD
+cat > secret.yaml <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: citybuilder-secret
+  namespace: default
+type: Opaque
+stringData:
+  DB_USER: citybuilder-app
+  DB_PASSWORD: <actual-password>
+EOF
+
+# Encrypt it using the cluster's sealing key
+kubeseal -f secret.yaml -w templates/sealed-secret.yaml
+```
+
+The generated `templates/sealed-secret.yaml` is safe to commit — only the target cluster can decrypt it. The plain `secret.yaml` is gitignored.
+
+### 2. Build and push the Docker image
+
+```bash
+./oglimmer.sh build
+```
+
+This builds the image, pushes it to `registry.oglimmer.com/citybuilder`, and restarts the Kubernetes deployment. Run `./oglimmer.sh --help` for options (platform selection, dry-run, verbose, etc.).
+
+### 3. Install / upgrade the Helm release
+
+```bash
+# First install
+helm install citybuilder helm/citybuilder/
+
+# Subsequent upgrades
+helm upgrade citybuilder helm/citybuilder/
+```
+
+### What gets deployed
+
+| Resource | Description |
+|----------|-------------|
+| Deployment | Single pod running the Node.js game server on port 1337 |
+| Service | ClusterIP service exposing port 1337 |
+| Ingress | TLS-terminated ingress for `cb.oglimmer.com` via cert-manager |
+| ConfigMap | CouchDB host/port/schema and app server settings |
+| SealedSecret | Encrypted CouchDB credentials (decrypted by the cluster) |
+| ServiceAccount | Runs as non-root user (UID 10001) |
+
+### Configuration
+
+Key values in `helm/citybuilder/values.yaml`:
+
+| Value | Default | Description |
+|-------|---------|-------------|
+| `image.repository` | `registry.oglimmer.com/citybuilder` | Docker image |
+| `couchdb.host` | `couchdb-prod-couchdb.couchdb.svc.cluster.local` | CouchDB service hostname |
+| `couchdb.schema` | `citybuilder` | Database name |
+| `ingress.hosts[0].host` | `cb.oglimmer.com` | Public domain |

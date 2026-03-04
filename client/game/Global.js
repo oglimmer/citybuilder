@@ -22,7 +22,7 @@ export default class Global {
 		this.i18n = I18n[Cookie.get('lang')];
 		this.serverCommListener = new ServerCommListener();
 		this.fieldPane = new FieldPane();
-		this.turnDoneButton = new Button(this.i18n.button_endRound, () => this.ctx.canvas.width - 80, () => this.ctx.canvas.height - 30, 75, () => this.serverCommListener.onTurnDone());
+		this.turnDoneButton = new Button(this.i18n.button_endRound, () => this.ctx.canvas.width - 100, () => this.ctx.canvas.height - 36, 80, () => this.serverCommListener.onTurnDone());
 		this.infoField = new InfoField(this.ctx);
 		this.cardLayouter = new CardLayouter(this.ctx);
 		this.infoBar = new InfoBar();
