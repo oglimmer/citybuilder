@@ -1,65 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>CityBuilder</title>
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
 	<link rel="stylesheet" type="text/css" href="game.css" />
 </head>
 <body>
-    <div id="help">
-        Here you can find information how the game works.<br/><br/>This is a multi-player computer-based card game.<br/><br/>You can either join a game somebody else created or create a game by yourself. Either way you have to put your name into the text field.
-    </div>
 	<div id="top">
-		<h1 class="translate">City Builder</h1>
-		<h3 class="translate">A fast-paced, city-building, card-based, multiplayer, online board game.</h3>
-		<div>
-			<span class="translate">Your name</span>: <input id="playerName" name="playerName" value=""/>
+		<div class="landing-bg">
+			<!-- Animated skyline -->
+			<div class="skyline">
+				<div class="building b1"></div>
+				<div class="building b2"></div>
+				<div class="building b3"></div>
+				<div class="building b4"></div>
+				<div class="building b5"></div>
+				<div class="building b6"></div>
+				<div class="building b7"></div>
+				<div class="building b8"></div>
+				<div class="building b9"></div>
+				<div class="building b10"></div>
+				<div class="building b11"></div>
+				<div class="building b12"></div>
+				<div class="building b13"></div>
+				<div class="building b14"></div>
+				<div class="building b15"></div>
+			</div>
+			<!-- Floating card accents -->
+			<div class="floating-cards">
+				<div class="fcard fc1"></div>
+				<div class="fcard fc2"></div>
+				<div class="fcard fc3"></div>
+			</div>
+			<div class="grid-overlay"></div>
 		</div>
-		<div>
-			<span class="translate">You could create or join a game</span>:<br/>
-			<div style="margin-top: 10px;">
-				<input type="button" value="List available Games" onclick="listGames()"/>
-				<input type="button" value="Create Game" onclick="createGame()"/>
-				<span id="rejoinDiv"></span>
+
+		<div class="landing-content">
+			<div class="logo-section">
+				<div class="logo-badge">CB</div>
+				<h1 class="translate">City Builder</h1>
+				<h3 class="translate">A fast-paced, city-building, card-based, multiplayer, online board game.</h3>
+			</div>
+
+			<div class="form-card">
+				<div class="form-group">
+					<label for="playerName" class="translate">Your name</label>
+					<input id="playerName" name="playerName" value="" placeholder="Enter your name..." />
+				</div>
+				<div class="form-actions">
+					<span class="form-hint translate">You could create or join a game</span>
+					<div class="button-row">
+						<input type="button" class="btn btn-secondary" value="List available Games" onclick="listGames()"/>
+						<input type="button" class="btn btn-primary" value="Create Game" onclick="createGame()"/>
+						<span id="rejoinDiv"></span>
+					</div>
+				</div>
+				<div id="availGamesDiv"></div>
+			</div>
+
+			<div class="cookie-notice">
+				We store 3 session cookies to identify your session. They contain no personal data and are deleted when you close your browser.
 			</div>
 		</div>
-		<div id="availGamesDiv"></div>
-    <div>
-      We have stored 3 session cookies on your computer. They don't store any personal information and are just used to identify your computer on subsequent http calls unless you will close your browser. If you are not okay with those cookies, just leave this page and your browser will delete them as soon as you terminate your browser application.<br/>
-    </div>
 	</div>
+
 	<div id="waitingForPlayers">
-		<h1 class="translate">msg_wfp_title</h1>
-		<div id="startButtonDiv">
-			<span class="translate">msg_wfp_playtime</span>: <select id="playTime" name="playTime">
-				<option>4</option>
-				<option>6</option>
-				<option>8</option>
-				<option>10</option>
-				<option selected="selected">12</option>
-				<option>24</option>
-				<option>36</option>
-				<option>48</option>
-				<option>60</option>
-				<option>72</option>
-			</select><span class="translate">msg_wfp_rounds</span>.
-			<input type="button" value="msg_wfp_startgame" onclick="startGame()" />
+		<div class="waiting-card">
+			<div class="waiting-pulse"></div>
+			<h1 class="translate">msg_wfp_title</h1>
+			<div id="startButtonDiv">
+				<div class="playtime-row">
+					<label class="translate">msg_wfp_playtime</label>
+					<select id="playTime" name="playTime">
+						<option>4</option>
+						<option>6</option>
+						<option>8</option>
+						<option>10</option>
+						<option selected="selected">12</option>
+						<option>24</option>
+						<option>36</option>
+						<option>48</option>
+						<option>60</option>
+						<option>72</option>
+					</select>
+					<span class="translate">msg_wfp_rounds</span>
+				</div>
+				<input type="button" class="btn btn-primary btn-start" value="msg_wfp_startgame" onclick="startGame()" />
+			</div>
+			<h3 class="translate" style="margin-top: 28px;">msg_wfp_player_in_the_game</h3>
+			<div id="playerList"></div>
 		</div>
-		<h3 class="translate" style="margin-top: 28px;">msg_wfp_player_in_the_game</h3>
-		<div id="playerList"></div>
 	</div>
+
 	<div id="bottom">
 		<canvas id="gameCanvas"></canvas>
 	</div>
+
 	<div id="winner"></div>
-	<div id="overlay"><div id="darkenlayer"></div><div id="infolayer"><div><p class="translate">msg_wfp_wait</p></div></div></div>
+
+	<div id="overlay">
+		<div id="darkenlayer"></div>
+		<div id="infolayer">
+			<div><p class="translate">msg_wfp_wait</p></div>
+		</div>
+	</div>
+
 	<div id="bidInput"><input name="bid" id="bid"/></div>
+
+	<div id="help" style="display:none;">
+		Here you can find information how the game works.<br/><br/>This is a multi-player computer-based card game.<br/><br/>You can either join a game somebody else created or create a game by yourself. Either way you have to put your name into the text field.
+	</div>
+
 	<script type="importmap">{"imports":{"socket.io-client":"/socket.io/socket.io.esm.min.js"}}</script>
 	<script type="module" src="/game/main.js"></script>
-	<div id="copyright">Copyright 2012-2024 by oglimmer.de - Oliver Zimpasser - All rights reserved.</div>
+	<div id="copyright">Copyright 2012-2024 by oglimmer.de &mdash; Oliver Zimpasser &mdash; All rights reserved.</div>
 </body>
 </html>
